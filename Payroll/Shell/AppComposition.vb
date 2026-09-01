@@ -1,0 +1,133 @@
+﻿
+Imports Payroll.DBConnection.Presenters
+Imports Payroll.DBConnection.Services
+Imports Payroll.DBConnection.Views
+Imports Payroll.Employee.Data
+Imports Payroll.Employee.Presenters
+Imports Payroll.Employee.Services
+Imports Payroll.Employee.Views
+Imports Payroll.Login.Data
+Imports Payroll.Login.Presenters
+Imports Payroll.Login.Services
+Imports Payroll.Users.Presenters
+Imports Payroll.Users.Services
+Imports Payroll.Users.Views
+
+Public Class AppComposition
+
+    Public Shared Function BuildEmployeeView() As ucEmployees
+
+        ' 1. Repository
+        Dim empRepo As New EmployeeRepository()
+
+        ' 2. Service
+        Dim empService As New EmployeeService(empRepo)
+
+        ' 3. Gawin MUNA ang Views — walang Presenter pa
+        Dim personalInfoView As New ucEmployeesPersonalInfo()
+        Dim employmentView As New ucEmployeesEmployment()
+        Dim earningsView As New ucEmployeesEarnings()
+        Dim statutoryView As New ucEmployeesStatutory()
+
+        ' 4. Gawin ang Presenters — i-inject ang View + Service
+        Dim personalInfoPresenter As New EmployeesPersonalInfoPresenter(personalInfoView, empService)
+        Dim employmentPresenter As New EmployeesEmploymentPresenter(employmentView, empService)
+        Dim earningsPresenter As New EmployeesEarningsPresenter(earningsView, empService)
+        Dim statutoryPresenter As New EmployeesStatutoryPresenter(statutoryView, empService)
+
+        ' 5. I-assign ang Presenter sa bawat View
+        personalInfoView.SetPresenter(personalInfoPresenter)
+        employmentView.SetPresenter(employmentPresenter)
+        earningsView.SetPresenter(earningsPresenter)
+        statutoryView.SetPresenter(statutoryPresenter)
+
+        ' 6. Gawin ang Main View
+        Return New ucEmployees(personalInfoView, employmentView, earningsView, statutoryView)
+
+    End Function
+
+    Public Shared Function BuildLoginForm() As frmLogin
+
+        ' 1. Repository
+        Dim userRepo As New UserRepository()
+
+        ' 2. Services
+        Dim authService As New AuthenticationService(userRepo)
+        Dim loginPreferencesService As New JsonLoginPreferencesService()
+
+        ' 3. View (yung frmLogin mismo ang View dito, hindi UserControl)
+        Dim loginView As New frmLogin()
+
+        ' 4. Presenter - i-inject ang View + Services
+        Dim presenter As New LoginPresenter(loginView, authService, loginPreferencesService)
+
+        ' 5. I-assign ang Presenter sa View
+        loginView.SetPresenter(presenter)
+
+        Return loginView
+
+    End Function
+
+    Public Shared Function BuildDatabaseConnectionSettingsView() As ucDatabaseConnectionSettings
+
+        ' 1. Service (walang Repository - local JSON file lang ang storage)
+        Dim settingsService As New DatabaseConnectionSettingsService()
+
+        ' 2. View
+        Dim view As New ucDatabaseConnectionSettings()
+
+        ' 3. Presenter - i-inject ang View + Service
+        Dim presenter As New DatabaseConnectionSettingsPresenter(view, settingsService)
+
+        ' 4. I-assign ang Presenter sa View
+        view.SetPresenter(presenter)
+
+        Return view
+
+    End Function
+
+    Public Shared Function BuildChangePasswordForm() As frmChangePassword
+
+        ' 1. Repository
+        Dim userRepo As New UserRepository()
+
+        ' 2. Service
+        Dim authService As New AuthenticationService(userRepo)
+
+        ' 3. View
+        Dim view As New frmChangePassword()
+
+        ' 4. Presenter - i-inject ang View + Service + kasalukuyang naka-login na username
+        Dim presenter As New ChangePasswordPresenter(view, authService, AppSession.CurrentUser)
+
+        ' 5. I-assign ang Presenter sa View
+        view.SetPresenter(presenter)
+
+        Return view
+
+    End Function
+
+    Public Shared Function BuildUsersView() As ucUsers
+
+        ' 1. Repository - reused mula sa Login module (parehong tblUsers naman)
+        Dim userRepo As New UserRepository()
+
+        ' 2. Services
+        Dim userMgmtService As New UserManagementService(userRepo)
+        Dim empRepo As New EmployeeRepository()
+        Dim empService As New EmployeeService(empRepo)
+
+        ' 3. View
+        Dim view As New ucUsers()
+
+        ' 4. Presenter - i-inject ang View + Services
+        Dim presenter As New UsersPresenter(view, userMgmtService, empService)
+
+        ' 5. I-assign ang Presenter sa View
+        view.SetPresenter(presenter)
+
+        Return view
+
+    End Function
+
+End Class

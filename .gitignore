@@ -1,0 +1,26 @@
+## Visual Studio User Settings and Cache
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build Outputs (Compiled Files)
+[Db]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.msi
+*.msm
+
+## Visual Studio Cache and Temporary Files
+.vs/
+*.vshost.exe
+*.vshost.exe.manifest
+*.xml
+
+## Aking mga personal na folder na ayaw isama
+img/
+References/
+SQL_DB/
+TempModuleFolder/
