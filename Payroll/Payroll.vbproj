@@ -107,12 +107,15 @@
     <Folder Include="Modules\MainMenu\Payroll\Presenters\" />
     <Folder Include="Modules\MainMenu\Payroll\Services\" />
     <Folder Include="Modules\Settings\AppSettings\DBConnection\Data\" />
-    <Folder Include="Modules\Settings\SysConfig\" />
     <Folder Include="Modules\MainMenu\Dashboard\Data\" />
     <Folder Include="Modules\MainMenu\Dashboard\Models\" />
     <Folder Include="Modules\MainMenu\Dashboard\Presenters\" />
     <Folder Include="Modules\MainMenu\Dashboard\Services\" />
     <Folder Include="GlobalShared\Datasets\" />
+    <Folder Include="Modules\Settings\SysConfig\Master Data\Data\" />
+    <Folder Include="Modules\Settings\SysConfig\Master Data\Models\" />
+    <Folder Include="Modules\Settings\SysConfig\Master Data\Presenters\" />
+    <Folder Include="Modules\Settings\SysConfig\Master Data\Services\" />
   </ItemGroup>
 
   <ItemGroup>
