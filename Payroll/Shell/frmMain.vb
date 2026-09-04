@@ -75,6 +75,9 @@ Public Class frmMain
             Case "admin_UsersAccount"
                 _nav.NavigateTo(Of ucUsers)(Function() AppComposition.BuildUsersView())
 
+            Case "settings_MasterData"
+                _nav.NavigateTo(Of ucSettingsLookups)(Function() AppComposition.BuildSettingsLookupsView())
+
             Case "logout"
                 PerformLogout()
 

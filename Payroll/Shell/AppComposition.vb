@@ -1,5 +1,4 @@
-﻿
-Imports Payroll.DBConnection.Presenters
+﻿Imports Payroll.DBConnection.Presenters
 Imports Payroll.DBConnection.Services
 Imports Payroll.DBConnection.Views
 Imports Payroll.Employee.Data
@@ -9,6 +8,9 @@ Imports Payroll.Employee.Views
 Imports Payroll.Login.Data
 Imports Payroll.Login.Presenters
 Imports Payroll.Login.Services
+Imports Payroll.Lookups.Data
+Imports Payroll.Lookups.Presenters
+Imports Payroll.Lookups.Services
 Imports Payroll.Users.Presenters
 Imports Payroll.Users.Services
 Imports Payroll.Users.Views
@@ -127,6 +129,58 @@ Public Class AppComposition
         view.SetPresenter(presenter)
 
         Return view
+
+    End Function
+
+    Public Shared Function BuildSettingsLookupsView() As ucSettingsLookups
+
+        ' 1. Repository + Service - iisa lang, SHARED sa lahat ng 8 tabs.
+        ' Stateless naman sila (tableName mismo ang ipinapasa sa bawat
+        ' call), kaya walang dahilan gumawa ng 8 hiwalay na instances.
+        Dim lookupRepo As New LookupRepository()
+        Dim lookupService As New LookupService(lookupRepo)
+
+        ' 2. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        Dim currentUser = AppSession.CurrentUser
+
+        ' 3. Gawin MUNA ang 8 Views - iisang class lang (ucLookupMaintenance),
+        ' walang Presenter pa (parehong hakbang gaya ng BuildEmployeeView)
+        Dim branchView As New ucLookupMaintenance()
+        Dim departmentView As New ucLookupMaintenance()
+        Dim positionView As New ucLookupMaintenance()
+        Dim categoryView As New ucLookupMaintenance()
+        Dim jobClassView As New ucLookupMaintenance()
+        Dim holidayGroupView As New ucLookupMaintenance()
+        Dim scheduleGroupView As New ucLookupMaintenance()
+        Dim bankView As New ucLookupMaintenance()
+
+        ' 4. Gawin ang 8 Presenters - bawat isa naka-configure sa ibang
+        ' tableName. Ang mismong pangalan ng table ay mula sa
+        ' LookupTableRegistry.MaintainedTables (single source of truth) -
+        ' kung magbabago man ang whitelist doon, dito lang ito babaguhin.
+        Dim branchPresenter As New LookupPresenter(branchView, lookupService, "tblBranch", currentUser)
+        Dim departmentPresenter As New LookupPresenter(departmentView, lookupService, "tblDepartment", currentUser)
+        Dim positionPresenter As New LookupPresenter(positionView, lookupService, "tblPosition", currentUser)
+        Dim categoryPresenter As New LookupPresenter(categoryView, lookupService, "tblCategoryCode", currentUser)
+        Dim jobClassPresenter As New LookupPresenter(jobClassView, lookupService, "tblJobClass", currentUser)
+        Dim holidayGroupPresenter As New LookupPresenter(holidayGroupView, lookupService, "tblHolidayGroup", currentUser)
+        Dim scheduleGroupPresenter As New LookupPresenter(scheduleGroupView, lookupService, "tblScheduleGroup", currentUser)
+        Dim bankPresenter As New LookupPresenter(bankView, lookupService, "tblBank", currentUser)
+
+        ' 5. I-assign ang Presenter sa bawat View (kasama ang display
+        ' title na makikita sa tab/breadcrumb)
+        branchView.SetPresenter(branchPresenter, "Branch")
+        departmentView.SetPresenter(departmentPresenter, "Department")
+        positionView.SetPresenter(positionPresenter, "Position")
+        categoryView.SetPresenter(categoryPresenter, "Category")
+        jobClassView.SetPresenter(jobClassPresenter, "Job Class")
+        holidayGroupView.SetPresenter(holidayGroupPresenter, "Holiday Group")
+        scheduleGroupView.SetPresenter(scheduleGroupPresenter, "Schedule Group")
+        bankView.SetPresenter(bankPresenter, "Bank")
+
+        ' 6. Gawin ang Main View
+        Return New ucSettingsLookups(branchView, departmentView, positionView,
+            categoryView, jobClassView, holidayGroupView, scheduleGroupView, bankView)
 
     End Function
 

@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class frmMain
     Inherits DevExpress.XtraBars.FluentDesignSystem.FluentDesignForm
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -65,7 +65,6 @@ Partial Class frmMain
         lblHost = New DevExpress.XtraEditors.LabelControl()
         lblVersion = New DevExpress.XtraEditors.LabelControl()
         tmMain = New DevExpress.Utils.Animation.TransitionManager(components)
-        aceSettingsCompanyProfile = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         CType(AccordionControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(FluentDesignFormControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(FluentFormDefaultManager1, ComponentModel.ISupportInitialize).BeginInit()
@@ -193,7 +192,6 @@ Partial Class frmMain
         aceSettingsCompany.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsCompany.Appearance.Default.Options.UseFont = True
         aceSettingsCompany.Expanded = True
-        aceSettingsCompany.HeaderTemplate.AddRange(New DevExpress.XtraBars.Navigation.HeaderElementInfo() {New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Image), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Text), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.ContextButtons), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.HeaderControl)})
         aceSettingsCompany.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCompany.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsCompany.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsCompany.Name = "aceSettingsCompany"
@@ -204,17 +202,18 @@ Partial Class frmMain
         ' 
         ' aceSettingsMasterData
         ' 
-        aceSettingsMasterData.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        aceSettingsMasterData.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
         aceSettingsMasterData.Appearance.Default.Options.UseFont = True
         aceSettingsMasterData.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsMasterData.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsMasterData.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsMasterData.Name = "aceSettingsMasterData"
         aceSettingsMasterData.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceSettingsMasterData.Tag = "settings_MasterData"
         aceSettingsMasterData.Text = "Master Data"
         ' 
         ' aceSettingsCutOff
         ' 
-        aceSettingsCutOff.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        aceSettingsCutOff.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
         aceSettingsCutOff.Appearance.Default.Options.UseFont = True
         aceSettingsCutOff.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCutOff.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsCutOff.ImageOptions.SvgImageSize = New Size(16, 16)
@@ -383,7 +382,7 @@ Partial Class frmMain
         ' 
         ' FluentFormDefaultManager1
         ' 
-        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         FluentFormDefaultManager1.Form = Me
         FluentFormDefaultManager1.Items.AddRange(New DevExpress.XtraBars.BarItem() {SkinDropDownButtonItem1, SkinPaletteDropDownButtonItem1})
         FluentFormDefaultManager1.MaxItemId = 2
@@ -554,20 +553,12 @@ Partial Class frmMain
         lblVersion.TabIndex = 11
         lblVersion.Text = "v1.0.0 — Internal use only"
         ' 
-        ' aceSettingsCompanyProfile
-        ' 
-        aceSettingsCompanyProfile.Appearance.Default.Font = New Font("Segoe UI", 9F)
-        aceSettingsCompanyProfile.Appearance.Default.Options.UseFont = True
-        aceSettingsCompanyProfile.Name = "aceSettingsCompanyProfile"
-        aceSettingsCompanyProfile.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        aceSettingsCompanyProfile.Text = "Company Profile"
-        ' 
         ' frmMain
         ' 
         Appearance.BackColor = SystemColors.Control
         Appearance.Options.UseBackColor = True
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6F, 13F)
+        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1398, 761)
         ControlContainer = fluentMainContainer
@@ -639,5 +630,4 @@ Partial Class frmMain
     Friend WithEvents AccordionControlSeparator9 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
     Friend WithEvents aceAdminUsers As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents AccordionControlElement1 As DevExpress.XtraBars.Navigation.AccordionControlElement
-    Friend WithEvents aceSettingsCompanyProfile As DevExpress.XtraBars.Navigation.AccordionControlElement
 End Class
