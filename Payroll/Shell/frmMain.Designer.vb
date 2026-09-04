@@ -34,7 +34,6 @@ Partial Class frmMain
         aceSettingsPayrollSetup = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsGeneral = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsCompany = New DevExpress.XtraBars.Navigation.AccordionControlElement()
-        aceSettingsCompanyProfile = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsMasterData = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsCutOff = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         AccordionControlSeparator6 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
@@ -66,6 +65,7 @@ Partial Class frmMain
         lblHost = New DevExpress.XtraEditors.LabelControl()
         lblVersion = New DevExpress.XtraEditors.LabelControl()
         tmMain = New DevExpress.Utils.Animation.TransitionManager(components)
+        aceSettingsCompanyProfile = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         CType(AccordionControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(FluentDesignFormControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(FluentFormDefaultManager1, ComponentModel.ISupportInitialize).BeginInit()
@@ -170,7 +170,7 @@ Partial Class frmMain
         ' 
         aceSettingsPayrollSetup.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsPayrollSetup.Appearance.Default.Options.UseFont = True
-        aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsCutOff, AccordionControlSeparator6, aceSettingsPersonal, aceSettings_Leave, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
+        aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsMasterData, aceSettingsCutOff, AccordionControlSeparator6, aceSettingsPersonal, aceSettings_Leave, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
         aceSettingsPayrollSetup.Expanded = True
         aceSettingsPayrollSetup.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsPayrollSetup.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsPayrollSetup.ImageOptions.SvgImageSize = New Size(20, 20)
@@ -192,35 +192,29 @@ Partial Class frmMain
         ' 
         aceSettingsCompany.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsCompany.Appearance.Default.Options.UseFont = True
-        aceSettingsCompany.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsCompanyProfile, aceSettingsMasterData})
         aceSettingsCompany.Expanded = True
         aceSettingsCompany.HeaderTemplate.AddRange(New DevExpress.XtraBars.Navigation.HeaderElementInfo() {New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Image), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Text), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.ContextButtons), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.HeaderControl)})
         aceSettingsCompany.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCompany.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsCompany.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsCompany.Name = "aceSettingsCompany"
+        aceSettingsCompany.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
         aceSettingsCompany.Tag = "settings_Company"
         aceSettingsCompany.Text = "Company"
         aceSettingsCompany.HeaderTemplate.AddRange(New DevExpress.XtraBars.Navigation.HeaderElementInfo() {New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Image), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Text), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.ContextButtons), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.HeaderControl)})
         ' 
-        ' aceSettingsCompanyProfile
-        ' 
-        aceSettingsCompanyProfile.Appearance.Default.Font = New Font("Segoe UI", 9F)
-        aceSettingsCompanyProfile.Appearance.Default.Options.UseFont = True
-        aceSettingsCompanyProfile.Name = "aceSettingsCompanyProfile"
-        aceSettingsCompanyProfile.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        aceSettingsCompanyProfile.Text = "Company Profile"
-        ' 
         ' aceSettingsMasterData
         ' 
-        aceSettingsMasterData.Appearance.Default.Font = New Font("Segoe UI", 9F)
+        aceSettingsMasterData.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsMasterData.Appearance.Default.Options.UseFont = True
+        aceSettingsMasterData.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsMasterData.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceSettingsMasterData.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsMasterData.Name = "aceSettingsMasterData"
         aceSettingsMasterData.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
         aceSettingsMasterData.Text = "Master Data"
         ' 
         ' aceSettingsCutOff
         ' 
-        aceSettingsCutOff.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
+        aceSettingsCutOff.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsCutOff.Appearance.Default.Options.UseFont = True
         aceSettingsCutOff.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCutOff.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsCutOff.ImageOptions.SvgImageSize = New Size(16, 16)
@@ -560,6 +554,14 @@ Partial Class frmMain
         lblVersion.TabIndex = 11
         lblVersion.Text = "v1.0.0 — Internal use only"
         ' 
+        ' aceSettingsCompanyProfile
+        ' 
+        aceSettingsCompanyProfile.Appearance.Default.Font = New Font("Segoe UI", 9F)
+        aceSettingsCompanyProfile.Appearance.Default.Options.UseFont = True
+        aceSettingsCompanyProfile.Name = "aceSettingsCompanyProfile"
+        aceSettingsCompanyProfile.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceSettingsCompanyProfile.Text = "Company Profile"
+        ' 
         ' frmMain
         ' 
         Appearance.BackColor = SystemColors.Control
@@ -620,7 +622,6 @@ Partial Class frmMain
     Friend WithEvents tmMain As DevExpress.Utils.Animation.TransitionManager
     Friend WithEvents btnBack As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnForward As DevExpress.XtraEditors.SimpleButton
-    Friend WithEvents aceSettingsCompanyProfile As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsMasterData As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents lblVersion As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblHost As DevExpress.XtraEditors.LabelControl
@@ -638,4 +639,5 @@ Partial Class frmMain
     Friend WithEvents AccordionControlSeparator9 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
     Friend WithEvents aceAdminUsers As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents AccordionControlElement1 As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceSettingsCompanyProfile As DevExpress.XtraBars.Navigation.AccordionControlElement
 End Class

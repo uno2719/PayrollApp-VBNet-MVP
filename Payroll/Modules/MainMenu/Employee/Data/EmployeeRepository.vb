@@ -361,38 +361,19 @@ Namespace Employee.Data
         Public Async Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel)) _
           Implements IEmployeeRepository.GetLookupsAsync
 
-            ' Whitelist
-            Dim allowed = New List(Of String) From {
-                "tblBranch", "tblDepartment", "tblPosition",
-                "tblCategoryCode", "tblJobClass", "tblLeaveGroup",
-                "tblHolidayGroup", "tblScheduleGroup", "tblBank"
-            }
+            ' Whitelist + column names now live in one shared place:
+            ' GlobalShared.Constants.LookupTableRegistry — also used by
+            ' the Settings > Master Data CRUD module, so both readers
+            ' always agree on the real column names.
+            Dim info = GlobalShared.Constants.LookupTableRegistry.GetInfo(tableName)
 
-            If Not allowed.Contains(tableName) Then
-                Throw New ArgumentException($"Invalid table: {tableName}")
-            End If
-
-            ' ✅ Manual mapping para sa exact column names
-            Dim columnMap As New Dictionary(Of String, String()) From {
-                {"tblBranch", New String() {"BranchId", "BranchCode", "BranchName"}},
-                {"tblDepartment", New String() {"DepartmentId", "DepartmentCode", "DepartmentName"}},
-                {"tblPosition", New String() {"PositionId", "PositionCode", "PositionName"}},
-                {"tblCategoryCode", New String() {"CategoryId", "CategoryCode", "CategoryName"}},
-                {"tblJobClass", New String() {"JobClassId", "JobClassCode", "JobClassName"}},
-                {"tblLeaveGroup", New String() {"LeaveGroupId", "LeaveGroupCode", "LeaveGroupName"}},
-                {"tblHolidayGroup", New String() {"HolidayGroupId", "HolidayGroupCode", "HolidayGroupName"}},
-                {"tblScheduleGroup", New String() {"ScheduleGroupId", "ScheduleGroupCode", "ScheduleGroupName"}},
-                {"tblBank", New String() {"BankId", "BankCode", "BankName"}}
-            }
-
-            Dim cols = columnMap(tableName)
             Dim sql = $"
-                SELECT {cols(0)} AS Id,
-                       {cols(1)} AS Code,
-                       {cols(2)} AS Name
+                SELECT {info.IdColumn} AS Id,
+                       {info.CodeColumn} AS Code,
+                       {info.NameColumn} AS Name
                 FROM {tableName}
                 WHERE IsActive = 1
-                ORDER BY {cols(2)}"
+                ORDER BY {info.NameColumn}"
 
             Using conn = GetConnection()
                 Dim result = Await conn.QueryAsync(Of GlobalShared.Models.LookupModel)(sql)

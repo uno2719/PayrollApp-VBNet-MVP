@@ -112,10 +112,7 @@
     <Folder Include="Modules\MainMenu\Dashboard\Presenters\" />
     <Folder Include="Modules\MainMenu\Dashboard\Services\" />
     <Folder Include="GlobalShared\Datasets\" />
-    <Folder Include="Modules\Settings\SysConfig\Master Data\Data\" />
     <Folder Include="Modules\Settings\SysConfig\Master Data\Models\" />
-    <Folder Include="Modules\Settings\SysConfig\Master Data\Presenters\" />
-    <Folder Include="Modules\Settings\SysConfig\Master Data\Services\" />
   </ItemGroup>
 
   <ItemGroup>
