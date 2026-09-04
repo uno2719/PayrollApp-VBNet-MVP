@@ -1,5 +1,4 @@
-﻿Imports System.Linq
-Imports Payroll.GlobalShared.Models
+﻿Imports Payroll.GlobalShared.Models
 
 Namespace Lookups.Presenters
 
@@ -14,11 +13,6 @@ Namespace Lookups.Presenters
         Private _isNewMode As Boolean = False
         Private _currentList As List(Of LookupModel)
 
-        ' tableName: alin sa 8 na-maintain na tables ang pag-aari ng
-        ' instance na ito (tblBranch, tblDepartment, atbp — mula sa
-        ' LookupTableRegistry.MaintainedTables). Bawat tab sa
-        ' ucSettingsLookups ay may sariling Presenter na naka-configure
-        ' sa ibang tableName, kahit iisang class lang ito.
         Public Sub New(
             view As Views.ILookupMaintenanceView,
             service As Services.ILookupService,
@@ -33,6 +27,11 @@ Namespace Lookups.Presenters
 
         Public Async Function LoadAsync() As Task
             Await LoadListAsync()
+
+            _selectedId = 0
+            _isNewMode = False
+
+            _view.ClearFields()
             _view.SetFormMode(False, False)
         End Function
 
@@ -42,49 +41,57 @@ Namespace Lookups.Presenters
         End Function
 
         Public Sub StartNew()
+
             _selectedId = 0
             _isNewMode = True
+
             _view.ClearFields()
             _view.IsActive = True
             _view.SetFormMode(True, True)
-        End Sub
-
-        Public Sub StartEdit()
-            If _selectedItem Is Nothing Then
-                _view.DisplayValidationError("Please select a record first.")
-                Return
-            End If
-
-            _view.SetFormMode(True, False)
-        End Sub
-
-        Public Sub CancelEdit()
-
-            If _selectedItem IsNot Nothing Then
-                SelectItem(_selectedItem.Id)
-            Else
-                _view.ClearFields()
-                _view.SetFormMode(False, False)
-            End If
 
         End Sub
 
-        ' Tinatawag ng View kapag pumili ng row sa grid (FocusedRowChanged).
+        ' Called by the View when a row is selected.
+        ' IMPORTANT:
+        ' Selecting a row only displays the record.
+        ' It does NOT enter edit mode.
         Public Sub SelectItem(id As Integer)
+
             _selectedId = id
             _isNewMode = False
 
-            Dim selected = _currentList?.FirstOrDefault(Function(x) x.Id = id)
+            Dim selected = _currentList?.FirstOrDefault(
+                Function(x) x.Id = id)
+
             If selected IsNot Nothing Then
+
                 _view.Code = selected.Code
                 _view.Name = selected.Name
                 _view.IsActive = selected.IsActive
+
             End If
 
+            ' Read-only mode after selecting a row.
+            _view.SetFormMode(False, False)
+
+        End Sub
+
+        ' Called when the user clicks Edit.
+        Public Sub StartEdit()
+
+            If _selectedId = 0 Then
+                _view.ShowError("Please select an entry first.")
+                Return
+            End If
+
+            _isNewMode = False
+
             _view.SetFormMode(True, False)
+
         End Sub
 
         Public Async Function SaveAsync() As Task
+
             Dim item As New LookupModel With {
                 .Id = _selectedId,
                 .Code = If(_view.Code, "").Trim(),
@@ -92,42 +99,80 @@ Namespace Lookups.Presenters
                 .IsActive = _view.IsActive
             }
 
-            Dim result = Await _service.SaveAsync(_tableName, item, _userName)
+            Dim result = Await _service.SaveAsync(
+                _tableName,
+                item,
+                _userName)
+
             If Not result.Success Then
                 _view.ShowError(result.ErrorMessage)
                 Return
             End If
 
-            _view.ShowMessage(If(_isNewMode, "Entry added.", "Entry updated."))
+            If _isNewMode Then
+                _view.ShowMessage("Entry added.")
+            Else
+                _view.ShowMessage("Entry updated.")
+            End If
+
+            _selectedId = 0
+            _isNewMode = False
+
             _view.ClearFields()
             _view.SetFormMode(False, False)
-            _isNewMode = False
-            _selectedId = 0
+
             Await LoadListAsync()
+
         End Function
 
         Public Sub CancelEdit()
-            _view.ClearFields()
-            _view.SetFormMode(False, False)
-            _isNewMode = False
-            _selectedId = 0
+
+            If _selectedId > 0 AndAlso Not _isNewMode Then
+
+                ' Restore the selected record and return to read-only mode.
+                SelectItem(_selectedId)
+
+            Else
+
+                ' Cancel New.
+                _selectedId = 0
+                _isNewMode = False
+
+                _view.ClearFields()
+                _view.SetFormMode(False, False)
+
+            End If
+
         End Sub
 
-        ' Soft-delete/reactivate toggle lang - IsActive 0/1, HINDI hard
-        ' DELETE. FK-referenced kasi ang mga tables na ito ng existing
-        ' Employee records (tblEmployeeEmployment.BranchId, atbp).
+        ' Soft-delete/reactivate only.
         Public Async Function ToggleActiveSelectedAsync() As Task
+
             If _selectedId = 0 Then
                 _view.ShowError("Please select an entry first.")
                 Return
             End If
 
             Dim newStatus = Not _view.IsActive
-            Await _service.SetActiveStatusAsync(_tableName, _selectedId, newStatus, _userName)
+
+            Await _service.SetActiveStatusAsync(
+                _tableName,
+                _selectedId,
+                newStatus,
+                _userName)
+
             _view.IsActive = newStatus
-            _view.ShowMessage(If(newStatus, "Entry reactivated.", "Entry deactivated."))
+
+            If newStatus Then
+                _view.ShowMessage("Entry reactivated.")
+            Else
+                _view.ShowMessage("Entry deactivated.")
+            End If
+
             Await LoadListAsync()
+
         End Function
 
     End Class
+
 End Namespace

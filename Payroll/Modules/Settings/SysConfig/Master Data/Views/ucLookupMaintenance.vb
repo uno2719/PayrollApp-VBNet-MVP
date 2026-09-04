@@ -13,12 +13,13 @@ Public Class ucLookupMaintenance
     Private _isNewRecord As Boolean = False
     Private _tabTitle As String = "Master Data"
 
-    Private Const BTN_NEW As Integer = 0
-    ' index 1 = separator
+    ' index 0 = separator
+    Private Const BTN_NEW As Integer = 1
     Private Const BTN_EDIT As Integer = 2
     Private Const BTN_DELETE As Integer = 3
     ' index 4 = separator
     Private Const BTN_REFRESH As Integer = 5
+    ' index 6 = separator
 
     ' Tinatawag ito ng AppComposition kapag ginagawa yung 8 instances -
     ' tabTitle ay display text lang (hal. "Branch") para sa Breadcrumb/
@@ -133,72 +134,66 @@ Public Class ucLookupMaintenance
     ' ILookupMaintenanceView - STATE / UX
     ' =============================================
     Public Sub SetFormMode(isEditable As Boolean, isNewRecord As Boolean) _
-    Implements ILookupMaintenanceView.SetFormMode
+        Implements ILookupMaintenanceView.SetFormMode
 
         _isEditing = isEditable
         _isNewRecord = isNewRecord
 
-        ' =============================================
-        ' FORM FIELDS
-        ' =============================================
+        '========================================
+        ' Fields
+        '========================================
         txtCode.Properties.ReadOnly = Not isEditable
         txtName.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
 
-        ' =============================================
-        ' GRID
-        ' =============================================
         gridconLookupList.Enabled = Not isEditable
 
-        ' =============================================
-        ' COMMAND BUTTONS
-        ' =============================================
-        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = Not isEditable
-        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Visible = True
-        wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.Enabled = Not isEditable
-
+        '========================================
+        ' NEW / SAVE / UPDATE BUTTON
+        '========================================
         If isEditable Then
-
-            ' -----------------------------------------
-            ' NEW / EDIT MODE
-            ' -----------------------------------------
             If isNewRecord Then
-
-                ' NEW RECORD
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Save"
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+                ' New Record
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " Save"
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
                 My.Resources.icon_save_24
-
             Else
-
-                ' EDIT EXISTING RECORD
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Update"
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+                ' Existing Record
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " Update"
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
                 My.Resources.icon_save_24
-
             End If
-
-            ' Delete becomes Cancel
-            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Cancel"
-            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-            My.Resources.icon_cancel_24
-
         Else
-
-            ' -----------------------------------------
-            ' IDLE / VIEW MODE
-            ' -----------------------------------------
-            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = True
-
-            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Edit"
-            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-            My.Resources.icon_edit_personel_24
-
-            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Delete"
-            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-            My.Resources.icon_delete_24
-
+            ' Normal View Mode
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " New"
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
+            My.Resources.icon_add_personel_24
         End If
+
+        '========================================
+        ' EDIT / CANCEL BUTTON
+        '========================================
+        If isEditable Then
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Cancel"
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+            My.Resources.icon_cancel_24
+        Else
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Edit"
+            ' Use your actual Edit icon here if available.
+            ' For now, don't change the image if you don't have one.
+        End If
+
+        '========================================
+        ' DELETE
+        '========================================
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Enabled =
+        Not isEditable
+
+        '========================================
+        ' REFRESH
+        '========================================
+        wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.Enabled =
+        Not isEditable
 
     End Sub
 
@@ -254,49 +249,49 @@ Public Class ucLookupMaintenance
     ' BUTTON COMMANDS (New / Save / Delete-Cancel / Refresh)
     ' =============================================
     Private Async Sub wbpMainCommands_ButtonClick(sender As Object, e As ButtonEventArgs) _
-            Handles wbpMainCommands.ButtonClick
+        Handles wbpMainCommands.ButtonClick
 
         Dim tag = e.Button.Properties.Tag?.ToString().Trim()
 
         Select Case tag
-
             Case "New"
-                _presenter.StartNew()
-
-            Case "Save"
                 If _isEditing Then
-                    ' Existing record = UPDATE
-                    ' New record = INSERT
+                    ' New mode = Save
                     Await _presenter.SaveAsync()
-
                 Else
-                    ' Normal mode = EDIT selected record
-                    _presenter.StartEdit()
+                    ' View mode = New
+                    _presenter.StartNew()
+                End If
 
+            Case "Edit"
+                If _isEditing Then
+                    ' Edit mode = Cancel
+                    _presenter.CancelEdit()
+                Else
+                    ' View mode = Edit
+                    _presenter.StartEdit()
                 End If
 
             Case "Delete"
-                If _isEditing Then
-                    ' Cancel editing
-                    _presenter.CancelEdit()
+                If Not _isEditing Then
+                    Dim action = If(IsActive,
+                                "deactivate",
+                                "reactivate")
 
-                Else
-                    Dim action = If(IsActive, "deactivate", "reactivate")
-
-                    Dim confirm = XtraMessageBox.Show(
-                    $"Are you sure you want to {action} this entry?",
-                    "Confirm",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question)
+                    Dim confirm = XtraMessageBox.Show($"Are you sure you want to {action} this entry?",
+                                                        "Confirm",
+                                                        MessageBoxButtons.YesNo,
+                                                        MessageBoxIcon.Question)
 
                     If confirm = DialogResult.Yes Then
                         Await _presenter.ToggleActiveSelectedAsync()
                     End If
-
                 End If
 
             Case "Refresh"
-                Await _presenter.LoadAsync()
+                If Not _isEditing Then
+                    Await _presenter.LoadAsync()
+                End If
 
         End Select
 
