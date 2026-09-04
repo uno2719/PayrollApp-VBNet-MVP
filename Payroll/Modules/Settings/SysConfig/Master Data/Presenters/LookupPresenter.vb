@@ -49,6 +49,26 @@ Namespace Lookups.Presenters
             _view.SetFormMode(True, True)
         End Sub
 
+        Public Sub StartEdit()
+            If _selectedItem Is Nothing Then
+                _view.DisplayValidationError("Please select a record first.")
+                Return
+            End If
+
+            _view.SetFormMode(True, False)
+        End Sub
+
+        Public Sub CancelEdit()
+
+            If _selectedItem IsNot Nothing Then
+                SelectItem(_selectedItem.Id)
+            Else
+                _view.ClearFields()
+                _view.SetFormMode(False, False)
+            End If
+
+        End Sub
+
         ' Tinatawag ng View kapag pumili ng row sa grid (FocusedRowChanged).
         Public Sub SelectItem(id As Integer)
             _selectedId = id

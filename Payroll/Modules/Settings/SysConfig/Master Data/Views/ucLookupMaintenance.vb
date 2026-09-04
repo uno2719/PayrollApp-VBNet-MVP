@@ -10,11 +10,12 @@ Public Class ucLookupMaintenance
 
     Private _presenter As LookupPresenter
     Private _isEditing As Boolean = False
+    Private _isNewRecord As Boolean = False
     Private _tabTitle As String = "Master Data"
 
     Private Const BTN_NEW As Integer = 0
     ' index 1 = separator
-    Private Const BTN_SAVE As Integer = 2
+    Private Const BTN_EDIT As Integer = 2
     Private Const BTN_DELETE As Integer = 3
     ' index 4 = separator
     Private Const BTN_REFRESH As Integer = 5
@@ -50,6 +51,7 @@ Public Class ucLookupMaintenance
     Public Overrides Async Function LoadFormAsync() As Task _
         Implements IAsyncLoadable.LoadFormAsync
 
+        SetupCommandImages()
         SetupGrid()
 
         Try
@@ -57,6 +59,7 @@ Public Class ucLookupMaintenance
         Catch ex As Exception
             DisplayValidationError(ex.Message)
         End Try
+
     End Function
 
     ' Sadyang naka-OFF ang inline grid editing (kahit pinagana natin ang
@@ -71,6 +74,22 @@ Public Class ucLookupMaintenance
             .OptionsView.ShowAutoFilterRow = True
             .OptionsSelection.EnableAppearanceFocusedCell = False
         End With
+    End Sub
+
+    Private Sub SetupCommandImages()
+
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
+        My.Resources.icon_add_personel_24
+
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+        My.Resources.icon_save_24
+
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
+        My.Resources.icon_delete_24
+
+        wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ImageOptions.Image =
+        My.Resources.icon_delete_24
+
     End Sub
 
     ' =============================================
@@ -114,23 +133,73 @@ Public Class ucLookupMaintenance
     ' ILookupMaintenanceView - STATE / UX
     ' =============================================
     Public Sub SetFormMode(isEditable As Boolean, isNewRecord As Boolean) _
-        Implements ILookupMaintenanceView.SetFormMode
+    Implements ILookupMaintenanceView.SetFormMode
 
         _isEditing = isEditable
+        _isNewRecord = isNewRecord
 
+        ' =============================================
+        ' FORM FIELDS
+        ' =============================================
         txtCode.Properties.ReadOnly = Not isEditable
         txtName.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
+
+        ' =============================================
+        ' GRID
+        ' =============================================
         gridconLookupList.Enabled = Not isEditable
 
+        ' =============================================
+        ' COMMAND BUTTONS
+        ' =============================================
         wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = Not isEditable
-        wbpMainCommands.Buttons.Item(BTN_SAVE).Properties.Visible = isEditable
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Visible = True
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.Enabled = Not isEditable
 
-        ' Ang Delete button ang siya ring "Cancel" habang nag-e-edit -
-        ' parehong pattern gaya ng Edit/Save + Delete/Cancel sa Users.
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption =
-            If(isEditable, " Cancel", " Delete")
+        If isEditable Then
+
+            ' -----------------------------------------
+            ' NEW / EDIT MODE
+            ' -----------------------------------------
+            If isNewRecord Then
+
+                ' NEW RECORD
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Save"
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+                My.Resources.icon_save_24
+
+            Else
+
+                ' EDIT EXISTING RECORD
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Update"
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+                My.Resources.icon_save_24
+
+            End If
+
+            ' Delete becomes Cancel
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Cancel"
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
+            My.Resources.icon_cancel_24
+
+        Else
+
+            ' -----------------------------------------
+            ' IDLE / VIEW MODE
+            ' -----------------------------------------
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = True
+
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Edit"
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
+            My.Resources.icon_edit_personel_24
+
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Delete"
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
+            My.Resources.icon_delete_24
+
+        End If
+
     End Sub
 
     Public Sub ClearFields() Implements ILookupMaintenanceView.ClearFields
@@ -185,37 +254,52 @@ Public Class ucLookupMaintenance
     ' BUTTON COMMANDS (New / Save / Delete-Cancel / Refresh)
     ' =============================================
     Private Async Sub wbpMainCommands_ButtonClick(sender As Object, e As ButtonEventArgs) _
-        Handles wbpMainCommands.ButtonClick
+            Handles wbpMainCommands.ButtonClick
 
         Dim tag = e.Button.Properties.Tag?.ToString().Trim()
 
         Select Case tag
+
             Case "New"
                 _presenter.StartNew()
 
             Case "Save"
-                Await _presenter.SaveAsync()
+                If _isEditing Then
+                    ' Existing record = UPDATE
+                    ' New record = INSERT
+                    Await _presenter.SaveAsync()
+
+                Else
+                    ' Normal mode = EDIT selected record
+                    _presenter.StartEdit()
+
+                End If
 
             Case "Delete"
                 If _isEditing Then
-                    ' Dito, "Delete" tag pero "Cancel" ang caption/action
+                    ' Cancel editing
                     _presenter.CancelEdit()
+
                 Else
                     Dim action = If(IsActive, "deactivate", "reactivate")
+
                     Dim confirm = XtraMessageBox.Show(
-                        $"Are you sure you want to {action} this entry?",
-                        "Confirm",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question)
+                    $"Are you sure you want to {action} this entry?",
+                    "Confirm",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question)
 
                     If confirm = DialogResult.Yes Then
                         Await _presenter.ToggleActiveSelectedAsync()
                     End If
+
                 End If
 
             Case "Refresh"
                 Await _presenter.LoadAsync()
+
         End Select
+
     End Sub
 
 End Class
