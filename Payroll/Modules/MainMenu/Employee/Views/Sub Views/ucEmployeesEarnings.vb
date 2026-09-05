@@ -249,13 +249,13 @@ Public Class ucEmployeesEarnings
     ' =============================================
     Private _banksLoaded As Boolean = False
     Public Sub LoadBanks(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEarningsView.LoadBanks
+    Implements Employee.Views.IEmployeesEarningsView.LoadBanks
 
-        ' ✅ I-load ang DataSource ONCE lang
         If Not _banksLoaded Then
             sleBank.Properties.DataSource = data
             sleBank.Properties.ValueMember = "Id"
             sleBank.Properties.DisplayMember = "Name"
+            sleBank.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
             _banksLoaded = True
         End If
 

@@ -36,5 +36,23 @@ Namespace GlobalShared.Extensions
             sle.EditValue = Nothing
         End Sub
 
+        ' Extension para hindi na mag-auto-populate ng LAHAT ng properties sa popup
+        ' grid ng isang SearchLookUpEdit — ikaw mismo ang magsasabi kung anong
+        ' fields/captions ang ipapakita, kahit anong model type ang bound.
+        <Extension()>
+        Public Sub ConfigureLookupColumns(
+            sle As SearchLookUpEdit,
+            ParamArray columns() As (FieldName As String, Caption As String))
+
+            With sle.Properties.View
+                .OptionsBehavior.AutoPopulateColumns = False
+                .Columns.Clear()
+                For Each col In columns
+                    .Columns.AddVisible(col.FieldName, col.Caption)
+                Next
+            End With
+
+        End Sub
+
     End Module
 End Namespace

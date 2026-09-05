@@ -19,6 +19,7 @@ Partial Class ucLookupMaintenance
         Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
+        lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
         grpDetails = New DevExpress.XtraEditors.GroupControl()
         chkActive = New DevExpress.XtraEditors.CheckEdit()
@@ -31,7 +32,6 @@ Partial Class ucLookupMaintenance
         colCode = New DevExpress.XtraGrid.Columns.GridColumn()
         colName = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
-        lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
@@ -54,6 +54,19 @@ Partial Class ucLookupMaintenance
         PanelControl1.Padding = New Padding(3, 2, 3, 2)
         PanelControl1.Size = New Size(948, 70)
         PanelControl1.TabIndex = 0
+        ' 
+        ' lblTabPageTitle
+        ' 
+        lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
+        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblTabPageTitle.Appearance.ForeColor = Color.Black
+        lblTabPageTitle.Appearance.Options.UseFont = True
+        lblTabPageTitle.Appearance.Options.UseForeColor = True
+        lblTabPageTitle.Location = New Point(8, 17)
+        lblTabPageTitle.Name = "lblTabPageTitle"
+        lblTabPageTitle.Size = New Size(125, 28)
+        lblTabPageTitle.TabIndex = 2
+        lblTabPageTitle.Text = "DASHBOARD"
         ' 
         ' wbpMainCommands
         ' 
@@ -183,19 +196,6 @@ Partial Class ucLookupMaintenance
         colActive.Visible = True
         colActive.VisibleIndex = 2
         colActive.Width = 70
-        ' 
-        ' lblTabPageTitle
-        ' 
-        lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
-        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15.75F, FontStyle.Bold)
-        lblTabPageTitle.Appearance.ForeColor = Color.Black
-        lblTabPageTitle.Appearance.Options.UseFont = True
-        lblTabPageTitle.Appearance.Options.UseForeColor = True
-        lblTabPageTitle.Location = New Point(8, 17)
-        lblTabPageTitle.Name = "lblTabPageTitle"
-        lblTabPageTitle.Size = New Size(131, 30)
-        lblTabPageTitle.TabIndex = 2
-        lblTabPageTitle.Text = "DASHBOARD"
         ' 
         ' ucLookupMaintenance
         ' 

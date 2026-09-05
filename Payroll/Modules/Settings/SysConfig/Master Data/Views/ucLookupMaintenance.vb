@@ -1,4 +1,5 @@
-﻿Imports DevExpress.XtraBars.Docking2010
+﻿Imports DevExpress.Mvvm.Native
+Imports DevExpress.XtraBars.Docking2010
 Imports DevExpress.XtraEditors
 Imports Payroll.GlobalShared.Models
 Imports Payroll.Lookups.Presenters
@@ -28,6 +29,7 @@ Public Class ucLookupMaintenance
     Public Sub SetPresenter(presenter As LookupPresenter, tabTitle As String)
         _presenter = presenter
         _tabTitle = tabTitle
+        lblTabPageTitle.Text = tabTitle.ToUpper
     End Sub
 
     ' =============================================
@@ -166,7 +168,7 @@ Public Class ucLookupMaintenance
         Else
             ' Normal View Mode
             wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " New"
-            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_personel_24
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_property_24_png
             wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New Entry"
         End If
 

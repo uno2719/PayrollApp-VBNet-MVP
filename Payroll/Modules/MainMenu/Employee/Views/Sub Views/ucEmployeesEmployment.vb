@@ -280,73 +280,78 @@ Public Class ucEmployeesEmployment
     ' LOOKUP LOADERS — i-populate ang dropdowns
     ' =============================================
     Public Sub LoadBranches(
-            data As List(Of GlobalShared.Models.LookupModel)) _
-            Implements Employee.Views.IEmployeesEmploymentView.LoadBranches
+        data As List(Of GlobalShared.Models.LookupModel)) _
+        Implements Employee.Views.IEmployeesEmploymentView.LoadBranches
 
         With sleBranch.Properties
-
             .DataSource = Nothing
-
-            .View.Columns.Clear()
-
             .DisplayMember = "Name"
             .ValueMember = "Id"
-
             .DataSource = data
-
-            .PopulateViewColumns()
-
         End With
+
+        sleBranch.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
 
     End Sub
 
     Public Sub LoadDepartments(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadDepartments
+    Implements Employee.Views.IEmployeesEmploymentView.LoadDepartments
         sleDepartment.Properties.DataSource = data
         sleDepartment.Properties.ValueMember = "Id"
         sleDepartment.Properties.DisplayMember = "Name"
+        sleDepartment.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
     End Sub
 
     Public Sub LoadPositions(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadPositions
+    Implements Employee.Views.IEmployeesEmploymentView.LoadPositions
         slePosition.Properties.DataSource = data
         slePosition.Properties.ValueMember = "Id"
         slePosition.Properties.DisplayMember = "Name"
+        slePosition.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
     End Sub
 
     Public Sub LoadCategories(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadCategories
+    Implements Employee.Views.IEmployeesEmploymentView.LoadCategories
         sleCategoryCode.Properties.DataSource = data
         sleCategoryCode.Properties.ValueMember = "Id"
         sleCategoryCode.Properties.DisplayMember = "Name"
+        sleCategoryCode.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
     End Sub
 
     Public Sub LoadJobClasses(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadJobClasses
+    Implements Employee.Views.IEmployeesEmploymentView.LoadJobClasses
         sleJobClass.Properties.DataSource = data
         sleJobClass.Properties.ValueMember = "Id"
         sleJobClass.Properties.DisplayMember = "Name"
+        sleJobClass.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
     End Sub
 
     Public Sub LoadLeaveGroups(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadLeaveGroups
+    Implements Employee.Views.IEmployeesEmploymentView.LoadLeaveGroups
         sleLeaveGroup.Properties.DataSource = data
         sleLeaveGroup.Properties.ValueMember = "Id"
         sleLeaveGroup.Properties.DisplayMember = "Name"
+        sleLeaveGroup.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
     End Sub
 
     Public Sub LoadScheduleGroups(data As List(Of GlobalShared.Models.LookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadScheduleGroups
+    Implements Employee.Views.IEmployeesEmploymentView.LoadScheduleGroups
         sleScheduleGroup.Properties.DataSource = data
         sleScheduleGroup.Properties.ValueMember = "Id"
         sleScheduleGroup.Properties.DisplayMember = "Name"
+        sleScheduleGroup.ConfigureLookupColumns(("Code", "Code"), ("Name", "Name"))
     End Sub
 
     Public Sub LoadSuperiors(data As List(Of GlobalShared.Models.EmployeeLookupModel)) _
-        Implements Employee.Views.IEmployeesEmploymentView.LoadSuperiors
+    Implements Employee.Views.IEmployeesEmploymentView.LoadSuperiors
+
         sleSuperior.Properties.DataSource = data
         sleSuperior.Properties.ValueMember = "RecordId"
         sleSuperior.Properties.DisplayMember = "DisplayText"
+        sleSuperior.ConfigureLookupColumns(
+        ("EmployeeNo", "Employee No."),
+        ("FullName", "Full Name"))
+
     End Sub
 
     Public Sub ClearFields() Implements Employee.Views.IEmployeesEmploymentView.ClearFields
