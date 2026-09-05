@@ -109,12 +109,12 @@ Public Class ucEmployees
         Implements IAsyncLoadable.LoadFormAsync
 
         ' Setup button icons
-        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-            My.Resources.icon_add_personel_24
-        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-            My.Resources.icon_edit_personel_24
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-            My.Resources.icon_delete_32
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_personel_24
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New Entry"
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_personel_24
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
 
         ' Setup SimpleButtons — hide muna
         SimpleButton1.Visible = False
@@ -347,14 +347,14 @@ Public Class ucEmployees
                 ' wbp Buttons
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = True
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " New"
-                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-                    My.Resources.icon_add_personel_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_personel_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New Entry"
                 wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Edit"
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-                    My.Resources.icon_edit_personel_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_personel_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Delete"
-                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-                    My.Resources.icon_delete_32
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
 
                 ' SimpleButtons — hide lahat
                 SimpleButton1.Visible = False
@@ -383,11 +383,11 @@ Public Class ucEmployees
                 ' wbp Buttons — hide New, Save = Edit btn, Cancel = Delete btn
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = False
                 wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = "Save Personal Info"
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-                    My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Save"
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Cancel"
-                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-                    My.Resources.icon_cancel_24
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_cancel_24
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Cancel"
 
                 ' Tabs — Personal Info lang enabled
                 EnableTab(tabpagePersonalInfo, True)
@@ -413,14 +413,14 @@ Public Class ucEmployees
                 ' wbp Buttons — Back = New btn
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = True
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " Back"
-                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-                    My.Resources.icon_back_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_back_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Back"
                 wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = "Save Employment"
-                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-                    My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Save"
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Cancel"
-                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-                    My.Resources.icon_cancel_24
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_cancel_24
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Cancel"
 
                 ' Tabs — Employment lang enabled
                 EnableTab(tabpagePersonalInfo, False)  ' pwede pa ring bumalik
@@ -484,6 +484,7 @@ Public Class ucEmployees
                 UpdateSaveButtonCaption()
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Cancel"
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_cancel_24
+                wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Cancel"
 
                 ' Current tab lang enabled
                 EnableOnlyCurrentTab()
@@ -529,6 +530,7 @@ Public Class ucEmployees
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = caption
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
             My.Resources.icon_saveAs_24
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Amend"
     End Sub
 
     Private Sub SelectGridRow(recordId As Integer)

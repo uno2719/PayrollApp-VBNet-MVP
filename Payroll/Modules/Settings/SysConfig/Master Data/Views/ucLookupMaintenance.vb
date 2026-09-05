@@ -79,17 +79,17 @@ Public Class ucLookupMaintenance
 
     Private Sub SetupCommandImages()
 
-        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-        My.Resources.icon_add_personel_24
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_property_24_png
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New Entry"
 
-        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-        My.Resources.icon_save_24
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_property_24
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
 
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-        My.Resources.icon_delete_24
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
 
-        wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ImageOptions.Image =
-        My.Resources.icon_delete_24
+        wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ImageOptions.Image = My.Resources.icon_refresh_24
+        wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ToolTip = "Reload from Database"
 
     End Sub
 
@@ -155,19 +155,19 @@ Public Class ucLookupMaintenance
             If isNewRecord Then
                 ' New Record
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " Save"
-                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-                My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Save New Entry"
             Else
                 ' Existing Record
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " Update"
-                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-                My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_saveAs_24
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Amend Record"
             End If
         Else
             ' Normal View Mode
             wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " New"
-            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-            My.Resources.icon_add_personel_24
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_personel_24
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New Entry"
         End If
 
         '========================================
@@ -175,10 +175,12 @@ Public Class ucLookupMaintenance
         '========================================
         If isEditable Then
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Cancel"
-            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-            My.Resources.icon_cancel_24
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_cancel_24
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Cancel"
         Else
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Edit"
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_property_24
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
             ' Use your actual Edit icon here if available.
             ' For now, don't change the image if you don't have one.
         End If

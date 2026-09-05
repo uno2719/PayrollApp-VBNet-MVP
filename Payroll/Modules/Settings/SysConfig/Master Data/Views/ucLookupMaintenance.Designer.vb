@@ -31,6 +31,7 @@ Partial Class ucLookupMaintenance
         colCode = New DevExpress.XtraGrid.Columns.GridColumn()
         colName = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
+        lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
@@ -44,6 +45,7 @@ Partial Class ucLookupMaintenance
         ' 
         ' PanelControl1
         ' 
+        PanelControl1.Controls.Add(lblTabPageTitle)
         PanelControl1.Controls.Add(wbpMainCommands)
         PanelControl1.Dock = DockStyle.Top
         PanelControl1.Location = New Point(4, 4)
@@ -56,13 +58,18 @@ Partial Class ucLookupMaintenance
         ' wbpMainCommands
         ' 
         wbpMainCommands.ButtonInterval = 15
+        WindowsuiButtonImageOptions1.Image = My.Resources.Resources.icon_add_property_24_png
+        WindowsuiButtonImageOptions2.Image = My.Resources.Resources.icon_edit_property_24
+        WindowsuiButtonImageOptions3.Image = My.Resources.Resources.icon_delete_24
+        WindowsuiButtonImageOptions4.Image = My.Resources.Resources.icon_refresh_24
         wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
-        wbpMainCommands.Dock = DockStyle.Fill
+        wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
+        wbpMainCommands.Dock = DockStyle.Right
         wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        wbpMainCommands.Location = New Point(5, 4)
+        wbpMainCommands.Location = New Point(459, 4)
         wbpMainCommands.Margin = New Padding(1)
         wbpMainCommands.Name = "wbpMainCommands"
-        wbpMainCommands.Size = New Size(938, 62)
+        wbpMainCommands.Size = New Size(484, 62)
         wbpMainCommands.TabIndex = 0
         wbpMainCommands.Text = "Commands"
         ' 
@@ -177,6 +184,19 @@ Partial Class ucLookupMaintenance
         colActive.VisibleIndex = 2
         colActive.Width = 70
         ' 
+        ' lblTabPageTitle
+        ' 
+        lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
+        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15.75F, FontStyle.Bold)
+        lblTabPageTitle.Appearance.ForeColor = Color.Black
+        lblTabPageTitle.Appearance.Options.UseFont = True
+        lblTabPageTitle.Appearance.Options.UseForeColor = True
+        lblTabPageTitle.Location = New Point(8, 17)
+        lblTabPageTitle.Name = "lblTabPageTitle"
+        lblTabPageTitle.Size = New Size(131, 30)
+        lblTabPageTitle.TabIndex = 2
+        lblTabPageTitle.Text = "DASHBOARD"
+        ' 
         ' ucLookupMaintenance
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -191,6 +211,7 @@ Partial Class ucLookupMaintenance
         Size = New Size(956, 534)
         CType(PanelControl1, ComponentModel.ISupportInitialize).EndInit()
         PanelControl1.ResumeLayout(False)
+        PanelControl1.PerformLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).EndInit()
         grpDetails.ResumeLayout(False)
         grpDetails.PerformLayout()
@@ -215,5 +236,6 @@ Partial Class ucLookupMaintenance
     Friend WithEvents colCode As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colName As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colActive As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
 
 End Class
