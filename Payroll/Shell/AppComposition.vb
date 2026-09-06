@@ -11,6 +11,9 @@ Imports Payroll.Login.Services
 Imports Payroll.Lookups.Data
 Imports Payroll.Lookups.Presenters
 Imports Payroll.Lookups.Services
+Imports Payroll.StatutorySettings.Data
+Imports Payroll.StatutorySettings.Presenters
+Imports Payroll.StatutorySettings.Services
 Imports Payroll.Users.Presenters
 Imports Payroll.Users.Services
 Imports Payroll.Users.Views
@@ -181,6 +184,37 @@ Public Class AppComposition
         ' 6. Gawin ang Main View
         Return New ucSettingsLookups(branchView, departmentView, positionView,
             categoryView, jobClassView, holidayGroupView, scheduleGroupView, bankView)
+
+    End Function
+
+    Public Shared Function BuildStatutorySettingsView() As ucStatutorySettingsShell
+
+        ' 1. Repository + Service - iisa lang, SHARED sa lahat ng 3 tabs,
+        ' gaya ng ginawa sa Master Data (stateless, tableName ang variable).
+        Dim statutoryRepo As New StatutorySettingsRepository()
+        Dim statutoryService As New StatutorySettingsService(statutoryRepo)
+
+        ' 2. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        Dim currentUser = AppSession.CurrentUser
+
+        ' 3. Gawin MUNA ang 3 Views - iisang class lang (ucStatutorySettings)
+        Dim sssView As New ucStatutorySettings()
+        Dim philHealthView As New ucStatutorySettings()
+        Dim pagIbigView As New ucStatutorySettings()
+
+        ' 4. Gawin ang 3 Presenters - bawat isa naka-configure sa ibang
+        ' tableName mula sa StatutorySettingsTableRegistry.
+        Dim sssPresenter As New StatutorySettingsPresenter(sssView, statutoryService, "tblStatutorySSS", currentUser)
+        Dim philHealthPresenter As New StatutorySettingsPresenter(philHealthView, statutoryService, "tblStatutoryPhilHealth", currentUser)
+        Dim pagIbigPresenter As New StatutorySettingsPresenter(pagIbigView, statutoryService, "tblStatutoryPagIbig", currentUser)
+
+        ' 5. I-assign ang Presenter sa bawat View (kasama ang display title)
+        sssView.SetPresenter(sssPresenter, "SSS")
+        philHealthView.SetPresenter(philHealthPresenter, "PhilHealth")
+        pagIbigView.SetPresenter(pagIbigPresenter, "Pag-IBIG")
+
+        ' 6. Gawin ang Main View
+        Return New ucStatutorySettingsShell(sssView, philHealthView, pagIbigView)
 
     End Function
 

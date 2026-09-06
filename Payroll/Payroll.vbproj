@@ -113,6 +113,7 @@
     <Folder Include="Modules\MainMenu\Dashboard\Services\" />
     <Folder Include="GlobalShared\Datasets\" />
     <Folder Include="Modules\Settings\SysConfig\Master Data\Models\" />
+    <Folder Include="Modules\Settings\SysConfig\StatutorySettings\Models\" />
   </ItemGroup>
 
   <ItemGroup>
