@@ -12,29 +12,28 @@ Namespace StatutorySettings.Data
         Public Async Function GetAllAsync(tableName As String) As Task(Of List(Of StatutoryBracketModel)) _
             Implements IStatutorySettingsRepository.GetAllAsync
 
-            Dim table = StatutorySettingsTableRegistry.GetTableName(tableName)
+            Dim info = StatutorySettingsTableRegistry.GetInfo(tableName)
 
             Dim sql = $"
-                SELECT Id, SalaryFrom, SalaryTo,
+                SELECT {info.IdColumn} AS Id, SalaryFrom, SalaryTo,
                        EEShare, EEContriType, ERShare, ERContriType,
                        ECCAmount, EEMPF, ERMPF, IsActive
-                FROM {table}
+                FROM {info.TableName}
                 ORDER BY SalaryFrom"
 
             Return Await MyBase.GetAllAsync(sql)
         End Function
 
         ' --- OVERLAP CHECK (used before Insert/Update) ---
-        ' Dalawang range ang nag-o-overlap kapag: HindiTotohanan(Bago.To < Luma.From O Bago.From > Luma.To)
         Public Async Function OverlapExistsAsync(tableName As String, salaryFrom As Decimal, salaryTo As Decimal, excludeId As Integer) As Task(Of Boolean) _
             Implements IStatutorySettingsRepository.OverlapExistsAsync
 
-            Dim table = StatutorySettingsTableRegistry.GetTableName(tableName)
+            Dim info = StatutorySettingsTableRegistry.GetInfo(tableName)
 
             Dim sql = $"
                 SELECT COUNT(1)
-                FROM {table}
-                WHERE Id <> @ExcludeId
+                FROM {info.TableName}
+                WHERE {info.IdColumn} <> @ExcludeId
                   AND SalaryFrom <= @SalaryTo
                   AND SalaryTo >= @SalaryFrom"
 
@@ -48,13 +47,13 @@ Namespace StatutorySettings.Data
         Public Async Function InsertAsync(tableName As String, item As StatutoryBracketModel, userName As String) As Task(Of Integer) _
             Implements IStatutorySettingsRepository.InsertAsync
 
-            Dim table = StatutorySettingsTableRegistry.GetTableName(tableName)
+            Dim info = StatutorySettingsTableRegistry.GetInfo(tableName)
 
             Dim sql = $"
-                INSERT INTO {table}
+                INSERT INTO {info.TableName}
                     (SalaryFrom, SalaryTo, EEShare, EEContriType, ERShare, ERContriType,
                      ECCAmount, EEMPF, ERMPF, IsActive, CreatedAt, CreatedBy)
-                OUTPUT INSERTED.Id
+                OUTPUT INSERTED.{info.IdColumn}
                 VALUES
                     (@SalaryFrom, @SalaryTo, @EEShare, @EEContriType, @ERShare, @ERContriType,
                      @ECCAmount, @EEMPF, @ERMPF, @IsActive, GETDATE(), @UserName)"
@@ -72,10 +71,10 @@ Namespace StatutorySettings.Data
         Public Async Function UpdateAsync(tableName As String, item As StatutoryBracketModel, userName As String) As Task(Of Boolean) _
             Implements IStatutorySettingsRepository.UpdateAsync
 
-            Dim table = StatutorySettingsTableRegistry.GetTableName(tableName)
+            Dim info = StatutorySettingsTableRegistry.GetInfo(tableName)
 
             Dim sql = $"
-                UPDATE {table}
+                UPDATE {info.TableName}
                 SET SalaryFrom = @SalaryFrom,
                     SalaryTo = @SalaryTo,
                     EEShare = @EEShare,
@@ -88,7 +87,7 @@ Namespace StatutorySettings.Data
                     IsActive = @IsActive,
                     UpdatedAt = GETDATE(),
                     UpdatedBy = @UserName
-                WHERE Id = @Id"
+                WHERE {info.IdColumn} = @Id"
 
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
                 item.Id, item.SalaryFrom, item.SalaryTo, item.EEShare, item.EEContriType,
@@ -102,14 +101,14 @@ Namespace StatutorySettings.Data
         Public Async Function SetActiveStatusAsync(tableName As String, id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean) _
             Implements IStatutorySettingsRepository.SetActiveStatusAsync
 
-            Dim table = StatutorySettingsTableRegistry.GetTableName(tableName)
+            Dim info = StatutorySettingsTableRegistry.GetInfo(tableName)
 
             Dim sql = $"
-                UPDATE {table}
+                UPDATE {info.TableName}
                 SET IsActive = @IsActive,
                     UpdatedAt = GETDATE(),
                     UpdatedBy = @UserName
-                WHERE Id = @Id"
+                WHERE {info.IdColumn} = @Id"
 
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {id, isActive, userName})
             Return rows > 0

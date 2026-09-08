@@ -16,13 +16,13 @@ Partial Class ucStatutorySettings
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim WindowsuiButtonImageOptions1 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions2 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions5 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions6 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions7 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions8 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
-        wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
+        wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
         grpDetails = New DevExpress.XtraEditors.GroupControl()
         chkActive = New DevExpress.XtraEditors.CheckEdit()
         txtSalaryFrom = New DevExpress.XtraEditors.TextEdit()
@@ -72,9 +72,9 @@ Partial Class ucStatutorySettings
         CType(gridconStatutoryList, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridviewStatutoryList, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
-        '
-        ' PanelControl1 — SAME sa ucLookupMaintenance, walang binago
-        '
+        ' 
+        ' PanelControl1
+        ' 
         PanelControl1.Controls.Add(lblTabPageTitle)
         PanelControl1.Controls.Add(wbpMainCommands)
         PanelControl1.Dock = DockStyle.Top
@@ -84,15 +84,27 @@ Partial Class ucStatutorySettings
         PanelControl1.Padding = New Padding(3, 2, 3, 2)
         PanelControl1.Size = New Size(948, 70)
         PanelControl1.TabIndex = 0
-        '
-        ' wbpMainCommands — SAME buttons (New/Edit/Delete/Refresh)
-        '
+        ' 
+        ' lblTabPageTitle
+        ' 
+        lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
+        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15.75F, FontStyle.Bold)
+        lblTabPageTitle.Appearance.ForeColor = Color.Black
+        lblTabPageTitle.Appearance.Options.UseFont = True
+        lblTabPageTitle.Location = New Point(8, 17)
+        lblTabPageTitle.Name = "lblTabPageTitle"
+        lblTabPageTitle.Size = New Size(131, 30)
+        lblTabPageTitle.TabIndex = 2
+        lblTabPageTitle.Text = "DASHBOARD"
+        ' 
+        ' wbpMainCommands
+        ' 
         wbpMainCommands.ButtonInterval = 15
-        WindowsuiButtonImageOptions1.Image = My.Resources.Resources.icon_add_property_24_png
-        WindowsuiButtonImageOptions2.Image = My.Resources.Resources.icon_edit_property_24
-        WindowsuiButtonImageOptions3.Image = My.Resources.Resources.icon_delete_24
-        WindowsuiButtonImageOptions4.Image = My.Resources.Resources.icon_refresh_24
-        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
+        WindowsuiButtonImageOptions5.Image = My.Resources.Resources.icon_add_property_24_png
+        WindowsuiButtonImageOptions6.Image = My.Resources.Resources.icon_edit_property_24
+        WindowsuiButtonImageOptions7.Image = My.Resources.Resources.icon_delete_24
+        WindowsuiButtonImageOptions8.Image = My.Resources.Resources.icon_refresh_24
+        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions5, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions6, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions7, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions8, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
         wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
         wbpMainCommands.Dock = DockStyle.Right
         wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -102,22 +114,9 @@ Partial Class ucStatutorySettings
         wbpMainCommands.Size = New Size(484, 62)
         wbpMainCommands.TabIndex = 0
         wbpMainCommands.Text = "Commands"
-        '
-        ' lblTabPageTitle — SAME (papalitan lang ni SetPresenter ang Text: SSS / PhilHealth / Pag-IBIG)
-        '
-        lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
-        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15.75F, FontStyle.Bold)
-        lblTabPageTitle.Appearance.ForeColor = Color.Black
-        lblTabPageTitle.Appearance.Options.UseFont = True
-        lblTabPageTitle.Appearance.Options.UseForeColor = True
-        lblTabPageTitle.Location = New Point(8, 17)
-        lblTabPageTitle.Name = "lblTabPageTitle"
-        lblTabPageTitle.Size = New Size(131, 30)
-        lblTabPageTitle.TabIndex = 2
-        lblTabPageTitle.Text = "DASHBOARD"
-        '
-        ' grpDetails — PINALAKI: 9 fields (3 col x 3 row) + Active
-        '
+        ' 
+        ' grpDetails
+        ' 
         grpDetails.Appearance.Options.UseFont = True
         grpDetails.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
@@ -148,143 +147,175 @@ Partial Class ucStatutorySettings
         grpDetails.Size = New Size(948, 190)
         grpDetails.TabIndex = 1
         grpDetails.Text = " DETAILS"
-        '
-        ' Row 1 — Salary From | EE Contri Type | ECC Amount | Active
-        '
-        lblSalaryFrom.Location = New Point(24, 24)
-        lblSalaryFrom.Margin = New Padding(3, 2, 3, 2)
-        lblSalaryFrom.Name = "lblSalaryFrom"
-        lblSalaryFrom.Size = New Size(60, 13)
-        lblSalaryFrom.TabIndex = 0
-        lblSalaryFrom.Text = "Salary From"
-        '
-        txtSalaryFrom.Location = New Point(24, 42)
+        ' 
+        ' chkActive
+        ' 
+        chkActive.Location = New Point(792, 51)
+        chkActive.Margin = New Padding(3, 2, 3, 2)
+        chkActive.Name = "chkActive"
+        chkActive.Properties.Caption = "Active"
+        chkActive.Size = New Size(90, 20)
+        chkActive.TabIndex = 6
+        ' 
+        ' txtSalaryFrom
+        ' 
+        txtSalaryFrom.Location = New Point(24, 49)
         txtSalaryFrom.Margin = New Padding(3, 2, 3, 2)
         txtSalaryFrom.Name = "txtSalaryFrom"
         txtSalaryFrom.Size = New Size(140, 20)
         txtSalaryFrom.TabIndex = 1
-        '
-        lblEEContriType.Location = New Point(280, 24)
-        lblEEContriType.Margin = New Padding(3, 2, 3, 2)
-        lblEEContriType.Name = "lblEEContriType"
-        lblEEContriType.Size = New Size(69, 13)
-        lblEEContriType.TabIndex = 2
-        lblEEContriType.Text = "EE Contri Type"
-        '
-        cboEEContriType.Location = New Point(280, 42)
+        ' 
+        ' lblSalaryFrom
+        ' 
+        lblSalaryFrom.Location = New Point(24, 31)
+        lblSalaryFrom.Margin = New Padding(3, 2, 3, 2)
+        lblSalaryFrom.Name = "lblSalaryFrom"
+        lblSalaryFrom.Size = New Size(57, 13)
+        lblSalaryFrom.TabIndex = 0
+        lblSalaryFrom.Text = "Salary From"
+        ' 
+        ' cboEEContriType
+        ' 
+        cboEEContriType.Location = New Point(280, 49)
         cboEEContriType.Margin = New Padding(3, 2, 3, 2)
         cboEEContriType.Name = "cboEEContriType"
         cboEEContriType.Properties.Items.AddRange(New Object() {"Amount", "Percentage"})
         cboEEContriType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboEEContriType.Size = New Size(160, 20)
         cboEEContriType.TabIndex = 3
-        '
-        lblECCAmount.Location = New Point(536, 24)
+        ' 
+        ' lblEEContriType
+        ' 
+        lblEEContriType.Location = New Point(280, 31)
+        lblEEContriType.Margin = New Padding(3, 2, 3, 2)
+        lblEEContriType.Name = "lblEEContriType"
+        lblEEContriType.Size = New Size(71, 13)
+        lblEEContriType.TabIndex = 2
+        lblEEContriType.Text = "EE Contri Type"
+        ' 
+        ' txtECCAmount
+        ' 
+        txtECCAmount.Location = New Point(536, 49)
+        txtECCAmount.Margin = New Padding(3, 2, 3, 2)
+        txtECCAmount.Name = "txtECCAmount"
+        txtECCAmount.Size = New Size(140, 20)
+        txtECCAmount.TabIndex = 5
+        ' 
+        ' lblECCAmount
+        ' 
+        lblECCAmount.Location = New Point(536, 31)
         lblECCAmount.Margin = New Padding(3, 2, 3, 2)
         lblECCAmount.Name = "lblECCAmount"
         lblECCAmount.Size = New Size(60, 13)
         lblECCAmount.TabIndex = 4
         lblECCAmount.Text = "ECC Amount"
-        '
-        txtECCAmount.Location = New Point(536, 42)
-        txtECCAmount.Margin = New Padding(3, 2, 3, 2)
-        txtECCAmount.Name = "txtECCAmount"
-        txtECCAmount.Size = New Size(140, 20)
-        txtECCAmount.TabIndex = 5
-        '
-        chkActive.Location = New Point(792, 44)
-        chkActive.Margin = New Padding(3, 2, 3, 2)
-        chkActive.Name = "chkActive"
-        chkActive.Properties.Caption = "Active"
-        chkActive.Size = New Size(90, 20)
-        chkActive.TabIndex = 6
-        '
-        ' Row 2 — Salary To | ER Share | EE MPF
-        '
-        lblSalaryTo.Location = New Point(24, 74)
-        lblSalaryTo.Margin = New Padding(3, 2, 3, 2)
-        lblSalaryTo.Name = "lblSalaryTo"
-        lblSalaryTo.Size = New Size(50, 13)
-        lblSalaryTo.TabIndex = 7
-        lblSalaryTo.Text = "Salary To"
-        '
-        txtSalaryTo.Location = New Point(24, 92)
+        ' 
+        ' txtSalaryTo
+        ' 
+        txtSalaryTo.Location = New Point(24, 99)
         txtSalaryTo.Margin = New Padding(3, 2, 3, 2)
         txtSalaryTo.Name = "txtSalaryTo"
         txtSalaryTo.Size = New Size(140, 20)
         txtSalaryTo.TabIndex = 8
-        '
-        lblERShare.Location = New Point(280, 74)
-        lblERShare.Margin = New Padding(3, 2, 3, 2)
-        lblERShare.Name = "lblERShare"
-        lblERShare.Size = New Size(47, 13)
-        lblERShare.TabIndex = 9
-        lblERShare.Text = "ER Share"
-        '
-        txtERShare.Location = New Point(280, 92)
+        ' 
+        ' lblSalaryTo
+        ' 
+        lblSalaryTo.Location = New Point(24, 81)
+        lblSalaryTo.Margin = New Padding(3, 2, 3, 2)
+        lblSalaryTo.Name = "lblSalaryTo"
+        lblSalaryTo.Size = New Size(45, 13)
+        lblSalaryTo.TabIndex = 7
+        lblSalaryTo.Text = "Salary To"
+        ' 
+        ' txtERShare
+        ' 
+        txtERShare.Location = New Point(280, 99)
         txtERShare.Margin = New Padding(3, 2, 3, 2)
         txtERShare.Name = "txtERShare"
         txtERShare.Size = New Size(160, 20)
         txtERShare.TabIndex = 10
-        '
-        lblEEMPF.Location = New Point(536, 74)
-        lblEEMPF.Margin = New Padding(3, 2, 3, 2)
-        lblEEMPF.Name = "lblEEMPF"
-        lblEEMPF.Size = New Size(42, 13)
-        lblEEMPF.TabIndex = 11
-        lblEEMPF.Text = "EE MPF"
-        '
-        txtEEMPF.Location = New Point(536, 92)
+        ' 
+        ' lblERShare
+        ' 
+        lblERShare.Location = New Point(280, 81)
+        lblERShare.Margin = New Padding(3, 2, 3, 2)
+        lblERShare.Name = "lblERShare"
+        lblERShare.Size = New Size(44, 13)
+        lblERShare.TabIndex = 9
+        lblERShare.Text = "ER Share"
+        ' 
+        ' txtEEMPF
+        ' 
+        txtEEMPF.Location = New Point(536, 99)
         txtEEMPF.Margin = New Padding(3, 2, 3, 2)
         txtEEMPF.Name = "txtEEMPF"
         txtEEMPF.Size = New Size(140, 20)
         txtEEMPF.TabIndex = 12
-        '
-        ' Row 3 — EE Share | ER Contri Type | ER MPF
-        '
-        lblEEShare.Location = New Point(24, 124)
-        lblEEShare.Margin = New Padding(3, 2, 3, 2)
-        lblEEShare.Name = "lblEEShare"
-        lblEEShare.Size = New Size(46, 13)
-        lblEEShare.TabIndex = 13
-        lblEEShare.Text = "EE Share"
-        '
-        txtEEShare.Location = New Point(24, 142)
+        ' 
+        ' lblEEMPF
+        ' 
+        lblEEMPF.Location = New Point(536, 81)
+        lblEEMPF.Margin = New Padding(3, 2, 3, 2)
+        lblEEMPF.Name = "lblEEMPF"
+        lblEEMPF.Size = New Size(35, 13)
+        lblEEMPF.TabIndex = 11
+        lblEEMPF.Text = "EE MPF"
+        ' 
+        ' txtEEShare
+        ' 
+        txtEEShare.Location = New Point(24, 149)
         txtEEShare.Margin = New Padding(3, 2, 3, 2)
         txtEEShare.Name = "txtEEShare"
         txtEEShare.Size = New Size(140, 20)
         txtEEShare.TabIndex = 14
-        '
-        lblERContriType.Location = New Point(280, 124)
-        lblERContriType.Margin = New Padding(3, 2, 3, 2)
-        lblERContriType.Name = "lblERContriType"
-        lblERContriType.Size = New Size(68, 13)
-        lblERContriType.TabIndex = 15
-        lblERContriType.Text = "ER Contri Type"
-        '
-        cboERContriType.Location = New Point(280, 142)
+        ' 
+        ' lblEEShare
+        ' 
+        lblEEShare.Location = New Point(24, 131)
+        lblEEShare.Margin = New Padding(3, 2, 3, 2)
+        lblEEShare.Name = "lblEEShare"
+        lblEEShare.Size = New Size(43, 13)
+        lblEEShare.TabIndex = 13
+        lblEEShare.Text = "EE Share"
+        ' 
+        ' cboERContriType
+        ' 
+        cboERContriType.Location = New Point(280, 149)
         cboERContriType.Margin = New Padding(3, 2, 3, 2)
         cboERContriType.Name = "cboERContriType"
         cboERContriType.Properties.Items.AddRange(New Object() {"Amount", "Percentage"})
         cboERContriType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboERContriType.Size = New Size(160, 20)
         cboERContriType.TabIndex = 16
-        '
-        lblERMPF.Location = New Point(536, 124)
-        lblERMPF.Margin = New Padding(3, 2, 3, 2)
-        lblERMPF.Name = "lblERMPF"
-        lblERMPF.Size = New Size(41, 13)
-        lblERMPF.TabIndex = 17
-        lblERMPF.Text = "ER MPF"
-        '
-        txtERMPF.Location = New Point(536, 142)
+        ' 
+        ' lblERContriType
+        ' 
+        lblERContriType.Location = New Point(280, 131)
+        lblERContriType.Margin = New Padding(3, 2, 3, 2)
+        lblERContriType.Name = "lblERContriType"
+        lblERContriType.Size = New Size(72, 13)
+        lblERContriType.TabIndex = 15
+        lblERContriType.Text = "ER Contri Type"
+        ' 
+        ' txtERMPF
+        ' 
+        txtERMPF.Location = New Point(536, 149)
         txtERMPF.Margin = New Padding(3, 2, 3, 2)
         txtERMPF.Name = "txtERMPF"
         txtERMPF.Size = New Size(140, 20)
         txtERMPF.TabIndex = 18
-        '
+        ' 
+        ' lblERMPF
+        ' 
+        lblERMPF.Location = New Point(536, 131)
+        lblERMPF.Margin = New Padding(3, 2, 3, 2)
+        lblERMPF.Name = "lblERMPF"
+        lblERMPF.Size = New Size(36, 13)
+        lblERMPF.TabIndex = 17
+        lblERMPF.Text = "ER MPF"
+        ' 
         ' gridconStatutoryList
-        '
+        ' 
         gridconStatutoryList.Dock = DockStyle.Fill
         gridconStatutoryList.Location = New Point(4, 264)
         gridconStatutoryList.MainView = gridviewStatutoryList
@@ -293,91 +324,111 @@ Partial Class ucStatutorySettings
         gridconStatutoryList.Size = New Size(948, 266)
         gridconStatutoryList.TabIndex = 2
         gridconStatutoryList.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridviewStatutoryList})
-        '
+        ' 
         ' gridviewStatutoryList
-        '
+        ' 
         gridviewStatutoryList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colSalaryFrom, colSalaryTo, colEEShare, colEEContriType, colERShare, colERContriType, colECCAmount, colEEMPF, colERMPF, colActive})
         gridviewStatutoryList.GridControl = gridconStatutoryList
         gridviewStatutoryList.Name = "gridviewStatutoryList"
         gridviewStatutoryList.OptionsPrint.PrintFilterInfo = True
         gridviewStatutoryList.OptionsView.NewItemRowPosition = DevExpress.XtraGrid.Views.Grid.NewItemRowPosition.Top
         gridviewStatutoryList.OptionsView.ShowGroupPanel = False
-        '
+        ' 
+        ' colSalaryFrom
+        ' 
         colSalaryFrom.Caption = "Salary (FR)"
         colSalaryFrom.FieldName = "SalaryFrom"
         colSalaryFrom.Name = "colSalaryFrom"
         colSalaryFrom.Visible = True
         colSalaryFrom.VisibleIndex = 0
         colSalaryFrom.Width = 100
-        '
+        ' 
+        ' colSalaryTo
+        ' 
         colSalaryTo.Caption = "Salary (TO)"
         colSalaryTo.FieldName = "SalaryTo"
         colSalaryTo.Name = "colSalaryTo"
         colSalaryTo.Visible = True
         colSalaryTo.VisibleIndex = 1
         colSalaryTo.Width = 100
-        '
+        ' 
+        ' colEEShare
+        ' 
         colEEShare.Caption = "Employee (EE) Share"
         colEEShare.FieldName = "EEShare"
         colEEShare.Name = "colEEShare"
         colEEShare.Visible = True
         colEEShare.VisibleIndex = 2
         colEEShare.Width = 90
-        '
+        ' 
+        ' colEEContriType
+        ' 
         colEEContriType.Caption = "EE Contri Type"
         colEEContriType.FieldName = "EEContriType"
         colEEContriType.Name = "colEEContriType"
         colEEContriType.Visible = True
         colEEContriType.VisibleIndex = 3
         colEEContriType.Width = 110
-        '
+        ' 
+        ' colERShare
+        ' 
         colERShare.Caption = "Employer (ER) Share"
         colERShare.FieldName = "ERShare"
         colERShare.Name = "colERShare"
         colERShare.Visible = True
         colERShare.VisibleIndex = 4
         colERShare.Width = 90
-        '
+        ' 
+        ' colERContriType
+        ' 
         colERContriType.Caption = "ER Contri Type"
         colERContriType.FieldName = "ERContriType"
         colERContriType.Name = "colERContriType"
         colERContriType.Visible = True
         colERContriType.VisibleIndex = 5
         colERContriType.Width = 110
-        '
+        ' 
+        ' colECCAmount
+        ' 
         colECCAmount.Caption = "ECC Amount"
         colECCAmount.FieldName = "ECCAmount"
         colECCAmount.Name = "colECCAmount"
         colECCAmount.Visible = True
         colECCAmount.VisibleIndex = 6
         colECCAmount.Width = 90
-        '
+        ' 
+        ' colEEMPF
+        ' 
         colEEMPF.Caption = "EE MPF"
         colEEMPF.FieldName = "EEMPF"
         colEEMPF.Name = "colEEMPF"
         colEEMPF.Visible = True
         colEEMPF.VisibleIndex = 7
         colEEMPF.Width = 80
-        '
+        ' 
+        ' colERMPF
+        ' 
         colERMPF.Caption = "ER MPF"
         colERMPF.FieldName = "ERMPF"
         colERMPF.Name = "colERMPF"
         colERMPF.Visible = True
         colERMPF.VisibleIndex = 8
         colERMPF.Width = 80
-        '
+        ' 
+        ' colActive
+        ' 
         colActive.Caption = "Active"
         colActive.FieldName = "IsActive"
         colActive.Name = "colActive"
         colActive.Visible = True
         colActive.VisibleIndex = 9
         colActive.Width = 70
-        '
-        ' ucStatutory
-        '
+        ' 
+        ' ucStatutorySettings
+        ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
+        AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(gridconStatutoryList)
         Controls.Add(grpDetails)
