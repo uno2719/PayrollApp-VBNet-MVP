@@ -59,9 +59,7 @@ Partial Class ucLookupMaintenance
         ' 
         lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
         lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblTabPageTitle.Appearance.ForeColor = Color.Black
         lblTabPageTitle.Appearance.Options.UseFont = True
-        lblTabPageTitle.Appearance.Options.UseForeColor = True
         lblTabPageTitle.Location = New Point(8, 17)
         lblTabPageTitle.Name = "lblTabPageTitle"
         lblTabPageTitle.Size = New Size(125, 28)
