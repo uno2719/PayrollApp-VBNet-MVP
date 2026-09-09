@@ -14,10 +14,10 @@ Partial Class ucLookupMaintenance
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim WindowsuiButtonImageOptions1 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions2 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions5 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions6 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions7 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions8 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
@@ -69,11 +69,11 @@ Partial Class ucLookupMaintenance
         ' wbpMainCommands
         ' 
         wbpMainCommands.ButtonInterval = 15
-        WindowsuiButtonImageOptions1.Image = My.Resources.Resources.icon_add_property_24_png
-        WindowsuiButtonImageOptions2.Image = My.Resources.Resources.icon_edit_property_24
-        WindowsuiButtonImageOptions3.Image = My.Resources.Resources.icon_delete_24
-        WindowsuiButtonImageOptions4.Image = My.Resources.Resources.icon_refresh_24
-        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
+        WindowsuiButtonImageOptions5.Image = My.Resources.Resources.icon_add_property_24_png
+        WindowsuiButtonImageOptions6.Image = My.Resources.Resources.icon_edit_property_24
+        WindowsuiButtonImageOptions7.Image = My.Resources.Resources.icon_delete_24
+        WindowsuiButtonImageOptions8.Image = My.Resources.Resources.icon_refresh_24
+        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions5, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions6, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions7, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions8, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
         wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
         wbpMainCommands.Dock = DockStyle.Right
         wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -117,6 +117,7 @@ Partial Class ucLookupMaintenance
         txtName.Location = New Point(200, 50)
         txtName.Margin = New Padding(3, 2, 3, 2)
         txtName.Name = "txtName"
+        txtName.Properties.CharacterCasing = CharacterCasing.Upper
         txtName.Properties.NullValuePrompt = "e.g. Main Office"
         txtName.Size = New Size(440, 20)
         txtName.TabIndex = 3
@@ -135,6 +136,7 @@ Partial Class ucLookupMaintenance
         txtCode.Location = New Point(24, 50)
         txtCode.Margin = New Padding(3, 2, 3, 2)
         txtCode.Name = "txtCode"
+        txtCode.Properties.CharacterCasing = CharacterCasing.Upper
         txtCode.Properties.NullValuePrompt = "e.g. MAIN"
         txtCode.Size = New Size(150, 20)
         txtCode.TabIndex = 1

@@ -11,6 +11,9 @@ Imports Payroll.Login.Services
 Imports Payroll.Lookups.Data
 Imports Payroll.Lookups.Presenters
 Imports Payroll.Lookups.Services
+Imports Payroll.PayrollSettings.Data
+Imports Payroll.PayrollSettings.Presenters
+Imports Payroll.PayrollSettings.Services
 Imports Payroll.StatutorySettings.Data
 Imports Payroll.StatutorySettings.Presenters
 Imports Payroll.StatutorySettings.Services
@@ -217,5 +220,63 @@ Public Class AppComposition
         Return New ucStatutorySettingsShell(sssView, philHealthView, pagIbigView)
 
     End Function
+
+    Public Shared Function BuildPayrollSettingsView() As ucPayrollSettings
+
+        ' 1. Repositories + Services - 4 shapes, iisa lang bawat isa (SHARED
+        ' sa mga magkaparehong-shape na tabs, gaya ng ginawa sa Master Data/
+        ' Statutory - stateless naman sila, tableName mismo ang variable
+        ' sa FlaggedEntry/RateEntry).
+        Dim compensationRepo As New CompensationRepository()
+        Dim compensationService As New CompensationService(compensationRepo)
+
+        Dim flaggedEntryRepo As New PayrollFlaggedEntryRepository()
+        Dim flaggedEntryService As New PayrollFlaggedEntryService(flaggedEntryRepo)
+
+        Dim rateEntryRepo As New PayrollRateEntryRepository()
+        Dim rateEntryService As New PayrollRateEntryService(rateEntryRepo)
+
+        Dim loanRepo As New LoanRepository()
+        Dim loanService As New LoanService(loanRepo)
+
+        ' 2. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        Dim currentUser = AppSession.CurrentUser
+
+        ' 3. Gawin MUNA ang 6 Views - 4 classes lang (Compensation/Loan may
+        ' 1 instance bawat isa; Deduction+Bonus parehong ucPayrollFlaggedEntry;
+        ' Overtime+Holiday parehong ucPayrollRateEntry) - walang Presenter pa.
+        Dim compensationView As New ucCompensation()
+        Dim deductionView As New ucPayrollFlaggedEntry()
+        Dim overtimeView As New ucPayrollRateEntry()
+        Dim holidayView As New ucPayrollRateEntry()
+        Dim bonusView As New ucPayrollFlaggedEntry()
+        Dim loanView As New ucLoan()
+
+        ' 4. Gawin ang 6 Presenters - Deduction/Bonus naka-configure sa
+        ' tblDeduction/tblBonus; Overtime/Holiday naka-configure sa
+        ' tblOvertime/tblHoliday.
+        Dim compensationPresenter As New CompensationPresenter(compensationView, compensationService, currentUser)
+        Dim deductionPresenter As New PayrollFlaggedEntryPresenter(deductionView, flaggedEntryService, "tblDeduction", currentUser)
+        Dim overtimePresenter As New PayrollRateEntryPresenter(overtimeView, rateEntryService, "tblOvertime", currentUser)
+        Dim holidayPresenter As New PayrollRateEntryPresenter(holidayView, rateEntryService, "tblHoliday", currentUser)
+        Dim bonusPresenter As New PayrollFlaggedEntryPresenter(bonusView, flaggedEntryService, "tblBonus", currentUser)
+        Dim loanPresenter As New LoanPresenter(loanView, loanService, currentUser)
+
+        ' 5. I-assign ang Presenter sa bawat View (Deduction/Bonus/Overtime/
+        ' Holiday kasama ang display title na makikita sa tab/breadcrumb -
+        ' Compensation/Loan iisa lang ang instance kaya naka-fix na ang title
+        ' sa View mismo).
+        compensationView.SetPresenter(compensationPresenter)
+        deductionView.SetPresenter(deductionPresenter, "Deduction")
+        overtimeView.SetPresenter(overtimePresenter, "Overtime")
+        holidayView.SetPresenter(holidayPresenter, "Holiday")
+        bonusView.SetPresenter(bonusPresenter, "Bonus")
+        loanView.SetPresenter(loanPresenter)
+
+        ' 6. Gawin ang Main View
+        Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView)
+
+    End Function
+
 
 End Class

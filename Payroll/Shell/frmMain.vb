@@ -81,6 +81,9 @@ Public Class frmMain
             Case "settings_Statutory"
                 _nav.NavigateTo(Of ucStatutorySettingsShell)(Function() AppComposition.BuildStatutorySettingsView())
 
+            Case "setting_Payroll"
+                _nav.NavigateTo(Of ucPayrollSettings)(Function() AppComposition.BuildPayrollSettingsView())
+
             Case "logout"
                 PerformLogout()
 
