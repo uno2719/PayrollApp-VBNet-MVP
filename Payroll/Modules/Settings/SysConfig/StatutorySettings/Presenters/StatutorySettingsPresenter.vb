@@ -166,6 +166,120 @@ Namespace StatutorySettings.Presenters
 
         End Function
 
+        ' =============================================
+        ' EXCEL IMPORT - dumadaan pa rin bawat row sa
+        ' _service.SaveAsync (kaya same overlap/range check gaya
+        ' ng manual Add), kaya hindi na kailangan ng bagong
+        ' validation path para lang sa import.
+        ' =============================================
+        Public Async Function ImportFromExcelAsync(filePath As String) As Task
+
+            Dim rows As List(Of Dictionary(Of String, String))
+            Try
+                rows = ExcelHelper.ReadWorksheet(filePath)
+            Catch ex As Exception
+                _view.ShowError($"Hindi mabuksan ang file: {ex.Message}")
+                Return
+            End Try
+
+            If rows.Count = 0 Then
+                _view.ShowError("Walang laman na row na nabasa sa Excel file.")
+                Return
+            End If
+
+            Dim successCount As Integer = 0
+            Dim errors As New List(Of String)
+
+            For i = 0 To rows.Count - 1
+                ' +2 dahil row 1 sa Excel ay header, at 1-based ang Excel rows
+                Dim excelRowNumber = i + 2
+                Dim row = rows(i)
+
+                Try
+                    Dim item As New StatutoryBracketModel With {
+                        .SalaryFrom = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "SalaryFrom")),
+                        .SalaryTo = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "SalaryTo")),
+                        .EEShare = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "EEShare")),
+                        .EEContriType = ExcelHelper.GetValueOrEmpty(row, "EEContriType").Trim(),
+                        .ERShare = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "ERShare")),
+                        .ERContriType = ExcelHelper.GetValueOrEmpty(row, "ERContriType").Trim(),
+                        .ECCAmount = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "ECCAmount")),
+                        .EEMPF = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "EEMPF")),
+                        .ERMPF = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "ERMPF")),
+                        .IsActive = ExcelHelper.ParseBoolOrDefault(ExcelHelper.GetValueOrEmpty(row, "IsActive"))
+                    }
+
+                    Dim result = Await _service.SaveAsync(_tableName, item, _userName)
+
+                    If result.Success Then
+                        successCount += 1
+                    Else
+                        errors.Add($"Row {excelRowNumber}: {result.ErrorMessage}")
+                    End If
+
+                Catch ex As Exception
+                    errors.Add($"Row {excelRowNumber}: {ex.Message}")
+                End Try
+            Next
+
+            Await LoadListAsync()
+
+            Dim summary As New System.Text.StringBuilder()
+            summary.AppendLine($"{successCount} of {rows.Count} row(s) na-import.")
+
+            If errors.Count > 0 Then
+                summary.AppendLine()
+                summary.AppendLine("Mga hindi na-import:")
+                For Each Err In errors
+                    summary.AppendLine($"- {Err()}")
+                Next
+                _view.ShowError(summary.ToString())
+            Else
+                _view.ShowMessage(summary.ToString())
+            End If
+
+        End Function
+
+
+        ' =============================================
+        ' EXCEL EXPORT - kasabay na "template" (headers lang kapag
+        ' walang laman ang list) at data backup (headers + current
+        ' rows kapag may laman na).
+        ' =============================================
+        Public Async Function ExportToExcelAsync(filePath As String, sheetLabel As String) As Task
+
+            Dim headers As New List(Of String) From {
+                "SalaryFrom", "SalaryTo", "EEShare", "EEContriType",
+                "ERShare", "ERContriType", "ECCAmount", "EEMPF", "ERMPF", "IsActive"
+            }
+
+            Dim data = Await _service.GetAllAsync(_tableName)
+
+            Dim rows As New List(Of List(Of String))
+            For Each item In data
+                rows.Add(New List(Of String) From {
+                    item.SalaryFrom.ToString(),
+                    item.SalaryTo.ToString(),
+                    item.EEShare.ToString(),
+                    item.EEContriType,
+                    item.ERShare.ToString(),
+                    item.ERContriType,
+                    item.ECCAmount.ToString(),
+                    item.EEMPF.ToString(),
+                    item.ERMPF.ToString(),
+                    item.IsActive.ToString()
+                })
+            Next
+
+            Try
+                ExcelHelper.WriteWorksheet(filePath, sheetLabel, headers, rows)
+                _view.ShowMessage($"Na-export sa: {filePath}")
+            Catch ex As Exception
+                _view.ShowError($"Hindi ma-export: {ex.Message}")
+            End Try
+
+        End Function
+
     End Class
 
 End Namespace

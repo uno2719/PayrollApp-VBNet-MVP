@@ -43,6 +43,8 @@ Partial Class ucStatutorySettings
         lblERContriType = New DevExpress.XtraEditors.LabelControl()
         txtERMPF = New DevExpress.XtraEditors.TextEdit()
         lblERMPF = New DevExpress.XtraEditors.LabelControl()
+        btnImportExcel = New DevExpress.XtraEditors.SimpleButton()
+        btnExportExcel = New DevExpress.XtraEditors.SimpleButton()
         gridconStatutoryList = New DevExpress.XtraGrid.GridControl()
         gridviewStatutoryList = New DevExpress.XtraGrid.Views.Grid.GridView()
         colSalaryFrom = New DevExpress.XtraGrid.Columns.GridColumn()
@@ -133,6 +135,8 @@ Partial Class ucStatutorySettings
         grpDetails.Controls.Add(lblERShare)
         grpDetails.Controls.Add(txtEEMPF)
         grpDetails.Controls.Add(lblEEMPF)
+        grpDetails.Controls.Add(btnImportExcel)
+        grpDetails.Controls.Add(btnExportExcel)
         grpDetails.Controls.Add(txtEEShare)
         grpDetails.Controls.Add(lblEEShare)
         grpDetails.Controls.Add(cboERContriType)
@@ -313,6 +317,24 @@ Partial Class ucStatutorySettings
         lblERMPF.TabIndex = 17
         lblERMPF.Text = "ER MPF"
         ' 
+        ' btnImportExcel
+        ' 
+        btnImportExcel.Location = New Point(792, 90)
+        btnImportExcel.Margin = New Padding(3, 2, 3, 2)
+        btnImportExcel.Name = "btnImportExcel"
+        btnImportExcel.Size = New Size(140, 30)
+        btnImportExcel.TabIndex = 19
+        btnImportExcel.Text = "Import from Excel"
+        ' 
+        ' btnExportExcel
+        ' 
+        btnExportExcel.Location = New Point(792, 128)
+        btnExportExcel.Margin = New Padding(3, 2, 3, 2)
+        btnExportExcel.Name = "btnExportExcel"
+        btnExportExcel.Size = New Size(140, 30)
+        btnExportExcel.TabIndex = 20
+        btnExportExcel.Text = "Export Template"
+        ' 
         ' gridconStatutoryList
         ' 
         gridconStatutoryList.Dock = DockStyle.Fill
@@ -479,6 +501,8 @@ Partial Class ucStatutorySettings
     Friend WithEvents lblERContriType As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtERMPF As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblERMPF As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents btnImportExcel As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnExportExcel As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents gridconStatutoryList As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridviewStatutoryList As DevExpress.XtraGrid.Views.Grid.GridView
     Friend WithEvents colSalaryFrom As DevExpress.XtraGrid.Columns.GridColumn

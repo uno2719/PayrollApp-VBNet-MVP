@@ -361,4 +361,41 @@ Public Class ucStatutorySettings
 
     End Sub
 
+    ' =============================================
+    ' EXCEL IMPORT / EXPORT (hiwalay sa wbpMainCommands,
+    ' kaya sarili nilang SimpleButton sa loob ng grpDetails)
+    ' =============================================
+    Private Async Sub btnImportExcel_Click(sender As Object, e As EventArgs) _
+        Handles btnImportExcel.Click
+
+        If _isEditing Then Return
+
+        Dim filePath = ExcelHelper.PromptOpenExcelFile($"Import {_tabTitle} Brackets from Excel")
+        If String.IsNullOrEmpty(filePath) Then Return
+
+        Try
+            Await _presenter.ImportFromExcelAsync(filePath)
+        Catch ex As Exception
+            DisplayValidationError(ex.Message)
+        End Try
+
+    End Sub
+
+    Private Async Sub btnExportExcel_Click(sender As Object, e As EventArgs) _
+        Handles btnExportExcel.Click
+
+        If _isEditing Then Return
+
+        Dim defaultFileName = $"{_tabTitle}_Template.xlsx"
+        Dim filePath = ExcelHelper.PromptSaveExcelFile(defaultFileName, $"Export {_tabTitle} Brackets to Excel")
+        If String.IsNullOrEmpty(filePath) Then Return
+
+        Try
+            Await _presenter.ExportToExcelAsync(filePath, _tabTitle)
+        Catch ex As Exception
+            DisplayValidationError(ex.Message)
+        End Try
+
+    End Sub
+
 End Class
