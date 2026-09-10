@@ -365,36 +365,41 @@ Public Class ucStatutorySettings
     ' EXCEL IMPORT / EXPORT (hiwalay sa wbpMainCommands,
     ' kaya sarili nilang SimpleButton sa loob ng grpDetails)
     ' =============================================
-    Private Async Sub btnImportExcel_Click(sender As Object, e As EventArgs) _
-        Handles btnImportExcel.Click
+    ' =============================================
+    ' EXCEL IMPORT / EXPORT (hiwalay sa wbpMainCommands, kaya
+    ' sarili niyang SimpleButton sa loob ng grpDetails) - iisang
+    ' button lang, may lalabas na prompt para pumili ng Import o
+    ' Export, para hindi na kailangang dalawang button pa.
+    ' =============================================
+    Private Async Sub btnExcel_Click(sender As Object, e As EventArgs) _
+        Handles btnExcel.Click
 
         If _isEditing Then Return
 
-        Dim filePath = ExcelHelper.PromptOpenExcelFile($"Import {_tabTitle} Brackets from Excel")
-        If String.IsNullOrEmpty(filePath) Then Return
+        Select Case ExcelHelper.PromptImportOrExport($"{_tabTitle} - Import Data Options")
 
-        Try
-            Await _presenter.ImportFromExcelAsync(filePath)
-        Catch ex As Exception
-            DisplayValidationError(ex.Message)
-        End Try
+            Case ExcelAction.Import
+                Dim filePath = ExcelHelper.PromptOpenExcelFile($"Import {_tabTitle} Brackets from Excel")
+                If String.IsNullOrEmpty(filePath) Then Return
 
-    End Sub
+                Try
+                    Await _presenter.ImportFromExcelAsync(filePath)
+                Catch ex As Exception
+                    DisplayValidationError(ex.Message)
+                End Try
 
-    Private Async Sub btnExportExcel_Click(sender As Object, e As EventArgs) _
-        Handles btnExportExcel.Click
+            Case ExcelAction.Export
+                Dim defaultFileName = $"{_tabTitle}_Template.xlsx"
+                Dim filePath = ExcelHelper.PromptSaveExcelFile(defaultFileName, $"Export {_tabTitle} Brackets to Excel")
+                If String.IsNullOrEmpty(filePath) Then Return
 
-        If _isEditing Then Return
+                Try
+                    Await _presenter.ExportToExcelAsync(filePath, _tabTitle)
+                Catch ex As Exception
+                    DisplayValidationError(ex.Message)
+                End Try
 
-        Dim defaultFileName = $"{_tabTitle}_Template.xlsx"
-        Dim filePath = ExcelHelper.PromptSaveExcelFile(defaultFileName, $"Export {_tabTitle} Brackets to Excel")
-        If String.IsNullOrEmpty(filePath) Then Return
-
-        Try
-            Await _presenter.ExportToExcelAsync(filePath, _tabTitle)
-        Catch ex As Exception
-            DisplayValidationError(ex.Message)
-        End Try
+        End Select
 
     End Sub
 

@@ -17,6 +17,7 @@ Partial Class ucStatutorySettings
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim WindowsuiButtonImageOptions1 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(ucStatutorySettings))
         Dim WindowsuiButtonImageOptions2 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
@@ -37,14 +38,13 @@ Partial Class ucStatutorySettings
         lblERShare = New DevExpress.XtraEditors.LabelControl()
         txtEEMPF = New DevExpress.XtraEditors.TextEdit()
         lblEEMPF = New DevExpress.XtraEditors.LabelControl()
+        btnExcel = New DevExpress.XtraEditors.SimpleButton()
         txtEEShare = New DevExpress.XtraEditors.TextEdit()
         lblEEShare = New DevExpress.XtraEditors.LabelControl()
         cboERContriType = New DevExpress.XtraEditors.ComboBoxEdit()
         lblERContriType = New DevExpress.XtraEditors.LabelControl()
         txtERMPF = New DevExpress.XtraEditors.TextEdit()
         lblERMPF = New DevExpress.XtraEditors.LabelControl()
-        btnImportExcel = New DevExpress.XtraEditors.SimpleButton()
-        btnExportExcel = New DevExpress.XtraEditors.SimpleButton()
         gridconStatutoryList = New DevExpress.XtraGrid.GridControl()
         gridviewStatutoryList = New DevExpress.XtraGrid.Views.Grid.GridView()
         colSalaryFrom = New DevExpress.XtraGrid.Columns.GridColumn()
@@ -84,7 +84,7 @@ Partial Class ucStatutorySettings
         PanelControl1.Margin = New Padding(3, 2, 3, 2)
         PanelControl1.Name = "PanelControl1"
         PanelControl1.Padding = New Padding(3, 2, 3, 2)
-        PanelControl1.Size = New Size(948, 70)
+        PanelControl1.Size = New Size(1069, 70)
         PanelControl1.TabIndex = 0
         ' 
         ' lblTabPageTitle
@@ -101,15 +101,15 @@ Partial Class ucStatutorySettings
         ' wbpMainCommands
         ' 
         wbpMainCommands.ButtonInterval = 15
-        WindowsuiButtonImageOptions1.Image = My.Resources.Resources.icon_add_property_24_png
-        WindowsuiButtonImageOptions2.Image = My.Resources.Resources.icon_edit_property_24
-        WindowsuiButtonImageOptions3.Image = My.Resources.Resources.icon_delete_24
-        WindowsuiButtonImageOptions4.Image = My.Resources.Resources.icon_refresh_24
+        WindowsuiButtonImageOptions1.Image = CType(resources.GetObject("WindowsuiButtonImageOptions1.Image"), Image)
+        WindowsuiButtonImageOptions2.Image = CType(resources.GetObject("WindowsuiButtonImageOptions2.Image"), Image)
+        WindowsuiButtonImageOptions3.Image = CType(resources.GetObject("WindowsuiButtonImageOptions3.Image"), Image)
+        WindowsuiButtonImageOptions4.Image = CType(resources.GetObject("WindowsuiButtonImageOptions4.Image"), Image)
         wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
         wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
         wbpMainCommands.Dock = DockStyle.Right
         wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        wbpMainCommands.Location = New Point(459, 4)
+        wbpMainCommands.Location = New Point(580, 4)
         wbpMainCommands.Margin = New Padding(1)
         wbpMainCommands.Name = "wbpMainCommands"
         wbpMainCommands.Size = New Size(484, 62)
@@ -135,8 +135,7 @@ Partial Class ucStatutorySettings
         grpDetails.Controls.Add(lblERShare)
         grpDetails.Controls.Add(txtEEMPF)
         grpDetails.Controls.Add(lblEEMPF)
-        grpDetails.Controls.Add(btnImportExcel)
-        grpDetails.Controls.Add(btnExportExcel)
+        grpDetails.Controls.Add(btnExcel)
         grpDetails.Controls.Add(txtEEShare)
         grpDetails.Controls.Add(lblEEShare)
         grpDetails.Controls.Add(cboERContriType)
@@ -147,13 +146,13 @@ Partial Class ucStatutorySettings
         grpDetails.Location = New Point(4, 74)
         grpDetails.Margin = New Padding(3, 2, 3, 2)
         grpDetails.Name = "grpDetails"
-        grpDetails.Size = New Size(948, 190)
+        grpDetails.Size = New Size(1069, 190)
         grpDetails.TabIndex = 1
         grpDetails.Text = " DETAILS"
         ' 
         ' chkActive
         ' 
-        chkActive.Location = New Point(792, 51)
+        chkActive.Location = New Point(792, 54)
         chkActive.Margin = New Padding(3, 2, 3, 2)
         chkActive.Name = "chkActive"
         chkActive.Properties.Caption = "Active"
@@ -162,7 +161,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtSalaryFrom
         ' 
-        txtSalaryFrom.Location = New Point(24, 49)
+        txtSalaryFrom.Location = New Point(24, 52)
         txtSalaryFrom.Margin = New Padding(3, 2, 3, 2)
         txtSalaryFrom.Name = "txtSalaryFrom"
         txtSalaryFrom.Size = New Size(140, 20)
@@ -170,7 +169,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblSalaryFrom
         ' 
-        lblSalaryFrom.Location = New Point(24, 31)
+        lblSalaryFrom.Location = New Point(24, 34)
         lblSalaryFrom.Margin = New Padding(3, 2, 3, 2)
         lblSalaryFrom.Name = "lblSalaryFrom"
         lblSalaryFrom.Size = New Size(57, 13)
@@ -179,7 +178,7 @@ Partial Class ucStatutorySettings
         ' 
         ' cboEEContriType
         ' 
-        cboEEContriType.Location = New Point(280, 49)
+        cboEEContriType.Location = New Point(280, 52)
         cboEEContriType.Margin = New Padding(3, 2, 3, 2)
         cboEEContriType.Name = "cboEEContriType"
         cboEEContriType.Properties.Items.AddRange(New Object() {"Amount", "Percentage"})
@@ -189,7 +188,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblEEContriType
         ' 
-        lblEEContriType.Location = New Point(280, 31)
+        lblEEContriType.Location = New Point(280, 34)
         lblEEContriType.Margin = New Padding(3, 2, 3, 2)
         lblEEContriType.Name = "lblEEContriType"
         lblEEContriType.Size = New Size(71, 13)
@@ -198,7 +197,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtECCAmount
         ' 
-        txtECCAmount.Location = New Point(536, 49)
+        txtECCAmount.Location = New Point(536, 52)
         txtECCAmount.Margin = New Padding(3, 2, 3, 2)
         txtECCAmount.Name = "txtECCAmount"
         txtECCAmount.Size = New Size(140, 20)
@@ -206,7 +205,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblECCAmount
         ' 
-        lblECCAmount.Location = New Point(536, 31)
+        lblECCAmount.Location = New Point(536, 34)
         lblECCAmount.Margin = New Padding(3, 2, 3, 2)
         lblECCAmount.Name = "lblECCAmount"
         lblECCAmount.Size = New Size(60, 13)
@@ -215,7 +214,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtSalaryTo
         ' 
-        txtSalaryTo.Location = New Point(24, 99)
+        txtSalaryTo.Location = New Point(24, 102)
         txtSalaryTo.Margin = New Padding(3, 2, 3, 2)
         txtSalaryTo.Name = "txtSalaryTo"
         txtSalaryTo.Size = New Size(140, 20)
@@ -223,7 +222,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblSalaryTo
         ' 
-        lblSalaryTo.Location = New Point(24, 81)
+        lblSalaryTo.Location = New Point(24, 84)
         lblSalaryTo.Margin = New Padding(3, 2, 3, 2)
         lblSalaryTo.Name = "lblSalaryTo"
         lblSalaryTo.Size = New Size(45, 13)
@@ -232,7 +231,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtERShare
         ' 
-        txtERShare.Location = New Point(280, 99)
+        txtERShare.Location = New Point(280, 102)
         txtERShare.Margin = New Padding(3, 2, 3, 2)
         txtERShare.Name = "txtERShare"
         txtERShare.Size = New Size(160, 20)
@@ -240,7 +239,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblERShare
         ' 
-        lblERShare.Location = New Point(280, 81)
+        lblERShare.Location = New Point(280, 84)
         lblERShare.Margin = New Padding(3, 2, 3, 2)
         lblERShare.Name = "lblERShare"
         lblERShare.Size = New Size(44, 13)
@@ -249,7 +248,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtEEMPF
         ' 
-        txtEEMPF.Location = New Point(536, 99)
+        txtEEMPF.Location = New Point(536, 102)
         txtEEMPF.Margin = New Padding(3, 2, 3, 2)
         txtEEMPF.Name = "txtEEMPF"
         txtEEMPF.Size = New Size(140, 20)
@@ -257,16 +256,30 @@ Partial Class ucStatutorySettings
         ' 
         ' lblEEMPF
         ' 
-        lblEEMPF.Location = New Point(536, 81)
+        lblEEMPF.Location = New Point(536, 84)
         lblEEMPF.Margin = New Padding(3, 2, 3, 2)
         lblEEMPF.Name = "lblEEMPF"
         lblEEMPF.Size = New Size(35, 13)
         lblEEMPF.TabIndex = 11
         lblEEMPF.Text = "EE MPF"
         ' 
+        ' btnExcel
+        ' 
+        btnExcel.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        btnExcel.ImageOptions.Location = DevExpress.XtraEditors.ImageLocation.MiddleCenter
+        btnExcel.ImageOptions.SvgImage = CType(resources.GetObject("btnExcel.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        btnExcel.ImageOptions.SvgImageSize = New Size(28, 28)
+        btnExcel.Location = New Point(1015, 34)
+        btnExcel.Margin = New Padding(3, 2, 3, 2)
+        btnExcel.Name = "btnExcel"
+        btnExcel.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
+        btnExcel.Size = New Size(40, 42)
+        btnExcel.TabIndex = 19
+        btnExcel.ToolTip = "Import Data Options"
+        ' 
         ' txtEEShare
         ' 
-        txtEEShare.Location = New Point(24, 149)
+        txtEEShare.Location = New Point(24, 152)
         txtEEShare.Margin = New Padding(3, 2, 3, 2)
         txtEEShare.Name = "txtEEShare"
         txtEEShare.Size = New Size(140, 20)
@@ -274,7 +287,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblEEShare
         ' 
-        lblEEShare.Location = New Point(24, 131)
+        lblEEShare.Location = New Point(24, 134)
         lblEEShare.Margin = New Padding(3, 2, 3, 2)
         lblEEShare.Name = "lblEEShare"
         lblEEShare.Size = New Size(43, 13)
@@ -283,7 +296,7 @@ Partial Class ucStatutorySettings
         ' 
         ' cboERContriType
         ' 
-        cboERContriType.Location = New Point(280, 149)
+        cboERContriType.Location = New Point(280, 152)
         cboERContriType.Margin = New Padding(3, 2, 3, 2)
         cboERContriType.Name = "cboERContriType"
         cboERContriType.Properties.Items.AddRange(New Object() {"Amount", "Percentage"})
@@ -293,7 +306,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblERContriType
         ' 
-        lblERContriType.Location = New Point(280, 131)
+        lblERContriType.Location = New Point(280, 134)
         lblERContriType.Margin = New Padding(3, 2, 3, 2)
         lblERContriType.Name = "lblERContriType"
         lblERContriType.Size = New Size(72, 13)
@@ -302,7 +315,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtERMPF
         ' 
-        txtERMPF.Location = New Point(536, 149)
+        txtERMPF.Location = New Point(536, 152)
         txtERMPF.Margin = New Padding(3, 2, 3, 2)
         txtERMPF.Name = "txtERMPF"
         txtERMPF.Size = New Size(140, 20)
@@ -310,30 +323,12 @@ Partial Class ucStatutorySettings
         ' 
         ' lblERMPF
         ' 
-        lblERMPF.Location = New Point(536, 131)
+        lblERMPF.Location = New Point(536, 134)
         lblERMPF.Margin = New Padding(3, 2, 3, 2)
         lblERMPF.Name = "lblERMPF"
         lblERMPF.Size = New Size(36, 13)
         lblERMPF.TabIndex = 17
         lblERMPF.Text = "ER MPF"
-        ' 
-        ' btnImportExcel
-        ' 
-        btnImportExcel.Location = New Point(792, 90)
-        btnImportExcel.Margin = New Padding(3, 2, 3, 2)
-        btnImportExcel.Name = "btnImportExcel"
-        btnImportExcel.Size = New Size(140, 30)
-        btnImportExcel.TabIndex = 19
-        btnImportExcel.Text = "Import from Excel"
-        ' 
-        ' btnExportExcel
-        ' 
-        btnExportExcel.Location = New Point(792, 128)
-        btnExportExcel.Margin = New Padding(3, 2, 3, 2)
-        btnExportExcel.Name = "btnExportExcel"
-        btnExportExcel.Size = New Size(140, 30)
-        btnExportExcel.TabIndex = 20
-        btnExportExcel.Text = "Export Template"
         ' 
         ' gridconStatutoryList
         ' 
@@ -342,7 +337,7 @@ Partial Class ucStatutorySettings
         gridconStatutoryList.MainView = gridviewStatutoryList
         gridconStatutoryList.Margin = New Padding(3, 2, 3, 2)
         gridconStatutoryList.Name = "gridconStatutoryList"
-        gridconStatutoryList.Size = New Size(948, 266)
+        gridconStatutoryList.Size = New Size(1069, 291)
         gridconStatutoryList.TabIndex = 2
         gridconStatutoryList.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridviewStatutoryList})
         ' 
@@ -456,7 +451,7 @@ Partial Class ucStatutorySettings
         Controls.Add(PanelControl1)
         Name = "ucStatutorySettings"
         Padding = New Padding(4)
-        Size = New Size(956, 534)
+        Size = New Size(1077, 559)
         CType(PanelControl1, ComponentModel.ISupportInitialize).EndInit()
         PanelControl1.ResumeLayout(False)
         PanelControl1.PerformLayout()
@@ -501,8 +496,7 @@ Partial Class ucStatutorySettings
     Friend WithEvents lblERContriType As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtERMPF As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblERMPF As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents btnImportExcel As DevExpress.XtraEditors.SimpleButton
-    Friend WithEvents btnExportExcel As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnExcel As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents gridconStatutoryList As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridviewStatutoryList As DevExpress.XtraGrid.Views.Grid.GridView
     Friend WithEvents colSalaryFrom As DevExpress.XtraGrid.Columns.GridColumn

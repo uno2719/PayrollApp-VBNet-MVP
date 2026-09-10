@@ -1,6 +1,16 @@
 ﻿Imports ClosedXML.Excel
 
 Namespace GlobalShared.Helpers
+    ''' <summary>
+    ''' Resulta ng PromptImportOrExport() - anong pinili ng user sa
+    ''' frmExcelOptions popup (o wala, kung sinara niya lang ang popup).
+    ''' </summary>
+    Public Enum ExcelAction
+        None
+        Import
+        Export
+    End Enum
+
 
     ''' <summary>
     ''' Generic Excel read/write helper - ginagamit ito ng kahit anong module
@@ -12,6 +22,25 @@ Namespace GlobalShared.Helpers
     ''' malaman ang shape ng bawat Model.
     ''' </summary>
     Public Module ExcelHelper
+
+        ' =============================================
+        ' ISANG "Excel" button lang bawat module - pag-click, lalabas
+        ' itong maliit na prompt (frmExcelOptions) na may 2 pilian.
+        ' Dito na dinideklara para consistent ang prompt sa lahat ng
+        ' module, hindi na kailangang gumawa ulit ng sariling popup.
+        ' =============================================
+        Public Function PromptImportOrExport(Optional title As String = "Excel Options") As ExcelAction
+            Using frm As New Global.Payroll.frmExcelOptions(title)
+                Select Case frm.ShowDialog()
+                    Case DialogResult.Yes
+                        Return ExcelAction.Import
+                    Case DialogResult.No
+                        Return ExcelAction.Export
+                    Case Else
+                        Return ExcelAction.None
+                End Select
+            End Using
+        End Function
 
         ' =============================================
         ' FILE DIALOGS - iisa lang dito para consistent ang

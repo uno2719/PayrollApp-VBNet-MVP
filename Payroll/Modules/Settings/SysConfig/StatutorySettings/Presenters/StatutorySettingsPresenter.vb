@@ -230,8 +230,8 @@ Namespace StatutorySettings.Presenters
             If errors.Count > 0 Then
                 summary.AppendLine()
                 summary.AppendLine("Mga hindi na-import:")
-                For Each Err In errors
-                    summary.AppendLine($"- {Err()}")
+                For Each errorLine In errors
+                    summary.AppendLine($"- {errorLine}")
                 Next
                 _view.ShowError(summary.ToString())
             Else
