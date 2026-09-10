@@ -2,6 +2,7 @@
 Imports DevExpress.XtraBars.FluentDesignSystem
 Imports DevExpress.XtraBars.Navigation
 Imports DevExpress.XtraEditors
+Imports Payroll.DBConnection.Services
 Imports Payroll.GlobalShared.Base
 Imports Payroll.GlobalShared.Database
 
@@ -84,6 +85,9 @@ Public Class frmMain
             Case "setting_Payroll"
                 _nav.NavigateTo(Of ucPayrollSettings)(Function() AppComposition.BuildPayrollSettingsView())
 
+            Case "settings_DatabaseSettings"
+                OpenDatabaseSettings()
+
             Case "logout"
                 PerformLogout()
 
@@ -91,6 +95,54 @@ Public Class frmMain
 
         btnBack.Enabled = _nav.IsNavigationChanged
         btnForward.Enabled = False
+    End Sub
+
+    ' =============================================
+    ' DATABASE SETTINGS - Admin: diretso, walang PIN pa (naka-gate na
+    ' sa Admin login mismo). Ordinary user: kailangan pa rin ng PIN -
+    ' parehong PIN system (SettingsPinService) na ginagamit sa secret
+    ' gesture sa login screen, kaya iisa lang ang PIN na pinapanatili.
+    ' =============================================
+    Private Sub OpenDatabaseSettings()
+
+        If AppSession.IsAdmin Then
+            ShowDatabaseSettingsDialog()
+            Return
+        End If
+
+        Dim pinService As New SettingsPinService()
+
+        If Not pinService.HasPin() Then
+            XtraMessageBox.Show(
+                "No Settings PIN has been set yet. Please use " &
+                "--set-settings-pin from the command line first.",
+                "Database Settings",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning)
+            Return
+        End If
+
+        Using pinPrompt As New frmSettingsPinPrompt()
+            If pinPrompt.ShowDialog() <> DialogResult.OK Then Return
+
+            If pinService.VerifyPin(pinPrompt.EnteredPin) Then
+                ShowDatabaseSettingsDialog()
+            Else
+                XtraMessageBox.Show(
+                    "Incorrect PIN.",
+                    "Database Settings",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error)
+            End If
+        End Using
+
+    End Sub
+
+    Private Sub ShowDatabaseSettingsDialog()
+        Dim settingsView = AppComposition.BuildDatabaseConnectionSettingsView()
+        Using dlg As New frmDatabaseConnectionSettingsDialog(settingsView)
+            dlg.ShowDialog()
+        End Using
     End Sub
 
 

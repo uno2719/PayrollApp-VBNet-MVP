@@ -67,7 +67,7 @@ Public Class ucPayrollSettings
 
     Public Overrides ReadOnly Property PageTitle As String
         Get
-            Return "Payroll"
+            Return "Payroll Settings"
         End Get
     End Property
 

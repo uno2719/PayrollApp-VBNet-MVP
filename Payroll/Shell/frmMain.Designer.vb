@@ -192,6 +192,7 @@ Partial Class frmMain
         aceSettingsCompany.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsCompany.Appearance.Default.Options.UseFont = True
         aceSettingsCompany.Expanded = True
+        aceSettingsCompany.HeaderTemplate.AddRange(New DevExpress.XtraBars.Navigation.HeaderElementInfo() {New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Image), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Text), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.ContextButtons), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.HeaderControl)})
         aceSettingsCompany.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCompany.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsCompany.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsCompany.Name = "aceSettingsCompany"
@@ -294,7 +295,6 @@ Partial Class frmMain
         aceSettingsAppConfig.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsAppConfig.Appearance.Default.Options.UseFont = True
         aceSettingsAppConfig.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceAppConfigDBSettings, AccordionControlElement1})
-        aceSettingsAppConfig.Expanded = True
         aceSettingsAppConfig.Hint = "App Config"
         aceSettingsAppConfig.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsAppConfig.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsAppConfig.ImageOptions.SvgImageSize = New Size(19, 19)
@@ -309,6 +309,7 @@ Partial Class frmMain
         aceAppConfigDBSettings.ImageOptions.SvgImageSize = New Size(16, 16)
         aceAppConfigDBSettings.Name = "aceAppConfigDBSettings"
         aceAppConfigDBSettings.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceAppConfigDBSettings.Tag = "settings_DatabaseSettings"
         aceAppConfigDBSettings.Text = "Database Settings"
         ' 
         ' AccordionControlElement1
@@ -382,7 +383,7 @@ Partial Class frmMain
         ' 
         ' FluentFormDefaultManager1
         ' 
-        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         FluentFormDefaultManager1.Form = Me
         FluentFormDefaultManager1.Items.AddRange(New DevExpress.XtraBars.BarItem() {SkinDropDownButtonItem1, SkinPaletteDropDownButtonItem1})
         FluentFormDefaultManager1.MaxItemId = 2
@@ -558,7 +559,7 @@ Partial Class frmMain
         Appearance.BackColor = SystemColors.Control
         Appearance.Options.UseBackColor = True
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
+        AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1398, 761)
         ControlContainer = fluentMainContainer

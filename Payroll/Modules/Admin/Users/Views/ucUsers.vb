@@ -41,12 +41,12 @@ Public Class ucUsers
     Public Overrides Async Function LoadFormAsync() As Task _
         Implements IAsyncLoadable.LoadFormAsync
 
-        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-            My.Resources.icon_add_personel_24
-        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-            My.Resources.icon_edit_personel_24
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-            My.Resources.icon_delete_32
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_personel_24
+        wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New User"
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_personel_24
+        wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit User"
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
+        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Remove User"
 
         SetupGrid()
 
@@ -237,24 +237,32 @@ Public Class ucUsers
         btnToggleActive.Text = If(IsActive, "Deactivate", "Reactivate")
 
         If isEditable Then
-            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = False
-            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = "Save"
-            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-                My.Resources.icon_save_24
+
+            If isNewRecord Then
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = False
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = "Save"
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_save_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Save New Entry"
+            Else
+                wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = False
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = "Update"
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_saveAs_24
+                wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Save Changes"
+            End If
+
             wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = "Cancel"
-            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-                My.Resources.icon_cancel_24
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_cancel_24
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Cancel"
         Else
             wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Visible = True
             wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " New"
-            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image =
-                My.Resources.icon_add_personel_24
+            wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ImageOptions.Image = My.Resources.icon_add_personel_24
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Edit"
-            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image =
-                My.Resources.icon_edit_personel_24
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_personel_24
+            wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit User"
             wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Delete"
-            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image =
-                My.Resources.icon_delete_32
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
+            wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Remove User"
         End If
     End Sub
 

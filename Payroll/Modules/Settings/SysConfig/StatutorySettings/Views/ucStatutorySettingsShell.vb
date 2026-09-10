@@ -49,7 +49,7 @@ Public Class ucStatutorySettingsShell
 
     Public Overrides ReadOnly Property PageTitle As String
         Get
-            Return "Statutory"
+            Return "Statutory Settings"
         End Get
     End Property
 

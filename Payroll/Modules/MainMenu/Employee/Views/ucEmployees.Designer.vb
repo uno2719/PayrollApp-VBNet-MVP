@@ -187,11 +187,11 @@ Partial Class ucEmployees
         ' 
         gridconEmployeeList.Dock = DockStyle.Fill
         gridconEmployeeList.EmbeddedNavigator.Margin = New Padding(3, 2, 3, 2)
-        gridconEmployeeList.Location = New Point(2, 87)
+        gridconEmployeeList.Location = New Point(2, 91)
         gridconEmployeeList.MainView = gridviewEmployeeList
         gridconEmployeeList.Margin = New Padding(3, 2, 3, 2)
         gridconEmployeeList.Name = "gridconEmployeeList"
-        gridconEmployeeList.Size = New Size(247, 420)
+        gridconEmployeeList.Size = New Size(247, 416)
         gridconEmployeeList.TabIndex = 3
         gridconEmployeeList.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridviewEmployeeList})
         ' 
@@ -259,7 +259,7 @@ Partial Class ucEmployees
         PanelControl1.Margin = New Padding(3, 2, 3, 2)
         PanelControl1.Name = "PanelControl1"
         PanelControl1.Padding = New Padding(3, 2, 3, 2)
-        PanelControl1.Size = New Size(247, 64)
+        PanelControl1.Size = New Size(247, 68)
         PanelControl1.TabIndex = 1
         ' 
         ' wbpMainCommands
@@ -272,7 +272,7 @@ Partial Class ucEmployees
         wbpMainCommands.Location = New Point(5, 4)
         wbpMainCommands.Margin = New Padding(1)
         wbpMainCommands.Name = "wbpMainCommands"
-        wbpMainCommands.Size = New Size(237, 56)
+        wbpMainCommands.Size = New Size(237, 60)
         wbpMainCommands.TabIndex = 1
         wbpMainCommands.Text = "Commands"
         wbpMainCommands.WrapButtons = True

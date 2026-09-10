@@ -43,10 +43,21 @@ Namespace DBConnection.Services
             ' Sa ngayon, SqlServerAuthentication lang ang aktibong ginagamit
             ' (WindowsAuthentication ay reserved pa lang) - pero panatilihin
             ' natin ang check na ito para future-proof, kapag na-activate na.
-            If settings.AuthenticationType = Models.DbAuthenticationType.SqlServerAuthentication _
-               AndAlso Not String.IsNullOrEmpty(plainSqlPassword) Then
+            If settings.AuthenticationType = Models.DbAuthenticationType.SqlServerAuthentication Then
 
-                settings.SqlPasswordEncrypted = EncryptString(plainSqlPassword)
+                If Not String.IsNullOrEmpty(plainSqlPassword) Then
+                    ' May binagong password - i-encrypt at gamitin ito.
+                    settings.SqlPasswordEncrypted = EncryptString(plainSqlPassword)
+                Else
+                    ' Blangko ang password field - HINDI ito nangangahulugang
+                    ' gustong i-clear ni user ang password, kundi dahil sinadya
+                    ' natin itong huwag ipakita ulit (tingnan ang LoadSettings sa
+                    ' Presenter). Panatilihin ang dati nang naka-save na encrypted
+                    ' password, huwag i-wipe.
+                    Dim existing = Load()
+                    settings.SqlPasswordEncrypted = existing.SqlPasswordEncrypted
+                End If
+
             Else
                 settings.SqlPasswordEncrypted = String.Empty
             End If

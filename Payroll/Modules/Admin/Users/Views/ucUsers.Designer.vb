@@ -74,11 +74,11 @@ Partial Class ucUsers
         ' gridconUsersList
         ' 
         gridconUsersList.Dock = DockStyle.Fill
-        gridconUsersList.Location = New Point(2, 87)
+        gridconUsersList.Location = New Point(2, 91)
         gridconUsersList.MainView = gridviewUsersList
         gridconUsersList.Margin = New Padding(3, 2, 3, 2)
         gridconUsersList.Name = "gridconUsersList"
-        gridconUsersList.Size = New Size(336, 445)
+        gridconUsersList.Size = New Size(336, 441)
         gridconUsersList.TabIndex = 3
         gridconUsersList.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridviewUsersList})
         ' 
@@ -135,7 +135,7 @@ Partial Class ucUsers
         PanelControl1.Margin = New Padding(3, 2, 3, 2)
         PanelControl1.Name = "PanelControl1"
         PanelControl1.Padding = New Padding(3, 2, 3, 2)
-        PanelControl1.Size = New Size(336, 64)
+        PanelControl1.Size = New Size(336, 68)
         PanelControl1.TabIndex = 1
         ' 
         ' wbpMainCommands
@@ -148,7 +148,7 @@ Partial Class ucUsers
         wbpMainCommands.Location = New Point(5, 4)
         wbpMainCommands.Margin = New Padding(1)
         wbpMainCommands.Name = "wbpMainCommands"
-        wbpMainCommands.Size = New Size(326, 56)
+        wbpMainCommands.Size = New Size(326, 60)
         wbpMainCommands.TabIndex = 1
         wbpMainCommands.Text = "Commands"
         wbpMainCommands.WrapButtons = True
@@ -293,7 +293,7 @@ Partial Class ucUsers
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
+        AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(grpUserDetails)
         Controls.Add(grpMasterlist)
