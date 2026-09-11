@@ -46,7 +46,7 @@ Partial Class frmMain
         AccordionControlSeparator9 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
         aceSettingsAppConfig = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceAppConfigDBSettings = New DevExpress.XtraBars.Navigation.AccordionControlElement()
-        AccordionControlElement1 = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceAppConfigThemes = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceLogout = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceHeaderAdministration = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceAdminUsers = New DevExpress.XtraBars.Navigation.AccordionControlElement()
@@ -65,6 +65,8 @@ Partial Class frmMain
         lblHost = New DevExpress.XtraEditors.LabelControl()
         lblVersion = New DevExpress.XtraEditors.LabelControl()
         tmMain = New DevExpress.Utils.Animation.TransitionManager(components)
+        aceAdminModules = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceAppConfigEmailSettings = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         CType(AccordionControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(FluentDesignFormControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(FluentFormDefaultManager1, ComponentModel.ISupportInitialize).BeginInit()
@@ -192,7 +194,6 @@ Partial Class frmMain
         aceSettingsCompany.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsCompany.Appearance.Default.Options.UseFont = True
         aceSettingsCompany.Expanded = True
-        aceSettingsCompany.HeaderTemplate.AddRange(New DevExpress.XtraBars.Navigation.HeaderElementInfo() {New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Image), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Text), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.ContextButtons), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.HeaderControl)})
         aceSettingsCompany.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCompany.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsCompany.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsCompany.Name = "aceSettingsCompany"
@@ -283,7 +284,7 @@ Partial Class frmMain
         aceSettingsPayroll.ImageOptions.SvgImageSize = New Size(16, 16)
         aceSettingsPayroll.Name = "aceSettingsPayroll"
         aceSettingsPayroll.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        aceSettingsPayroll.Tag = "setting_Payroll"
+        aceSettingsPayroll.Tag = "settings_Payroll"
         aceSettingsPayroll.Text = "Payroll"
         ' 
         ' AccordionControlSeparator9
@@ -294,7 +295,7 @@ Partial Class frmMain
         ' 
         aceSettingsAppConfig.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsAppConfig.Appearance.Default.Options.UseFont = True
-        aceSettingsAppConfig.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceAppConfigDBSettings, AccordionControlElement1})
+        aceSettingsAppConfig.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceAppConfigDBSettings, aceAppConfigEmailSettings, aceAppConfigThemes})
         aceSettingsAppConfig.Hint = "App Config"
         aceSettingsAppConfig.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsAppConfig.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsAppConfig.ImageOptions.SvgImageSize = New Size(19, 19)
@@ -312,13 +313,14 @@ Partial Class frmMain
         aceAppConfigDBSettings.Tag = "settings_DatabaseSettings"
         aceAppConfigDBSettings.Text = "Database Settings"
         ' 
-        ' AccordionControlElement1
+        ' aceAppConfigThemes
         ' 
-        AccordionControlElement1.ImageOptions.SvgImage = CType(resources.GetObject("AccordionControlElement1.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
-        AccordionControlElement1.ImageOptions.SvgImageSize = New Size(16, 16)
-        AccordionControlElement1.Name = "AccordionControlElement1"
-        AccordionControlElement1.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        AccordionControlElement1.Text = "Theme / Skin"
+        aceAppConfigThemes.ImageOptions.SvgImage = CType(resources.GetObject("AccordionControlElement1.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceAppConfigThemes.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceAppConfigThemes.Name = "aceAppConfigThemes"
+        aceAppConfigThemes.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceAppConfigThemes.Tag = "settings_Themes"
+        aceAppConfigThemes.Text = "Theme / Skin"
         ' 
         ' aceLogout
         ' 
@@ -337,7 +339,7 @@ Partial Class frmMain
         ' aceHeaderAdministration
         ' 
         aceHeaderAdministration.ControlFooterAlignment = DevExpress.XtraBars.Navigation.AccordionItemFooterAlignment.Far
-        aceHeaderAdministration.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceAdminUsers})
+        aceHeaderAdministration.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceAdminUsers, aceAdminModules})
         aceHeaderAdministration.Expanded = True
         aceHeaderAdministration.ImageOptions.SvgImage = CType(resources.GetObject("aceHeaderAdministration.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceHeaderAdministration.ImageOptions.SvgImageSize = New Size(30, 30)
@@ -351,7 +353,7 @@ Partial Class frmMain
         aceAdminUsers.Name = "aceAdminUsers"
         aceAdminUsers.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
         aceAdminUsers.Tag = "admin_UsersAccount"
-        aceAdminUsers.Text = "Users"
+        aceAdminUsers.Text = "User Management"
         ' 
         ' FluentDesignFormControl1
         ' 
@@ -554,6 +556,24 @@ Partial Class frmMain
         lblVersion.TabIndex = 11
         lblVersion.Text = "v1.0.0 — Internal use only"
         ' 
+        ' aceAdminModules
+        ' 
+        aceAdminModules.ImageOptions.SvgImage = CType(resources.GetObject("aceAdminModules.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceAdminModules.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceAdminModules.Name = "aceAdminModules"
+        aceAdminModules.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceAdminModules.Tag = "admin_Modules"
+        aceAdminModules.Text = "Module Management"
+        ' 
+        ' aceAppConfigEmailSettings
+        ' 
+        aceAppConfigEmailSettings.ImageOptions.SvgImage = CType(resources.GetObject("aceAppConfigEmailSettings.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceAppConfigEmailSettings.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceAppConfigEmailSettings.Name = "aceAppConfigEmailSettings"
+        aceAppConfigEmailSettings.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceAppConfigEmailSettings.Tag = "settings_Email"
+        aceAppConfigEmailSettings.Text = "Email Settings"
+        ' 
         ' frmMain
         ' 
         Appearance.BackColor = SystemColors.Control
@@ -630,5 +650,7 @@ Partial Class frmMain
     Friend WithEvents AccordionControlSeparator7 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
     Friend WithEvents AccordionControlSeparator9 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
     Friend WithEvents aceAdminUsers As DevExpress.XtraBars.Navigation.AccordionControlElement
-    Friend WithEvents AccordionControlElement1 As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceAppConfigThemes As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceAppConfigEmailSettings As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceAdminModules As DevExpress.XtraBars.Navigation.AccordionControlElement
 End Class

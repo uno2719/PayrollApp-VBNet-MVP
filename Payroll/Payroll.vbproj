@@ -112,6 +112,7 @@
     <Folder Include="Modules\MainMenu\Dashboard\Models\" />
     <Folder Include="Modules\MainMenu\Dashboard\Presenters\" />
     <Folder Include="Modules\MainMenu\Dashboard\Services\" />
+    <Folder Include="Modules\Settings\SysConfig\CompanyProfile\Models\" />
     <Folder Include="Modules\Settings\SysConfig\IncomeTaxTable\Models\" />
     <Folder Include="Modules\Settings\SysConfig\Master Data\Models\" />
     <Folder Include="Modules\Settings\SysConfig\StatutorySettings\Models\" />
