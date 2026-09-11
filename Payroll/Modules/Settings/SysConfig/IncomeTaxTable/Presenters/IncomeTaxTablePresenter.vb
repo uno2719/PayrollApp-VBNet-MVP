@@ -1,21 +1,21 @@
 ﻿Imports Payroll.GlobalShared.Models
 
-Namespace StatutorySettings.Presenters
+Namespace IncomeTaxTable.Presenters
 
-    Public Class StatutorySettingsPresenter
+    Public Class IncomeTaxTablePresenter
 
-        Private ReadOnly _view As Views.IStatutorySettingsMaintenanceView
-        Private ReadOnly _service As Services.IStatutorySettingsService
+        Private ReadOnly _view As Views.IIncomeTaxTableMaintenanceView
+        Private ReadOnly _service As Services.IIncomeTaxTableService
         Private ReadOnly _tableName As String
         Private ReadOnly _userName As String
 
         Private _selectedId As Integer = 0
         Private _isNewMode As Boolean = False
-        Private _currentList As List(Of StatutoryBracketModel)
+        Private _currentList As List(Of IncomeTaxBracketModel)
 
         Public Sub New(
-            view As Views.IStatutorySettingsMaintenanceView,
-            service As Services.IStatutorySettingsService,
+            view As Views.IIncomeTaxTableMaintenanceView,
+            service As Services.IIncomeTaxTableService,
             tableName As String,
             userName As String)
 
@@ -52,7 +52,7 @@ Namespace StatutorySettings.Presenters
         End Sub
 
         ' Tinatawag ng View kapag pinili ang isang row - display lang,
-        ' hindi pa edit mode, kagaya ng LookupPresenter.
+        ' hindi pa edit mode, kagaya ng StatutorySettingsPresenter.
         Public Sub SelectItem(id As Integer)
 
             _selectedId = id
@@ -64,13 +64,8 @@ Namespace StatutorySettings.Presenters
             If selected IsNot Nothing Then
                 _view.SalaryFrom = selected.SalaryFrom
                 _view.SalaryTo = selected.SalaryTo
-                _view.EEShare = selected.EEShare
-                _view.EEContriType = selected.EEContriType
-                _view.ERShare = selected.ERShare
-                _view.ERContriType = selected.ERContriType
-                _view.ECCAmount = selected.ECCAmount
-                _view.EEMPF = selected.EEMPF
-                _view.ERMPF = selected.ERMPF
+                _view.TaxPercentage = selected.TaxPercentage
+                _view.FixTaxAmount = selected.FixTaxAmount
                 _view.IsActive = selected.IsActive
             End If
 
@@ -92,17 +87,12 @@ Namespace StatutorySettings.Presenters
 
         Public Async Function SaveAsync() As Task
 
-            Dim item As New StatutoryBracketModel With {
+            Dim item As New IncomeTaxBracketModel With {
                 .Id = _selectedId,
                 .SalaryFrom = _view.SalaryFrom,
                 .SalaryTo = _view.SalaryTo,
-                .EEShare = _view.EEShare,
-                .EEContriType = If(_view.EEContriType, "").Trim(),
-                .ERShare = _view.ERShare,
-                .ERContriType = If(_view.ERContriType, "").Trim(),
-                .ECCAmount = _view.ECCAmount,
-                .EEMPF = _view.EEMPF,
-                .ERMPF = _view.ERMPF,
+                .TaxPercentage = _view.TaxPercentage,
+                .FixTaxAmount = _view.FixTaxAmount,
                 .IsActive = _view.IsActive
             }
 
@@ -196,16 +186,11 @@ Namespace StatutorySettings.Presenters
                 Dim row = rows(i)
 
                 Try
-                    Dim item As New StatutoryBracketModel With {
+                    Dim item As New IncomeTaxBracketModel With {
                         .SalaryFrom = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "SalaryFrom")),
                         .SalaryTo = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "SalaryTo")),
-                        .EEShare = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "EEShare")),
-                        .EEContriType = ExcelHelper.GetValueOrEmpty(row, "EEContriType").Trim(),
-                        .ERShare = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "ERShare")),
-                        .ERContriType = ExcelHelper.GetValueOrEmpty(row, "ERContriType").Trim(),
-                        .ECCAmount = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "ECCAmount")),
-                        .EEMPF = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "EEMPF")),
-                        .ERMPF = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "ERMPF")),
+                        .TaxPercentage = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "TaxPercentage")),
+                        .FixTaxAmount = ExcelHelper.ParseDecimalOrDefault(ExcelHelper.GetValueOrEmpty(row, "FixTaxAmount")),
                         .IsActive = ExcelHelper.ParseBoolOrDefault(ExcelHelper.GetValueOrEmpty(row, "IsActive"))
                     }
 
@@ -249,8 +234,7 @@ Namespace StatutorySettings.Presenters
         Public Async Function ExportToExcelAsync(filePath As String, sheetLabel As String) As Task
 
             Dim headers As New List(Of String) From {
-                "SalaryFrom", "SalaryTo", "EEShare", "EEContriType",
-                "ERShare", "ERContriType", "ECCAmount", "EEMPF", "ERMPF", "IsActive"
+                "SalaryFrom", "SalaryTo", "TaxPercentage", "FixTaxAmount", "IsActive"
             }
 
             Dim data = Await _service.GetAllAsync(_tableName)
@@ -260,13 +244,8 @@ Namespace StatutorySettings.Presenters
                 rows.Add(New List(Of String) From {
                     item.SalaryFrom.ToString(),
                     item.SalaryTo.ToString(),
-                    item.EEShare.ToString(),
-                    item.EEContriType,
-                    item.ERShare.ToString(),
-                    item.ERContriType,
-                    item.ECCAmount.ToString(),
-                    item.EEMPF.ToString(),
-                    item.ERMPF.ToString(),
+                    item.TaxPercentage.ToString(),
+                    item.FixTaxAmount.ToString(),
                     item.IsActive.ToString()
                 })
             Next

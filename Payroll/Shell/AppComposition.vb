@@ -5,6 +5,9 @@ Imports Payroll.Employee.Data
 Imports Payroll.Employee.Presenters
 Imports Payroll.Employee.Services
 Imports Payroll.Employee.Views
+Imports Payroll.IncomeTaxTable.Data
+Imports Payroll.IncomeTaxTable.Presenters
+Imports Payroll.IncomeTaxTable.Services
 Imports Payroll.Login.Data
 Imports Payroll.Login.Presenters
 Imports Payroll.Login.Services
@@ -278,5 +281,33 @@ Public Class AppComposition
 
     End Function
 
+    Public Shared Function BuildIncomeTaxTableView() As ucIncomeTaxTableShell
+
+        Dim taxRepo As New IncomeTaxTableRepository()
+        Dim taxService As New IncomeTaxTableService(taxRepo)
+
+        Dim currentUser = AppSession.CurrentUser
+
+        Dim yearlyView As New ucIncomeTaxTable()
+        Dim monthlyView As New ucIncomeTaxTable()
+        Dim semiMonthlyView As New ucIncomeTaxTable()
+        Dim weeklyView As New ucIncomeTaxTable()
+        Dim dailyView As New ucIncomeTaxTable()
+
+        Dim yearlyPresenter As New IncomeTaxTablePresenter(yearlyView, taxService, "tblIncomeTaxYearly", currentUser)
+        Dim monthlyPresenter As New IncomeTaxTablePresenter(monthlyView, taxService, "tblIncomeTaxMonthly", currentUser)
+        Dim semiMonthlyPresenter As New IncomeTaxTablePresenter(semiMonthlyView, taxService, "tblIncomeTaxSemiMonthly", currentUser)
+        Dim weeklyPresenter As New IncomeTaxTablePresenter(weeklyView, taxService, "tblIncomeTaxWeekly", currentUser)
+        Dim dailyPresenter As New IncomeTaxTablePresenter(dailyView, taxService, "tblIncomeTaxDaily", currentUser)
+
+        yearlyView.SetPresenter(yearlyPresenter, "Yearly")
+        monthlyView.SetPresenter(monthlyPresenter, "Monthly")
+        semiMonthlyView.SetPresenter(semiMonthlyPresenter, "Semi-Monthly")
+        weeklyView.SetPresenter(weeklyPresenter, "Weekly")
+        dailyView.SetPresenter(dailyPresenter, "Daily")
+
+        Return New ucIncomeTaxTableShell(yearlyView, monthlyView, semiMonthlyView, weeklyView, dailyView)
+
+    End Function
 
 End Class

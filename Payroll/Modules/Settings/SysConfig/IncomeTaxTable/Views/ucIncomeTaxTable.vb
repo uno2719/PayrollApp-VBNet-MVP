@@ -2,17 +2,17 @@
 Imports DevExpress.XtraEditors
 Imports Payroll.GlobalShared.Extensions
 Imports Payroll.GlobalShared.Models
-Imports Payroll.StatutorySettings.Presenters
-Imports Payroll.StatutorySettings.Views
+Imports Payroll.IncomeTaxTable.Presenters
+Imports Payroll.IncomeTaxTable.Views
 
-Public Class ucStatutorySettings
-    Implements IStatutorySettingsMaintenanceView
+Public Class ucIncomeTaxTable
+    Implements IIncomeTaxTableMaintenanceView
     Implements IAsyncLoadable
 
-    Private _presenter As StatutorySettingsPresenter
+    Private _presenter As IncomeTaxTablePresenter
     Private _isEditing As Boolean = False
     Private _isNewRecord As Boolean = False
-    Private _tabTitle As String = "Statutory"
+    Private _tabTitle As String = "Yearly"
 
     ' index 0 = separator
     Private Const BTN_NEW As Integer = 1
@@ -22,9 +22,10 @@ Public Class ucStatutorySettings
     Private Const BTN_REFRESH As Integer = 5
     ' index 6 = separator
 
-    ' Tinatawag ito ng AppComposition kapag ginagawa yung 3 instances
-    ' (SSS/PhilHealth/Pag-IBIG) - parehong pattern gaya ng Master Data.
-    Public Sub SetPresenter(presenter As StatutorySettingsPresenter, tabTitle As String)
+    ' Tinatawag ito ng AppComposition kapag ginagawa yung 5 instances
+    ' (Yearly/Monthly/Semi-Monthly/Weekly/Daily) - parehong pattern
+    ' gaya ng Statutory Settings.
+    Public Sub SetPresenter(presenter As IncomeTaxTablePresenter, tabTitle As String)
         _presenter = presenter
         _tabTitle = tabTitle
         lblTabPageTitle.Text = tabTitle
@@ -35,7 +36,7 @@ Public Class ucStatutorySettings
     ' =============================================
     Public Overrides ReadOnly Property Breadcrumb As String
         Get
-            Return $"Settings > Payroll Setup > Statutory > {_tabTitle}"
+            Return $"Settings > Payroll Setup > Income Tax Table > {_tabTitle}"
         End Get
     End Property
 
@@ -46,7 +47,7 @@ Public Class ucStatutorySettings
     End Property
 
     ' =============================================
-    ' LOAD (lazy - isang beses lang per tab, gaya ng Master Data)
+    ' LOAD (lazy - isang beses lang per tab, gaya ng Statutory)
     ' =============================================
     Public Overrides Async Function LoadFormAsync() As Task _
         Implements IAsyncLoadable.LoadFormAsync
@@ -64,7 +65,7 @@ Public Class ucStatutorySettings
     End Function
 
     Private Sub SetupGrid()
-        With gridviewStatutoryList
+        With gridviewIncomeTaxList
             .OptionsBehavior.Editable = False
             .OptionsView.NewItemRowPosition = DevExpress.XtraGrid.Views.Grid.NewItemRowPosition.None
             .OptionsView.ShowAutoFilterRow = True
@@ -72,16 +73,17 @@ Public Class ucStatutorySettings
         End With
     End Sub
 
-    ' Currency mask sa lahat ng peso-value fields - isang beses lang
-    ' i-set sa Load, hindi kailangan ulitin sa Designer.
+    ' Currency mask sa peso-value fields, plain 2-decimal number sa
+    ' Tax Percentage (hindi ito peso, kaya walang currency symbol) -
+    ' isang beses lang i-set sa Load, hindi kailangan ulitin sa Designer.
     Private Sub SetupNumericFields()
         txtSalaryFrom.SetAsCurrency()
         txtSalaryTo.SetAsCurrency()
-        txtEEShare.SetAsCurrency()
-        txtERShare.SetAsCurrency()
-        txtECCAmount.SetAsCurrency()
-        txtEEMPF.SetAsCurrency()
-        txtERMPF.SetAsCurrency()
+        txtFixTaxAmount.SetAsCurrency()
+
+        txtTaxPercentage.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.Numeric
+        txtTaxPercentage.Properties.Mask.EditMask = "n2"
+        txtTaxPercentage.Properties.Mask.UseMaskAsDisplayFormat = True
     End Sub
 
     Private Sub SetupCommandImages()
@@ -98,14 +100,18 @@ Public Class ucStatutorySettings
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ImageOptions.Image = My.Resources.icon_refresh_24
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ToolTip = "Reload from Database"
 
+        ' Shared Excel SVG na ginagamit na rin ng ibang module - kaya
+        ' hindi na kailangan ng duplicate na resx entry para dito.
+        btnExcel.ImageOptions.SvgImage = My.Resources.excel2_svgrep
+
     End Sub
 
     ' =============================================
-    ' IStatutoryMaintenanceView - FORM FIELDS
+    ' IIncomeTaxTableMaintenanceView - FORM FIELDS
     ' Peso-value fields: TextEdit na naka-Numeric mask (SetAsCurrency),
     ' kaya Decimal na agad ang EditValue - walang manual string parsing.
     ' =============================================
-    Public Property SalaryFrom As Decimal Implements IStatutorySettingsMaintenanceView.SalaryFrom
+    Public Property SalaryFrom As Decimal Implements IIncomeTaxTableMaintenanceView.SalaryFrom
         Get
             Return If(txtSalaryFrom.EditValue Is Nothing, 0D, Convert.ToDecimal(txtSalaryFrom.EditValue))
         End Get
@@ -114,7 +120,7 @@ Public Class ucStatutorySettings
         End Set
     End Property
 
-    Public Property SalaryTo As Decimal Implements IStatutorySettingsMaintenanceView.SalaryTo
+    Public Property SalaryTo As Decimal Implements IIncomeTaxTableMaintenanceView.SalaryTo
         Get
             Return If(txtSalaryTo.EditValue Is Nothing, 0D, Convert.ToDecimal(txtSalaryTo.EditValue))
         End Get
@@ -123,70 +129,25 @@ Public Class ucStatutorySettings
         End Set
     End Property
 
-    Public Property EEShare As Decimal Implements IStatutorySettingsMaintenanceView.EEShare
+    Public Property TaxPercentage As Decimal Implements IIncomeTaxTableMaintenanceView.TaxPercentage
         Get
-            Return If(txtEEShare.EditValue Is Nothing, 0D, Convert.ToDecimal(txtEEShare.EditValue))
+            Return If(txtTaxPercentage.EditValue Is Nothing, 0D, Convert.ToDecimal(txtTaxPercentage.EditValue))
         End Get
         Set(value As Decimal)
-            txtEEShare.EditValue = value
+            txtTaxPercentage.EditValue = value
         End Set
     End Property
 
-    Public Property EEContriType As String Implements IStatutorySettingsMaintenanceView.EEContriType
+    Public Property FixTaxAmount As Decimal Implements IIncomeTaxTableMaintenanceView.FixTaxAmount
         Get
-            Return cboEEContriType.Text
-        End Get
-        Set(value As String)
-            cboEEContriType.Text = value
-        End Set
-    End Property
-
-    Public Property ERShare As Decimal Implements IStatutorySettingsMaintenanceView.ERShare
-        Get
-            Return If(txtERShare.EditValue Is Nothing, 0D, Convert.ToDecimal(txtERShare.EditValue))
+            Return If(txtFixTaxAmount.EditValue Is Nothing, 0D, Convert.ToDecimal(txtFixTaxAmount.EditValue))
         End Get
         Set(value As Decimal)
-            txtERShare.EditValue = value
+            txtFixTaxAmount.EditValue = value
         End Set
     End Property
 
-    Public Property ERContriType As String Implements IStatutorySettingsMaintenanceView.ERContriType
-        Get
-            Return cboERContriType.Text
-        End Get
-        Set(value As String)
-            cboERContriType.Text = value
-        End Set
-    End Property
-
-    Public Property ECCAmount As Decimal Implements IStatutorySettingsMaintenanceView.ECCAmount
-        Get
-            Return If(txtECCAmount.EditValue Is Nothing, 0D, Convert.ToDecimal(txtECCAmount.EditValue))
-        End Get
-        Set(value As Decimal)
-            txtECCAmount.EditValue = value
-        End Set
-    End Property
-
-    Public Property EEMPF As Decimal Implements IStatutorySettingsMaintenanceView.EEMPF
-        Get
-            Return If(txtEEMPF.EditValue Is Nothing, 0D, Convert.ToDecimal(txtEEMPF.EditValue))
-        End Get
-        Set(value As Decimal)
-            txtEEMPF.EditValue = value
-        End Set
-    End Property
-
-    Public Property ERMPF As Decimal Implements IStatutorySettingsMaintenanceView.ERMPF
-        Get
-            Return If(txtERMPF.EditValue Is Nothing, 0D, Convert.ToDecimal(txtERMPF.EditValue))
-        End Get
-        Set(value As Decimal)
-            txtERMPF.EditValue = value
-        End Set
-    End Property
-
-    Public Property IsActive As Boolean Implements IStatutorySettingsMaintenanceView.IsActive
+    Public Property IsActive As Boolean Implements IIncomeTaxTableMaintenanceView.IsActive
         Get
             Return chkActive.Checked
         End Get
@@ -196,17 +157,17 @@ Public Class ucStatutorySettings
     End Property
 
     ' =============================================
-    ' IStatutoryMaintenanceView - GRID
+    ' IIncomeTaxTableMaintenanceView - GRID
     ' =============================================
-    Public Sub BindList(items As List(Of StatutoryBracketModel)) Implements IStatutorySettingsMaintenanceView.BindList
-        gridconStatutoryList.DataSource = items
+    Public Sub BindList(items As List(Of IncomeTaxBracketModel)) Implements IIncomeTaxTableMaintenanceView.BindList
+        gridconIncomeTaxList.DataSource = items
     End Sub
 
     ' =============================================
-    ' IStatutoryMaintenanceView - STATE / UX
+    ' IIncomeTaxTableMaintenanceView - STATE / UX
     ' =============================================
     Public Sub SetFormMode(isEditable As Boolean, isNewRecord As Boolean) _
-        Implements IStatutorySettingsMaintenanceView.SetFormMode
+        Implements IIncomeTaxTableMaintenanceView.SetFormMode
 
         _isEditing = isEditable
         _isNewRecord = isNewRecord
@@ -216,16 +177,11 @@ Public Class ucStatutorySettings
         '========================================
         txtSalaryFrom.Properties.ReadOnly = Not isEditable
         txtSalaryTo.Properties.ReadOnly = Not isEditable
-        txtEEShare.Properties.ReadOnly = Not isEditable
-        cboEEContriType.Properties.ReadOnly = Not isEditable
-        txtERShare.Properties.ReadOnly = Not isEditable
-        cboERContriType.Properties.ReadOnly = Not isEditable
-        txtECCAmount.Properties.ReadOnly = Not isEditable
-        txtEEMPF.Properties.ReadOnly = Not isEditable
-        txtERMPF.Properties.ReadOnly = Not isEditable
+        txtTaxPercentage.Properties.ReadOnly = Not isEditable
+        txtFixTaxAmount.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
 
-        gridconStatutoryList.Enabled = Not isEditable
+        gridconIncomeTaxList.Enabled = Not isEditable
 
         '========================================
         ' NEW / SAVE / UPDATE BUTTON
@@ -267,49 +223,44 @@ Public Class ucStatutorySettings
 
     End Sub
 
-    Public Sub ClearFields() Implements IStatutorySettingsMaintenanceView.ClearFields
+    Public Sub ClearFields() Implements IIncomeTaxTableMaintenanceView.ClearFields
         txtSalaryFrom.EditValue = Nothing
         txtSalaryTo.EditValue = Nothing
-        txtEEShare.EditValue = Nothing
-        cboEEContriType.SelectedIndex = -1
-        txtERShare.EditValue = Nothing
-        cboERContriType.SelectedIndex = -1
-        txtECCAmount.EditValue = Nothing
-        txtEEMPF.EditValue = Nothing
-        txtERMPF.EditValue = Nothing
+        txtTaxPercentage.EditValue = Nothing
+        txtFixTaxAmount.EditValue = Nothing
         chkActive.Checked = True
     End Sub
 
-    Public Sub DisplayInfo(message As String) Implements IStatutorySettingsMaintenanceView.ShowMessage
+    Public Sub DisplayInfo(message As String) Implements IIncomeTaxTableMaintenanceView.ShowMessage
         ShowMessage(message)
     End Sub
 
-    Public Sub DisplayValidationError(message As String) Implements IStatutorySettingsMaintenanceView.ShowError
+    Public Sub DisplayValidationError(message As String) Implements IIncomeTaxTableMaintenanceView.ShowError
         ShowError(message)
     End Sub
 
     ' =============================================
     ' GRID SELECTION
     ' =============================================
-    Private Sub gridviewStatutoryList_FocusedRowChanged(
+    Private Sub gridviewIncomeTaxList_FocusedRowChanged(
         sender As Object, e As DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventArgs) _
-        Handles gridviewStatutoryList.FocusedRowChanged
+        Handles gridviewIncomeTaxList.FocusedRowChanged
 
         If _isEditing Then Return
 
-        Dim id = gridviewStatutoryList.GetFocusedRowCellValue("Id")
+        Dim id = gridviewIncomeTaxList.GetFocusedRowCellValue("Id")
         If id Is Nothing Then Return
 
         _presenter.SelectItem(CInt(id))
     End Sub
 
-    Private Sub gridviewStatutoryList_Click(sender As Object, e As EventArgs) _
-        Handles gridviewStatutoryList.Click
+    Private Sub gridviewIncomeTaxList_Click(sender As Object, e As EventArgs) _
+        Handles gridviewIncomeTaxList.Click
 
         If _isEditing Then Return
-        If gridviewStatutoryList.SelectedRowsCount = 0 Then Return
+        If gridviewIncomeTaxList.SelectedRowsCount = 0 Then Return
 
-        Dim id = gridviewStatutoryList.GetFocusedRowCellValue("Id")
+        Dim id = gridviewIncomeTaxList.GetFocusedRowCellValue("Id")
         If id Is Nothing Then Return
 
         _presenter.SelectItem(CInt(id))
@@ -362,14 +313,10 @@ Public Class ucStatutorySettings
     End Sub
 
     ' =============================================
-    ' EXCEL IMPORT / EXPORT (hiwalay sa wbpMainCommands,
-    ' kaya sarili nilang SimpleButton sa loob ng grpDetails)
-    ' =============================================
-    ' =============================================
     ' EXCEL IMPORT / EXPORT (hiwalay sa wbpMainCommands, kaya
     ' sarili niyang SimpleButton sa loob ng grpDetails) - iisang
     ' button lang, may lalabas na prompt para pumili ng Import o
-    ' Export, para hindi na kailangang dalawang button pa.
+    ' Export.
     ' =============================================
     Private Async Sub btnExcel_Click(sender As Object, e As EventArgs) _
         Handles btnExcel.Click
