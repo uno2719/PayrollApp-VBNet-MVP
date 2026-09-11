@@ -111,7 +111,7 @@ Partial Class ucIncomeTaxTable
         grpDetails.Location = New Point(4, 74)
         grpDetails.Margin = New Padding(3, 2, 3, 2)
         grpDetails.Name = "grpDetails"
-        grpDetails.Size = New Size(1069, 190)
+        grpDetails.Size = New Size(1069, 140)
         grpDetails.TabIndex = 1
         grpDetails.Text = " DETAILS"
         '
@@ -143,19 +143,19 @@ Partial Class ucIncomeTaxTable
         '
         ' txtFixTaxAmount
         '
-        txtFixTaxAmount.Location = New Point(280, 52)
+        txtFixTaxAmount.Location = New Point(280, 102)
         txtFixTaxAmount.Margin = New Padding(3, 2, 3, 2)
         txtFixTaxAmount.Name = "txtFixTaxAmount"
         txtFixTaxAmount.Size = New Size(140, 20)
-        txtFixTaxAmount.TabIndex = 3
+        txtFixTaxAmount.TabIndex = 8
         '
         ' lblFixTaxAmount
         '
-        lblFixTaxAmount.Location = New Point(280, 34)
+        lblFixTaxAmount.Location = New Point(280, 84)
         lblFixTaxAmount.Margin = New Padding(3, 2, 3, 2)
         lblFixTaxAmount.Name = "lblFixTaxAmount"
         lblFixTaxAmount.Size = New Size(66, 13)
-        lblFixTaxAmount.TabIndex = 2
+        lblFixTaxAmount.TabIndex = 7
         lblFixTaxAmount.Text = "Fix Tax Amount"
         '
         ' txtSalaryTo
@@ -177,19 +177,19 @@ Partial Class ucIncomeTaxTable
         '
         ' txtTaxPercentage
         '
-        txtTaxPercentage.Location = New Point(24, 152)
+        txtTaxPercentage.Location = New Point(280, 52)
         txtTaxPercentage.Margin = New Padding(3, 2, 3, 2)
         txtTaxPercentage.Name = "txtTaxPercentage"
         txtTaxPercentage.Size = New Size(140, 20)
-        txtTaxPercentage.TabIndex = 8
+        txtTaxPercentage.TabIndex = 3
         '
         ' lblTaxPercentage
         '
-        lblTaxPercentage.Location = New Point(24, 134)
+        lblTaxPercentage.Location = New Point(280, 34)
         lblTaxPercentage.Margin = New Padding(3, 2, 3, 2)
         lblTaxPercentage.Name = "lblTaxPercentage"
         lblTaxPercentage.Size = New Size(72, 13)
-        lblTaxPercentage.TabIndex = 7
+        lblTaxPercentage.TabIndex = 2
         lblTaxPercentage.Text = "Tax Percentage"
         '
         ' btnExcel
@@ -208,11 +208,11 @@ Partial Class ucIncomeTaxTable
         ' gridconIncomeTaxList
         '
         gridconIncomeTaxList.Dock = DockStyle.Fill
-        gridconIncomeTaxList.Location = New Point(4, 264)
+        gridconIncomeTaxList.Location = New Point(4, 214)
         gridconIncomeTaxList.MainView = gridviewIncomeTaxList
         gridconIncomeTaxList.Margin = New Padding(3, 2, 3, 2)
         gridconIncomeTaxList.Name = "gridconIncomeTaxList"
-        gridconIncomeTaxList.Size = New Size(1069, 291)
+        gridconIncomeTaxList.Size = New Size(1069, 341)
         gridconIncomeTaxList.TabIndex = 2
         gridconIncomeTaxList.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridviewIncomeTaxList})
         '
@@ -281,7 +281,7 @@ Partial Class ucIncomeTaxTable
         Controls.Add(PanelControl1)
         Name = "ucIncomeTaxTable"
         Padding = New Padding(4)
-        Size = New Size(1077, 559)
+        Size = New Size(1077, 509)
         CType(PanelControl1, ComponentModel.ISupportInitialize).EndInit()
         PanelControl1.ResumeLayout(False)
         PanelControl1.PerformLayout()

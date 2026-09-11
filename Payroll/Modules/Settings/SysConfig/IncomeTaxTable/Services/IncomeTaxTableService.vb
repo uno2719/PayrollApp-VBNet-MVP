@@ -19,8 +19,20 @@ Namespace IncomeTaxTable.Services
         Public Async Function SaveAsync(tableName As String, item As IncomeTaxBracketModel, userName As String) As Task(Of IncomeTaxTableSaveResult) _
             Implements IIncomeTaxTableService.SaveAsync
 
+            If item.SalaryFrom < 0 OrElse item.SalaryTo < 0 Then
+                Return New IncomeTaxTableSaveResult With {.Success = False, .ErrorMessage = "Salary From/To cannot be negative."}
+            End If
+
             If item.SalaryTo <= item.SalaryFrom Then
                 Return New IncomeTaxTableSaveResult With {.Success = False, .ErrorMessage = "Salary To must be greater than Salary From."}
+            End If
+
+            If item.TaxPercentage < 0 OrElse item.TaxPercentage > 100 Then
+                Return New IncomeTaxTableSaveResult With {.Success = False, .ErrorMessage = "Tax Percentage must be between 0 and 100."}
+            End If
+
+            If item.FixTaxAmount < 0 Then
+                Return New IncomeTaxTableSaveResult With {.Success = False, .ErrorMessage = "Fix Tax Amount cannot be negative."}
             End If
 
             ' Enforced gaya ng Statutory Settings - iwas mangyari yung
