@@ -79,6 +79,9 @@ Public Class frmMain
             Case "settings_MasterData"
                 _nav.NavigateTo(Of ucSettingsLookups)(Function() AppComposition.BuildSettingsLookupsView())
 
+            Case "settings_Company"
+                _nav.NavigateTo(Of ucCompanyProfileShell)(Function() AppComposition.BuildCompanyProfileView())
+
             Case "settings_Statutory"
                 _nav.NavigateTo(Of ucStatutorySettingsShell)(Function() AppComposition.BuildStatutorySettingsView())
 

@@ -23,7 +23,7 @@ Namespace CompanyProfile.Views
 
         ' Palitan ng "SSS No./Branch", "TIN/RDO", atbp. depende sa agency -
         ' tingnan ang CompanyAgencyTypeRegistry.
-        Sub SetLabels(registrationNoLabel As String, branchLabel As String)
+        Sub SetLabels(registrationNoLabel As String, branchLabel As String, displayName As String)
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
     End Interface

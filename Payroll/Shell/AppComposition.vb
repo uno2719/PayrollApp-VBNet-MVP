@@ -23,6 +23,10 @@ Imports Payroll.StatutorySettings.Services
 Imports Payroll.Users.Presenters
 Imports Payroll.Users.Services
 Imports Payroll.Users.Views
+Imports Payroll.CompanyProfile.Data
+Imports Payroll.CompanyProfile.Presenters
+Imports Payroll.CompanyProfile.Services
+Imports Payroll.CompanyProfile.Views
 
 Public Class AppComposition
 
@@ -307,6 +311,55 @@ Public Class AppComposition
         dailyView.SetPresenter(dailyPresenter, "Daily")
 
         Return New ucIncomeTaxTableShell(yearlyView, monthlyView, semiMonthlyView, weeklyView, dailyView)
+
+    End Function
+
+    Public Shared Function BuildCompanyProfileView() As ucCompanyProfileShell
+
+        ' 1. Repositories + Services - 3 shapes: CompanyRepository (singleton),
+        ' CompanyAgencyRegistrationRepository (SHARED sa 4 agency tabs, gaya
+        ' ng Statutory/Lookups - stateless, agencyType mismo ang variable),
+        ' CompanyBankRepository (list).
+        Dim companyRepo As New CompanyRepository()
+        Dim companyService As New CompanyService(companyRepo)
+
+        Dim agencyRepo As New CompanyAgencyRegistrationRepository()
+        Dim agencyService As New CompanyAgencyRegistrationService(agencyRepo)
+
+        Dim bankRepo As New CompanyBankRepository()
+        Dim bankService As New CompanyBankService(bankRepo)
+
+        ' 2. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        Dim currentUser = AppSession.CurrentUser
+
+        ' 3. Gawin MUNA ang 6 Views - 3 classes lang (ucCompanyAgencyRegistration
+        ' 4x, ucCompany at ucCompanyBank isa bawat isa) - walang Presenter pa.
+        Dim companyView As New ucCompany()
+        Dim sssView As New ucCompanyAgencyRegistration()
+        Dim philHealthView As New ucCompanyAgencyRegistration()
+        Dim pagIbigView As New ucCompanyAgencyRegistration()
+        Dim birView As New ucCompanyAgencyRegistration()
+        Dim bankView As New ucCompanyBank()
+
+        ' 4. Gawin ang 6 Presenters - 4 sa Agency Registration naka-configure
+        ' sa ibang agencyType mula sa CompanyAgencyTypeRegistry.
+        Dim companyPresenter As New CompanyPresenter(companyView, companyService, currentUser)
+        Dim sssPresenter As New CompanyAgencyRegistrationPresenter(sssView, agencyService, "SSS", currentUser)
+        Dim philHealthPresenter As New CompanyAgencyRegistrationPresenter(philHealthView, agencyService, "PHILHEALTH", currentUser)
+        Dim pagIbigPresenter As New CompanyAgencyRegistrationPresenter(pagIbigView, agencyService, "PAGIBIG", currentUser)
+        Dim birPresenter As New CompanyAgencyRegistrationPresenter(birView, agencyService, "BIR", currentUser)
+        Dim bankPresenter As New CompanyBankPresenter(bankView, bankService, currentUser)
+
+        ' 5. I-assign ang Presenter sa bawat View
+        companyView.SetPresenter(companyPresenter)
+        sssView.SetPresenter(sssPresenter)
+        philHealthView.SetPresenter(philHealthPresenter)
+        pagIbigView.SetPresenter(pagIbigPresenter)
+        birView.SetPresenter(birPresenter)
+        bankView.SetPresenter(bankPresenter)
+
+        ' 6. Gawin ang Main View
+        Return New ucCompanyProfileShell(companyView, sssView, philHealthView, pagIbigView, birView, bankView)
 
     End Function
 

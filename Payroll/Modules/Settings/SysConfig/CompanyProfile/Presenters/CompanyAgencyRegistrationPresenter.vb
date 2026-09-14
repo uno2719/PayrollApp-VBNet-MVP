@@ -26,7 +26,7 @@ Namespace CompanyProfile.Presenters
 
         Public Async Function LoadAsync() As Task
             Dim info = CompanyAgencyTypeRegistry.GetInfo(_agencyType)
-            _view.SetLabels(info.RegistrationNoLabel, info.BranchLabel)
+            _view.SetLabels(info.RegistrationNoLabel, info.BranchLabel, info.DisplayName)
 
             _current = Await _service.GetAsync(_agencyType)
 
