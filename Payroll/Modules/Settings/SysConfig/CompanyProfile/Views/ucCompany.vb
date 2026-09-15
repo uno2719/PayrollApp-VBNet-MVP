@@ -1,11 +1,14 @@
 ﻿' File: Modules/Settings/SysConfig/CompanyProfile/Views/ucCompany.vb
+Imports System.Linq
 Imports Payroll.CompanyProfile.Presenters
 Imports Payroll.CompanyProfile.Views
+Imports Payroll.GlobalShared.Models
 
 Public Class ucCompany
     Implements ICompanyView, IAsyncLoadable
 
     Private _presenter As CompanyPresenter
+    Private _employees As List(Of EmployeeContactLookupModel)
 
     Public Sub SetPresenter(presenter As CompanyPresenter)
         _presenter = presenter
@@ -30,6 +33,16 @@ Public Class ucCompany
     Private Sub btnUploadLogo_Click(sender As Object, e As EventArgs) Handles btnUploadLogo.Click
         _presenter.UploadLogo()
     End Sub
+
+    ' Hindi pwede ang TryCast sa Nullable(Of Integer) dahil value type siya -
+    ' ito ang ginagamit sa halip, dito at sa EditValueChanged sa ibaba.
+    Private Function ToNullableInt(value As Object) As Integer?
+        If value Is Nothing OrElse IsDBNull(value) Then
+            Return Nothing
+        End If
+        Return Convert.ToInt32(value)
+    End Function
+
 
     ' === ICompanyView ===
 
@@ -96,21 +109,12 @@ Public Class ucCompany
         End Set
     End Property
 
-    Public Property ContactPerson As String Implements ICompanyView.ContactPerson
+    Public Property ContactPersonRecordId As Integer? Implements ICompanyView.ContactPersonRecordId
         Get
-            Return txtContactPerson.Text
+            Return ToNullableInt(lookupContactPerson.EditValue)
         End Get
-        Set(value As String)
-            txtContactPerson.Text = value
-        End Set
-    End Property
-
-    Public Property ContactPersonPosition As String Implements ICompanyView.ContactPersonPosition
-        Get
-            Return txtContactPersonPosition.Text
-        End Get
-        Set(value As String)
-            txtContactPersonPosition.Text = value
+        Set(value As Integer?)
+            lookupContactPerson.EditValue = value
         End Set
     End Property
 
@@ -177,9 +181,36 @@ Public Class ucCompany
         End Set
     End Property
 
+    Public Sub SetEmployeeList(employees As List(Of EmployeeContactLookupModel)) Implements ICompanyView.SetEmployeeList
+        _employees = employees
+
+        With lookupContactPerson.Properties
+            .DataSource = employees
+            .DisplayMember = "FullName"
+            .ValueMember = "RecordId"
+            .NullText = "[Select employee]"
+            .Columns.Clear()
+            .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("EmployeeNo", "Employee No.", 90))
+            .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("FullName", "Name", 200))
+            .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("PositionName", "Position", 150))
+        End With
+    End Sub
+
+    ' Kapag pumili ng ibang employee, i-refresh agad ang read-only Position
+    ' textbox mula sa parehong naka-bind na listahan - hindi na kailangan
+    ' bumalik pa sa database para dito.
+    Private Sub lookupContactPerson_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupContactPerson.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupContactPerson.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+
+        txtContactPersonPosition.Text = If(matched?.PositionName, "")
+    End Sub
+
     Public Sub ShowLogo(fullPath As String) Implements ICompanyView.ShowLogo
         If String.IsNullOrWhiteSpace(fullPath) OrElse Not IO.File.Exists(fullPath) Then
-            picLogo.EditValue = Nothing   ' pwede mo itong palitan ng default placeholder resource, e.g. My.Resources.Resources.img_default_logo, kung gagawa ka ng isa
+            picLogo.EditValue = Nothing
             Return
         End If
 

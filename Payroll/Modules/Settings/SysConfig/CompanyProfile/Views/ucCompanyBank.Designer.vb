@@ -34,19 +34,19 @@ Partial Class ucCompanyBank
         lblPersonInCharge2Email = New DevExpress.XtraEditors.LabelControl()
         txtPersonInCharge2Position = New DevExpress.XtraEditors.TextEdit()
         lblPersonInCharge2Position = New DevExpress.XtraEditors.LabelControl()
-        txtPersonInCharge2 = New DevExpress.XtraEditors.TextEdit()
+        lookupPersonInCharge2 = New DevExpress.XtraEditors.LookUpEdit()
         lblPersonInCharge2 = New DevExpress.XtraEditors.LabelControl()
         txtPersonInCharge1Email = New DevExpress.XtraEditors.TextEdit()
         lblPersonInCharge1Email = New DevExpress.XtraEditors.LabelControl()
         txtPersonInCharge1Position = New DevExpress.XtraEditors.TextEdit()
         lblPersonInCharge1Position = New DevExpress.XtraEditors.LabelControl()
-        txtPersonInCharge1 = New DevExpress.XtraEditors.TextEdit()
+        lookupPersonInCharge1 = New DevExpress.XtraEditors.LookUpEdit()
         lblPersonInCharge1 = New DevExpress.XtraEditors.LabelControl()
         txtContactPersonEmail = New DevExpress.XtraEditors.TextEdit()
         lblContactPersonEmail = New DevExpress.XtraEditors.LabelControl()
         txtContactPersonPosition = New DevExpress.XtraEditors.TextEdit()
         lblContactPersonPosition = New DevExpress.XtraEditors.LabelControl()
-        txtContactPerson = New DevExpress.XtraEditors.TextEdit()
+        lookupContactPerson = New DevExpress.XtraEditors.LookUpEdit()
         lblContactPerson = New DevExpress.XtraEditors.LabelControl()
         txtFaxNo = New DevExpress.XtraEditors.TextEdit()
         lblFaxNo = New DevExpress.XtraEditors.LabelControl()
@@ -88,13 +88,13 @@ Partial Class ucCompanyBank
         CType(txtSwiftCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtPersonInCharge2Email.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtPersonInCharge2Position.Properties, ComponentModel.ISupportInitialize).BeginInit()
-        CType(txtPersonInCharge2.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lookupPersonInCharge2.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtPersonInCharge1Email.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtPersonInCharge1Position.Properties, ComponentModel.ISupportInitialize).BeginInit()
-        CType(txtPersonInCharge1.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lookupPersonInCharge1.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtContactPersonEmail.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtContactPersonPosition.Properties, ComponentModel.ISupportInitialize).BeginInit()
-        CType(txtContactPerson.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lookupContactPerson.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtFaxNo.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtTelephoneNo.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtPostCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -169,19 +169,19 @@ Partial Class ucCompanyBank
         grpDetails.Controls.Add(lblPersonInCharge2Email)
         grpDetails.Controls.Add(txtPersonInCharge2Position)
         grpDetails.Controls.Add(lblPersonInCharge2Position)
-        grpDetails.Controls.Add(txtPersonInCharge2)
+        grpDetails.Controls.Add(lookupPersonInCharge2)
         grpDetails.Controls.Add(lblPersonInCharge2)
         grpDetails.Controls.Add(txtPersonInCharge1Email)
         grpDetails.Controls.Add(lblPersonInCharge1Email)
         grpDetails.Controls.Add(txtPersonInCharge1Position)
         grpDetails.Controls.Add(lblPersonInCharge1Position)
-        grpDetails.Controls.Add(txtPersonInCharge1)
+        grpDetails.Controls.Add(lookupPersonInCharge1)
         grpDetails.Controls.Add(lblPersonInCharge1)
         grpDetails.Controls.Add(txtContactPersonEmail)
         grpDetails.Controls.Add(lblContactPersonEmail)
         grpDetails.Controls.Add(txtContactPersonPosition)
         grpDetails.Controls.Add(lblContactPersonPosition)
-        grpDetails.Controls.Add(txtContactPerson)
+        grpDetails.Controls.Add(lookupContactPerson)
         grpDetails.Controls.Add(lblContactPerson)
         grpDetails.Controls.Add(txtFaxNo)
         grpDetails.Controls.Add(lblFaxNo)
@@ -321,7 +321,7 @@ Partial Class ucCompanyBank
         txtPostCode.Size = New Size(190, 20)
         txtPostCode.TabIndex = 19
         '
-        ' Column 3 (x=464): Telephone No., Fax No., Contact Person, Position, Email
+        ' Column 3 (x=464): Telephone No., Fax No., Contact Person (LookUpEdit), Position, Email
         '
         lblTelephoneNo.Location = New Point(464, 34)
         lblTelephoneNo.Name = "lblTelephoneNo"
@@ -348,11 +348,11 @@ Partial Class ucCompanyBank
         lblContactPerson.Size = New Size(72, 13)
         lblContactPerson.TabIndex = 24
         lblContactPerson.Text = "Contact Person"
-        txtContactPerson.Location = New Point(464, 152)
-        txtContactPerson.Margin = New Padding(3, 2, 3, 2)
-        txtContactPerson.Name = "txtContactPerson"
-        txtContactPerson.Size = New Size(190, 20)
-        txtContactPerson.TabIndex = 25
+        lookupContactPerson.Location = New Point(464, 152)
+        lookupContactPerson.Margin = New Padding(3, 2, 3, 2)
+        lookupContactPerson.Name = "lookupContactPerson"
+        lookupContactPerson.Size = New Size(190, 20)
+        lookupContactPerson.TabIndex = 25
         lblContactPersonPosition.Location = New Point(464, 184)
         lblContactPersonPosition.Name = "lblContactPersonPosition"
         lblContactPersonPosition.Size = New Size(40, 13)
@@ -374,18 +374,18 @@ Partial Class ucCompanyBank
         txtContactPersonEmail.Size = New Size(190, 20)
         txtContactPersonEmail.TabIndex = 29
         '
-        ' Column 4 (x=684): Person-in-charge 1 (full) + Person-in-charge 2 (Name, Position)
+        ' Column 4 (x=684): Person-in-charge 1 (full) + Person-in-charge 2 (Name via LookUpEdit, Position)
         '
         lblPersonInCharge1.Location = New Point(684, 34)
         lblPersonInCharge1.Name = "lblPersonInCharge1"
         lblPersonInCharge1.Size = New Size(91, 13)
         lblPersonInCharge1.TabIndex = 30
         lblPersonInCharge1.Text = "Person-in-charge 1"
-        txtPersonInCharge1.Location = New Point(684, 52)
-        txtPersonInCharge1.Margin = New Padding(3, 2, 3, 2)
-        txtPersonInCharge1.Name = "txtPersonInCharge1"
-        txtPersonInCharge1.Size = New Size(190, 20)
-        txtPersonInCharge1.TabIndex = 31
+        lookupPersonInCharge1.Location = New Point(684, 52)
+        lookupPersonInCharge1.Margin = New Padding(3, 2, 3, 2)
+        lookupPersonInCharge1.Name = "lookupPersonInCharge1"
+        lookupPersonInCharge1.Size = New Size(190, 20)
+        lookupPersonInCharge1.TabIndex = 31
         lblPersonInCharge1Position.Location = New Point(684, 84)
         lblPersonInCharge1Position.Name = "lblPersonInCharge1Position"
         lblPersonInCharge1Position.Size = New Size(40, 13)
@@ -411,11 +411,11 @@ Partial Class ucCompanyBank
         lblPersonInCharge2.Size = New Size(91, 13)
         lblPersonInCharge2.TabIndex = 36
         lblPersonInCharge2.Text = "Person-in-charge 2"
-        txtPersonInCharge2.Location = New Point(684, 202)
-        txtPersonInCharge2.Margin = New Padding(3, 2, 3, 2)
-        txtPersonInCharge2.Name = "txtPersonInCharge2"
-        txtPersonInCharge2.Size = New Size(190, 20)
-        txtPersonInCharge2.TabIndex = 37
+        lookupPersonInCharge2.Location = New Point(684, 202)
+        lookupPersonInCharge2.Margin = New Padding(3, 2, 3, 2)
+        lookupPersonInCharge2.Name = "lookupPersonInCharge2"
+        lookupPersonInCharge2.Size = New Size(190, 20)
+        lookupPersonInCharge2.TabIndex = 37
         lblPersonInCharge2Position.Location = New Point(684, 234)
         lblPersonInCharge2Position.Name = "lblPersonInCharge2Position"
         lblPersonInCharge2Position.Size = New Size(40, 13)
@@ -555,13 +555,13 @@ Partial Class ucCompanyBank
         CType(txtSwiftCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtPersonInCharge2Email.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtPersonInCharge2Position.Properties, ComponentModel.ISupportInitialize).EndInit()
-        CType(txtPersonInCharge2.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(lookupPersonInCharge2.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtPersonInCharge1Email.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtPersonInCharge1Position.Properties, ComponentModel.ISupportInitialize).EndInit()
-        CType(txtPersonInCharge1.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(lookupPersonInCharge1.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtContactPersonEmail.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtContactPersonPosition.Properties, ComponentModel.ISupportInitialize).EndInit()
-        CType(txtContactPerson.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(lookupContactPerson.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtFaxNo.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtTelephoneNo.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtPostCode.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -594,19 +594,19 @@ Partial Class ucCompanyBank
     Friend WithEvents lblPersonInCharge2Email As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtPersonInCharge2Position As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblPersonInCharge2Position As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents txtPersonInCharge2 As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lookupPersonInCharge2 As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents lblPersonInCharge2 As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtPersonInCharge1Email As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblPersonInCharge1Email As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtPersonInCharge1Position As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblPersonInCharge1Position As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents txtPersonInCharge1 As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lookupPersonInCharge1 As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents lblPersonInCharge1 As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtContactPersonEmail As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblContactPersonEmail As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtContactPersonPosition As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblContactPersonPosition As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents txtContactPerson As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lookupContactPerson As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents lblContactPerson As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtFaxNo As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblFaxNo As DevExpress.XtraEditors.LabelControl

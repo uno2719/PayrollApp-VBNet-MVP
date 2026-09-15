@@ -1,4 +1,5 @@
-﻿' File: Modules/Settings/SysConfig/CompanyProfile/Presenters/CompanyPresenter.vb
+﻿' UPDATE: Modules/Settings/SysConfig/CompanyProfile/Presenters/CompanyPresenter.vb
+Imports Payroll.Employee.Data
 Imports Payroll.GlobalShared.Helpers
 Imports Payroll.GlobalShared.Models
 
@@ -7,21 +8,30 @@ Namespace CompanyProfile.Presenters
 
         Private ReadOnly _view As Views.ICompanyView
         Private ReadOnly _service As Services.ICompanyService
+        Private ReadOnly _employeeRepository As IEmployeeRepository
         Private ReadOnly _userName As String
 
         Private _current As CompanyModel
 
-        Public Sub New(view As Views.ICompanyView, service As Services.ICompanyService, userName As String)
+        Public Sub New(
+            view As Views.ICompanyView,
+            service As Services.ICompanyService,
+            employeeRepository As IEmployeeRepository,
+            userName As String)
+
             _view = view
             _service = service
+            _employeeRepository = employeeRepository
             _userName = userName
         End Sub
 
         Public Async Function LoadAsync() As Task
-            _current = Await _service.GetAsync()
+            ' I-bind muna ang employee list bago i-set ang ContactPersonRecordId,
+            ' kailangan ito ng GridLookUpEdit para maipakita ang tamang selection.
+            Dim employees = Await _employeeRepository.GetEmployeeContactLookupAsync()
+            _view.SetEmployeeList(employees)
 
-            ' Nothing pag bagong install pa, wala pang na-Insert kailanman -
-            ' blangko form, CompanyId mananatiling 0 hanggang unang Save.
+            _current = Await _service.GetAsync()
             If _current Is Nothing Then
                 _current = New CompanyModel()
             End If
@@ -33,8 +43,7 @@ Namespace CompanyProfile.Presenters
             _view.PostCode = _current.PostCode
             _view.TelephoneNo = _current.TelephoneNo
             _view.FaxNo = _current.FaxNo
-            _view.ContactPerson = _current.ContactPerson
-            _view.ContactPersonPosition = _current.ContactPersonPosition
+            _view.ContactPersonRecordId = _current.ContactPersonRecordId
             _view.ContactPersonEmail = _current.ContactPersonEmail
             _view.Address1 = _current.Address1
             _view.Address2 = _current.Address2
@@ -46,13 +55,10 @@ Namespace CompanyProfile.Presenters
             _view.ShowLogo(FileStorageHelper.GetFullPath(_current.LogoPath))
         End Function
 
-        ' Tinatawag pag pinindot ang "Upload Logo" button
         Public Sub UploadLogo()
             Dim pickedFile = _view.PromptForLogoFile()
             If String.IsNullOrWhiteSpace(pickedFile) Then Return
 
-            ' Tanggalin muna yung dating logo file bago i-save yung bago,
-            ' para hindi maiwang basura sa Uploads folder.
             If Not String.IsNullOrWhiteSpace(_current.LogoPath) Then
                 FileStorageHelper.DeleteFile(_current.LogoPath)
             End If
@@ -69,8 +75,7 @@ Namespace CompanyProfile.Presenters
             _current.PostCode = _view.PostCode
             _current.TelephoneNo = _view.TelephoneNo
             _current.FaxNo = _view.FaxNo
-            _current.ContactPerson = _view.ContactPerson
-            _current.ContactPersonPosition = _view.ContactPersonPosition
+            _current.ContactPersonRecordId = _view.ContactPersonRecordId
             _current.ContactPersonEmail = _view.ContactPersonEmail
             _current.Address1 = _view.Address1
             _current.Address2 = _view.Address2
@@ -86,10 +91,7 @@ Namespace CompanyProfile.Presenters
                 Return
             End If
 
-            ' Kunin ulit yung fresh copy - kailangan makuha yung bagong
-            ' CompanyId kung Insert ito, para Update na ang susunod na Save.
             _current = Await _service.GetAsync()
-
             _view.ShowMessage("Company Profile saved.")
         End Function
 

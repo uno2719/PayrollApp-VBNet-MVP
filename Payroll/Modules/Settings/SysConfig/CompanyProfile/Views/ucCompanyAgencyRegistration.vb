@@ -1,12 +1,15 @@
 ﻿' File: Modules/Settings/SysConfig/CompanyProfile/Views/ucCompanyAgencyRegistration.vb
+Imports System.Linq
 Imports Payroll.CompanyProfile.Presenters
 Imports Payroll.CompanyProfile.Views
+Imports Payroll.GlobalShared.Models
 
 Public Class ucCompanyAgencyRegistration
     Implements ICompanyAgencyRegistrationView, IAsyncLoadable
 
     Private _presenter As CompanyAgencyRegistrationPresenter
     Private _pageTitle As String = "Agency Registration"
+    Private _employees As List(Of EmployeeContactLookupModel)
 
     Public Sub SetPresenter(presenter As CompanyAgencyRegistrationPresenter)
         _presenter = presenter
@@ -28,10 +31,15 @@ Public Class ucCompanyAgencyRegistration
         Await _presenter.SaveAsync()
     End Sub
 
+    Private Function ToNullableInt(value As Object) As Integer?
+        If value Is Nothing OrElse IsDBNull(value) Then
+            Return Nothing
+        End If
+        Return Convert.ToInt32(value)
+    End Function
+
     ' === ICompanyAgencyRegistrationView ===
 
-    ' SSS No./Branch, PhilHealth No./Branch, Pag-IBIG No./Branch, o TIN/RDO -
-    ' depende sa kung sinong ucCompanyAgencyRegistration instance ito.
     Public Sub SetLabels(registrationNoLabel As String, branchLabel As String, displayName As String) _
         Implements ICompanyAgencyRegistrationView.SetLabels
 
@@ -39,6 +47,54 @@ Public Class ucCompanyAgencyRegistration
         lblBranch.Text = branchLabel
         lblTabPageTitle.Text = $"{displayName.ToUpper()} REGISTRATION"
         _pageTitle = $"{displayName} Registration"
+    End Sub
+
+    Public Sub SetEmployeeList(employees As List(Of EmployeeContactLookupModel)) _
+        Implements ICompanyAgencyRegistrationView.SetEmployeeList
+
+        _employees = employees
+
+        For Each lookup In New DevExpress.XtraEditors.LookUpEdit() {lookupContactPerson, lookupPersonInCharge1, lookupPersonInCharge2}
+            With lookup.Properties
+                .DataSource = employees
+                .DisplayMember = "FullName"
+                .ValueMember = "RecordId"
+                .NullText = "[Select employee]"
+                .Columns.Clear()
+                .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("EmployeeNo", "Employee No.", 90))
+                .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("FullName", "Name", 200))
+                .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("PositionName", "Position", 150))
+            End With
+        Next
+
+        ' Palaging read-only na ang Position - "matic" na, hindi na type-able.
+        txtContactPersonPosition.Properties.ReadOnly = True
+        txtPersonInCharge1Position.Properties.ReadOnly = True
+        txtPersonInCharge2Position.Properties.ReadOnly = True
+    End Sub
+
+    Private Sub lookupContactPerson_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupContactPerson.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupContactPerson.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+        txtContactPersonPosition.Text = If(matched?.PositionName, "")
+    End Sub
+
+    Private Sub lookupPersonInCharge1_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupPersonInCharge1.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupPersonInCharge1.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+        txtPersonInCharge1Position.Text = If(matched?.PositionName, "")
+    End Sub
+
+    Private Sub lookupPersonInCharge2_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupPersonInCharge2.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupPersonInCharge2.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+        txtPersonInCharge2Position.Text = If(matched?.PositionName, "")
     End Sub
 
     Public Property RegistrationNo As String Implements ICompanyAgencyRegistrationView.RegistrationNo
@@ -122,21 +178,12 @@ Public Class ucCompanyAgencyRegistration
         End Set
     End Property
 
-    Public Property ContactPerson As String Implements ICompanyAgencyRegistrationView.ContactPerson
+    Public Property ContactPersonRecordId As Integer? Implements ICompanyAgencyRegistrationView.ContactPersonRecordId
         Get
-            Return txtContactPerson.Text
+            Return ToNullableInt(lookupContactPerson.EditValue)
         End Get
-        Set(value As String)
-            txtContactPerson.Text = value
-        End Set
-    End Property
-
-    Public Property ContactPersonPosition As String Implements ICompanyAgencyRegistrationView.ContactPersonPosition
-        Get
-            Return txtContactPersonPosition.Text
-        End Get
-        Set(value As String)
-            txtContactPersonPosition.Text = value
+        Set(value As Integer?)
+            lookupContactPerson.EditValue = value
         End Set
     End Property
 
@@ -149,21 +196,12 @@ Public Class ucCompanyAgencyRegistration
         End Set
     End Property
 
-    Public Property PersonInCharge1 As String Implements ICompanyAgencyRegistrationView.PersonInCharge1
+    Public Property PersonInCharge1RecordId As Integer? Implements ICompanyAgencyRegistrationView.PersonInCharge1RecordId
         Get
-            Return txtPersonInCharge1.Text
+            Return ToNullableInt(lookupPersonInCharge1.EditValue)
         End Get
-        Set(value As String)
-            txtPersonInCharge1.Text = value
-        End Set
-    End Property
-
-    Public Property PersonInCharge1Position As String Implements ICompanyAgencyRegistrationView.PersonInCharge1Position
-        Get
-            Return txtPersonInCharge1Position.Text
-        End Get
-        Set(value As String)
-            txtPersonInCharge1Position.Text = value
+        Set(value As Integer?)
+            lookupPersonInCharge1.EditValue = value
         End Set
     End Property
 
@@ -176,21 +214,12 @@ Public Class ucCompanyAgencyRegistration
         End Set
     End Property
 
-    Public Property PersonInCharge2 As String Implements ICompanyAgencyRegistrationView.PersonInCharge2
+    Public Property PersonInCharge2RecordId As Integer? Implements ICompanyAgencyRegistrationView.PersonInCharge2RecordId
         Get
-            Return txtPersonInCharge2.Text
+            Return ToNullableInt(lookupPersonInCharge2.EditValue)
         End Get
-        Set(value As String)
-            txtPersonInCharge2.Text = value
-        End Set
-    End Property
-
-    Public Property PersonInCharge2Position As String Implements ICompanyAgencyRegistrationView.PersonInCharge2Position
-        Get
-            Return txtPersonInCharge2Position.Text
-        End Get
-        Set(value As String)
-            txtPersonInCharge2Position.Text = value
+        Set(value As Integer?)
+            lookupPersonInCharge2.EditValue = value
         End Set
     End Property
 

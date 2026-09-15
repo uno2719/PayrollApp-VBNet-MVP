@@ -1,4 +1,6 @@
 ﻿' File: Modules/Settings/SysConfig/CompanyProfile/Presenters/CompanyBankPresenter.vb
+Imports System.Linq
+Imports Payroll.Employee.Data
 Imports Payroll.GlobalShared.Models
 
 Namespace CompanyProfile.Presenters
@@ -6,19 +8,29 @@ Namespace CompanyProfile.Presenters
 
         Private ReadOnly _view As Views.ICompanyBankMaintenanceView
         Private ReadOnly _service As Services.ICompanyBankService
+        Private ReadOnly _employeeRepository As IEmployeeRepository
         Private ReadOnly _userName As String
 
         Private _selectedId As Integer = 0
         Private _isNewMode As Boolean = False
         Private _currentList As List(Of CompanyBankModel)
 
-        Public Sub New(view As Views.ICompanyBankMaintenanceView, service As Services.ICompanyBankService, userName As String)
+        Public Sub New(
+            view As Views.ICompanyBankMaintenanceView,
+            service As Services.ICompanyBankService,
+            employeeRepository As IEmployeeRepository,
+            userName As String)
+
             _view = view
             _service = service
+            _employeeRepository = employeeRepository
             _userName = userName
         End Sub
 
         Public Async Function LoadAsync() As Task
+            Dim employees = Await _employeeRepository.GetEmployeeContactLookupAsync()
+            _view.SetEmployeeList(employees)
+
             Await LoadListAsync()
 
             _selectedId = 0
@@ -42,7 +54,6 @@ Namespace CompanyProfile.Presenters
             _view.SetFormMode(True, True)
         End Sub
 
-        ' Pagpili lang ng row sa grid - display lang, hindi pa edit mode.
         Public Sub SelectItem(id As Integer)
             _selectedId = id
             _isNewMode = False
@@ -62,14 +73,11 @@ Namespace CompanyProfile.Presenters
                 _view.PostCode = selected.PostCode
                 _view.TelephoneNo = selected.TelephoneNo
                 _view.FaxNo = selected.FaxNo
-                _view.ContactPerson = selected.ContactPerson
-                _view.ContactPersonPosition = selected.ContactPersonPosition
+                _view.ContactPersonRecordId = selected.ContactPersonRecordId
                 _view.ContactPersonEmail = selected.ContactPersonEmail
-                _view.PersonInCharge1 = selected.PersonInCharge1
-                _view.PersonInCharge1Position = selected.PersonInCharge1Position
+                _view.PersonInCharge1RecordId = selected.PersonInCharge1RecordId
                 _view.PersonInCharge1Email = selected.PersonInCharge1Email
-                _view.PersonInCharge2 = selected.PersonInCharge2
-                _view.PersonInCharge2Position = selected.PersonInCharge2Position
+                _view.PersonInCharge2RecordId = selected.PersonInCharge2RecordId
                 _view.PersonInCharge2Email = selected.PersonInCharge2Email
                 _view.SwiftCode = selected.SwiftCode
                 _view.BranchNo = selected.BranchNo
@@ -105,14 +113,11 @@ Namespace CompanyProfile.Presenters
                 .PostCode = _view.PostCode,
                 .TelephoneNo = _view.TelephoneNo,
                 .FaxNo = _view.FaxNo,
-                .ContactPerson = _view.ContactPerson,
-                .ContactPersonPosition = _view.ContactPersonPosition,
+                .ContactPersonRecordId = _view.ContactPersonRecordId,
                 .ContactPersonEmail = _view.ContactPersonEmail,
-                .PersonInCharge1 = _view.PersonInCharge1,
-                .PersonInCharge1Position = _view.PersonInCharge1Position,
+                .PersonInCharge1RecordId = _view.PersonInCharge1RecordId,
                 .PersonInCharge1Email = _view.PersonInCharge1Email,
-                .PersonInCharge2 = _view.PersonInCharge2,
-                .PersonInCharge2Position = _view.PersonInCharge2Position,
+                .PersonInCharge2RecordId = _view.PersonInCharge2RecordId,
                 .PersonInCharge2Email = _view.PersonInCharge2Email,
                 .SwiftCode = _view.SwiftCode,
                 .BranchNo = _view.BranchNo,
@@ -149,7 +154,6 @@ Namespace CompanyProfile.Presenters
             End If
         End Sub
 
-        ' Soft-delete/reactivate lang - hindi kailanman hard delete.
         Public Async Function ToggleActiveSelectedAsync() As Task
             If _selectedId = 0 Then
                 _view.ShowError("Please select a bank entry first.")

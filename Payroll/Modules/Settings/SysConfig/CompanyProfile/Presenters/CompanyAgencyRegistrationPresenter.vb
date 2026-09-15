@@ -1,4 +1,5 @@
 ﻿' File: Modules/Settings/SysConfig/CompanyProfile/Presenters/CompanyAgencyRegistrationPresenter.vb
+Imports Payroll.Employee.Data
 Imports Payroll.GlobalShared.Constants
 Imports Payroll.GlobalShared.Models
 
@@ -7,6 +8,7 @@ Namespace CompanyProfile.Presenters
 
         Private ReadOnly _view As Views.ICompanyAgencyRegistrationView
         Private ReadOnly _service As Services.ICompanyAgencyRegistrationService
+        Private ReadOnly _employeeRepository As IEmployeeRepository
         Private ReadOnly _agencyType As String
         Private ReadOnly _userName As String
 
@@ -15,11 +17,13 @@ Namespace CompanyProfile.Presenters
         Public Sub New(
             view As Views.ICompanyAgencyRegistrationView,
             service As Services.ICompanyAgencyRegistrationService,
+            employeeRepository As IEmployeeRepository,
             agencyType As String,
             userName As String)
 
             _view = view
             _service = service
+            _employeeRepository = employeeRepository
             _agencyType = agencyType
             _userName = userName
         End Sub
@@ -27,6 +31,9 @@ Namespace CompanyProfile.Presenters
         Public Async Function LoadAsync() As Task
             Dim info = CompanyAgencyTypeRegistry.GetInfo(_agencyType)
             _view.SetLabels(info.RegistrationNoLabel, info.BranchLabel, info.DisplayName)
+
+            Dim employees = Await _employeeRepository.GetEmployeeContactLookupAsync()
+            _view.SetEmployeeList(employees)
 
             _current = Await _service.GetAsync(_agencyType)
 
@@ -43,14 +50,11 @@ Namespace CompanyProfile.Presenters
             _view.PostCode = _current.PostCode
             _view.TelephoneNo = _current.TelephoneNo
             _view.FaxNo = _current.FaxNo
-            _view.ContactPerson = _current.ContactPerson
-            _view.ContactPersonPosition = _current.ContactPersonPosition
+            _view.ContactPersonRecordId = _current.ContactPersonRecordId
             _view.ContactPersonEmail = _current.ContactPersonEmail
-            _view.PersonInCharge1 = _current.PersonInCharge1
-            _view.PersonInCharge1Position = _current.PersonInCharge1Position
+            _view.PersonInCharge1RecordId = _current.PersonInCharge1RecordId
             _view.PersonInCharge1Email = _current.PersonInCharge1Email
-            _view.PersonInCharge2 = _current.PersonInCharge2
-            _view.PersonInCharge2Position = _current.PersonInCharge2Position
+            _view.PersonInCharge2RecordId = _current.PersonInCharge2RecordId
             _view.PersonInCharge2Email = _current.PersonInCharge2Email
             _view.Remarks = _current.Remarks
         End Function
@@ -65,14 +69,11 @@ Namespace CompanyProfile.Presenters
             _current.PostCode = _view.PostCode
             _current.TelephoneNo = _view.TelephoneNo
             _current.FaxNo = _view.FaxNo
-            _current.ContactPerson = _view.ContactPerson
-            _current.ContactPersonPosition = _view.ContactPersonPosition
+            _current.ContactPersonRecordId = _view.ContactPersonRecordId
             _current.ContactPersonEmail = _view.ContactPersonEmail
-            _current.PersonInCharge1 = _view.PersonInCharge1
-            _current.PersonInCharge1Position = _view.PersonInCharge1Position
+            _current.PersonInCharge1RecordId = _view.PersonInCharge1RecordId
             _current.PersonInCharge1Email = _view.PersonInCharge1Email
-            _current.PersonInCharge2 = _view.PersonInCharge2
-            _current.PersonInCharge2Position = _view.PersonInCharge2Position
+            _current.PersonInCharge2RecordId = _view.PersonInCharge2RecordId
             _current.PersonInCharge2Email = _view.PersonInCharge2Email
             _current.Remarks = _view.Remarks
 

@@ -64,7 +64,6 @@ Public Class frmMain
         Await Task.Delay(50)
         Select Case e.Element.Tag.ToString()
             Case "main_Dashboard"
-
                 _nav.NavigateTo(Of ucDashboard)()
 
             Case "main_Employees"

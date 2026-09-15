@@ -399,5 +399,23 @@ Namespace Employee.Data
             End Using
         End Function
 
+        Public Async Function GetEmployeeContactLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeContactLookupModel)) _
+            Implements IEmployeeRepository.GetEmployeeContactLookupAsync
+
+            Dim sql = "
+        SELECT e.RecordId, e.EmployeeNo, e.FirstName + ' ' + e.LastName AS FullName,
+               p.PositionName
+        FROM tblEmployee e
+        LEFT JOIN tblEmployeeEmployment ee ON e.RecordId = ee.RecordId
+        LEFT JOIN tblPosition p ON ee.PositionId = p.PositionId
+        WHERE e.IsActive = 1
+        ORDER BY e.LastName, e.FirstName"
+
+            Using conn = GetConnection()
+                Dim result = Await conn.QueryAsync(Of GlobalShared.Models.EmployeeContactLookupModel)(sql)
+                Return result.ToList()
+            End Using
+        End Function
+
     End Class
 End Namespace

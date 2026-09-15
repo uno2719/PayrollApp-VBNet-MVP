@@ -1,4 +1,4 @@
-﻿' File: Modules/Settings/SysConfig/CompanyProfile/Views/ICompanyView.vb
+﻿' UPDATE: Modules/Settings/SysConfig/CompanyProfile/Views/ICompanyView.vb
 Namespace CompanyProfile.Views
     Public Interface ICompanyView
         Property CompanyCode As String
@@ -8,9 +8,10 @@ Namespace CompanyProfile.Views
         Property PostCode As String
         Property TelephoneNo As String
         Property FaxNo As String
-        Property ContactPerson As String
-        Property ContactPersonPosition As String
+
+        Property ContactPersonRecordId As Integer?
         Property ContactPersonEmail As String
+
         Property Address1 As String
         Property Address2 As String
         Property Address3 As String
@@ -18,8 +19,9 @@ Namespace CompanyProfile.Views
         Property Website As String
         Property IsActive As Boolean
 
+        Sub SetEmployeeList(employees As List(Of GlobalShared.Models.EmployeeContactLookupModel))
         Sub ShowLogo(fullPath As String)
-        Function PromptForLogoFile() As String   ' Nothing kung Cancel ang pinindot sa OpenFileDialog
+        Function PromptForLogoFile() As String
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
     End Interface

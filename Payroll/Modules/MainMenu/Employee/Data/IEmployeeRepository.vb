@@ -25,6 +25,7 @@
         ' --- Lookups ---
         Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel))
         Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel))
+        Function GetEmployeeContactLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeContactLookupModel))
 
 
     End Interface

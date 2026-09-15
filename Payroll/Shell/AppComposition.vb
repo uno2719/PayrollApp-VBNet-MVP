@@ -316,10 +316,6 @@ Public Class AppComposition
 
     Public Shared Function BuildCompanyProfileView() As ucCompanyProfileShell
 
-        ' 1. Repositories + Services - 3 shapes: CompanyRepository (singleton),
-        ' CompanyAgencyRegistrationRepository (SHARED sa 4 agency tabs, gaya
-        ' ng Statutory/Lookups - stateless, agencyType mismo ang variable),
-        ' CompanyBankRepository (list).
         Dim companyRepo As New CompanyRepository()
         Dim companyService As New CompanyService(companyRepo)
 
@@ -329,11 +325,12 @@ Public Class AppComposition
         Dim bankRepo As New CompanyBankRepository()
         Dim bankService As New CompanyBankService(bankRepo)
 
-        ' 2. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        ' Kailangan na ngayon ng Employee repository para sa Contact Person /
+        ' Person-in-charge employee-picker (LookUpEdit) sa 3 magkaibang views.
+        Dim employeeRepo As New EmployeeRepository()
+
         Dim currentUser = AppSession.CurrentUser
 
-        ' 3. Gawin MUNA ang 6 Views - 3 classes lang (ucCompanyAgencyRegistration
-        ' 4x, ucCompany at ucCompanyBank isa bawat isa) - walang Presenter pa.
         Dim companyView As New ucCompany()
         Dim sssView As New ucCompanyAgencyRegistration()
         Dim philHealthView As New ucCompanyAgencyRegistration()
@@ -341,16 +338,13 @@ Public Class AppComposition
         Dim birView As New ucCompanyAgencyRegistration()
         Dim bankView As New ucCompanyBank()
 
-        ' 4. Gawin ang 6 Presenters - 4 sa Agency Registration naka-configure
-        ' sa ibang agencyType mula sa CompanyAgencyTypeRegistry.
-        Dim companyPresenter As New CompanyPresenter(companyView, companyService, currentUser)
-        Dim sssPresenter As New CompanyAgencyRegistrationPresenter(sssView, agencyService, "SSS", currentUser)
-        Dim philHealthPresenter As New CompanyAgencyRegistrationPresenter(philHealthView, agencyService, "PHILHEALTH", currentUser)
-        Dim pagIbigPresenter As New CompanyAgencyRegistrationPresenter(pagIbigView, agencyService, "PAGIBIG", currentUser)
-        Dim birPresenter As New CompanyAgencyRegistrationPresenter(birView, agencyService, "BIR", currentUser)
-        Dim bankPresenter As New CompanyBankPresenter(bankView, bankService, currentUser)
+        Dim companyPresenter As New CompanyPresenter(companyView, companyService, employeeRepo, currentUser)
+        Dim sssPresenter As New CompanyAgencyRegistrationPresenter(sssView, agencyService, employeeRepo, "SSS", currentUser)
+        Dim philHealthPresenter As New CompanyAgencyRegistrationPresenter(philHealthView, agencyService, employeeRepo, "PHILHEALTH", currentUser)
+        Dim pagIbigPresenter As New CompanyAgencyRegistrationPresenter(pagIbigView, agencyService, employeeRepo, "PAGIBIG", currentUser)
+        Dim birPresenter As New CompanyAgencyRegistrationPresenter(birView, agencyService, employeeRepo, "BIR", currentUser)
+        Dim bankPresenter As New CompanyBankPresenter(bankView, bankService, employeeRepo, currentUser)
 
-        ' 5. I-assign ang Presenter sa bawat View
         companyView.SetPresenter(companyPresenter)
         sssView.SetPresenter(sssPresenter)
         philHealthView.SetPresenter(philHealthPresenter)
@@ -358,7 +352,6 @@ Public Class AppComposition
         birView.SetPresenter(birPresenter)
         bankView.SetPresenter(bankPresenter)
 
-        ' 6. Gawin ang Main View
         Return New ucCompanyProfileShell(companyView, sssView, philHealthView, pagIbigView, birView, bankView)
 
     End Function

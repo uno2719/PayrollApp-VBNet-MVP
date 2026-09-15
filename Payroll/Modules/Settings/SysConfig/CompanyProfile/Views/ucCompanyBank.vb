@@ -1,4 +1,5 @@
 ﻿' File: Modules/Settings/SysConfig/CompanyProfile/Views/ucCompanyBank.vb
+Imports System.Linq
 Imports DevExpress.XtraBars.Docking2010
 Imports DevExpress.XtraEditors
 Imports Payroll.CompanyProfile.Presenters
@@ -10,14 +11,12 @@ Public Class ucCompanyBank
 
     Private _presenter As CompanyBankPresenter
     Private _isEditing As Boolean = False
+    Private _employees As List(Of EmployeeContactLookupModel)
 
-    ' index 0 = separator
     Private Const BTN_NEW As Integer = 1
     Private Const BTN_EDIT As Integer = 2
     Private Const BTN_DELETE As Integer = 3
-    ' index 4 = separator
     Private Const BTN_REFRESH As Integer = 5
-    ' index 6 = separator
 
     Public Sub SetPresenter(presenter As CompanyBankPresenter)
         _presenter = presenter
@@ -47,8 +46,6 @@ Public Class ucCompanyBank
         End Try
     End Function
 
-    ' Sadyang naka-OFF ang inline grid editing, parehong dahilan gaya ng
-    ' ucLookupMaintenance - ang TOP FORM + buttons na lang ang single edit path.
     Private Sub SetupGrid()
         With gridviewBankList
             .OptionsBehavior.Editable = False
@@ -57,6 +54,13 @@ Public Class ucCompanyBank
             .OptionsSelection.EnableAppearanceFocusedCell = False
         End With
     End Sub
+
+    Private Function ToNullableInt(value As Object) As Integer?
+        If value Is Nothing OrElse IsDBNull(value) Then
+            Return Nothing
+        End If
+        Return Convert.ToInt32(value)
+    End Function
 
     ' === ICompanyBankMaintenanceView - FORM FIELDS ===
 
@@ -168,21 +172,12 @@ Public Class ucCompanyBank
         End Set
     End Property
 
-    Public Property ContactPerson As String Implements ICompanyBankMaintenanceView.ContactPerson
+    Public Property ContactPersonRecordId As Integer? Implements ICompanyBankMaintenanceView.ContactPersonRecordId
         Get
-            Return txtContactPerson.Text
+            Return ToNullableInt(lookupContactPerson.EditValue)
         End Get
-        Set(value As String)
-            txtContactPerson.Text = value
-        End Set
-    End Property
-
-    Public Property ContactPersonPosition As String Implements ICompanyBankMaintenanceView.ContactPersonPosition
-        Get
-            Return txtContactPersonPosition.Text
-        End Get
-        Set(value As String)
-            txtContactPersonPosition.Text = value
+        Set(value As Integer?)
+            lookupContactPerson.EditValue = value
         End Set
     End Property
 
@@ -195,21 +190,12 @@ Public Class ucCompanyBank
         End Set
     End Property
 
-    Public Property PersonInCharge1 As String Implements ICompanyBankMaintenanceView.PersonInCharge1
+    Public Property PersonInCharge1RecordId As Integer? Implements ICompanyBankMaintenanceView.PersonInCharge1RecordId
         Get
-            Return txtPersonInCharge1.Text
+            Return ToNullableInt(lookupPersonInCharge1.EditValue)
         End Get
-        Set(value As String)
-            txtPersonInCharge1.Text = value
-        End Set
-    End Property
-
-    Public Property PersonInCharge1Position As String Implements ICompanyBankMaintenanceView.PersonInCharge1Position
-        Get
-            Return txtPersonInCharge1Position.Text
-        End Get
-        Set(value As String)
-            txtPersonInCharge1Position.Text = value
+        Set(value As Integer?)
+            lookupPersonInCharge1.EditValue = value
         End Set
     End Property
 
@@ -222,21 +208,12 @@ Public Class ucCompanyBank
         End Set
     End Property
 
-    Public Property PersonInCharge2 As String Implements ICompanyBankMaintenanceView.PersonInCharge2
+    Public Property PersonInCharge2RecordId As Integer? Implements ICompanyBankMaintenanceView.PersonInCharge2RecordId
         Get
-            Return txtPersonInCharge2.Text
+            Return ToNullableInt(lookupPersonInCharge2.EditValue)
         End Get
-        Set(value As String)
-            txtPersonInCharge2.Text = value
-        End Set
-    End Property
-
-    Public Property PersonInCharge2Position As String Implements ICompanyBankMaintenanceView.PersonInCharge2Position
-        Get
-            Return txtPersonInCharge2Position.Text
-        End Get
-        Set(value As String)
-            txtPersonInCharge2Position.Text = value
+        Set(value As Integer?)
+            lookupPersonInCharge2.EditValue = value
         End Set
     End Property
 
@@ -285,6 +262,55 @@ Public Class ucCompanyBank
         End Set
     End Property
 
+    ' === EMPLOYEE PICKER ===
+
+    Public Sub SetEmployeeList(employees As List(Of EmployeeContactLookupModel)) _
+        Implements ICompanyBankMaintenanceView.SetEmployeeList
+
+        _employees = employees
+
+        For Each lookup In New LookUpEdit() {lookupContactPerson, lookupPersonInCharge1, lookupPersonInCharge2}
+            With lookup.Properties
+                .DataSource = employees
+                .DisplayMember = "FullName"
+                .ValueMember = "RecordId"
+                .NullText = "[Select employee]"
+                .Columns.Clear()
+                .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("EmployeeNo", "Employee No.", 90))
+                .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("FullName", "Name", 200))
+                .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("PositionName", "Position", 150))
+            End With
+        Next
+
+        txtContactPersonPosition.Properties.ReadOnly = True
+        txtPersonInCharge1Position.Properties.ReadOnly = True
+        txtPersonInCharge2Position.Properties.ReadOnly = True
+    End Sub
+
+    Private Sub lookupContactPerson_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupContactPerson.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupContactPerson.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+        txtContactPersonPosition.Text = If(matched?.PositionName, "")
+    End Sub
+
+    Private Sub lookupPersonInCharge1_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupPersonInCharge1.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupPersonInCharge1.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+        txtPersonInCharge1Position.Text = If(matched?.PositionName, "")
+    End Sub
+
+    Private Sub lookupPersonInCharge2_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles lookupPersonInCharge2.EditValueChanged
+
+        Dim selectedId = ToNullableInt(lookupPersonInCharge2.EditValue)
+        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
+        txtPersonInCharge2Position.Text = If(matched?.PositionName, "")
+    End Sub
+
     ' === GRID ===
 
     Public Sub BindList(items As List(Of CompanyBankModel)) Implements ICompanyBankMaintenanceView.BindList
@@ -298,23 +324,28 @@ Public Class ucCompanyBank
 
         _isEditing = isEditable
 
-        Dim allFields As TextEdit() = {
+        Dim textFields As TextEdit() = {
             txtBankName, txtBankCode, txtAccountName, txtAccountNo, txtBranch,
             txtAddress1, txtAddress2, txtAddress3, txtCountry, txtPostCode,
-            txtTelephoneNo, txtFaxNo, txtContactPerson, txtContactPersonPosition, txtContactPersonEmail,
-            txtPersonInCharge1, txtPersonInCharge1Position, txtPersonInCharge1Email,
-            txtPersonInCharge2, txtPersonInCharge2Position, txtPersonInCharge2Email,
+            txtTelephoneNo, txtFaxNo,
+            txtContactPersonEmail, txtPersonInCharge1Email, txtPersonInCharge2Email,
             txtSwiftCode, txtBranchNo, txtCustomerID
         }
 
-        For Each field In allFields
+        For Each field In textFields
             field.Properties.ReadOnly = Not isEditable
         Next
         chkActive.Properties.ReadOnly = Not isEditable
 
+        ' Ang 3 employee-picker - palaging naka-link sa isang tao lang,
+        ' gawin ding ReadOnly kapag hindi editing (Position ay palaging
+        ' ReadOnly, kahit sa editing mode - itinakda na sa SetEmployeeList)
+        For Each lookup In New LookUpEdit() {lookupContactPerson, lookupPersonInCharge1, lookupPersonInCharge2}
+            lookup.Properties.ReadOnly = Not isEditable
+        Next
+
         gridconBankList.Enabled = Not isEditable
 
-        ' NEW / SAVE / UPDATE BUTTON
         If isEditable Then
             If isNewRecord Then
                 wbpMainCommands.Buttons.Item(BTN_NEW).Properties.Caption = " Save"
@@ -331,7 +362,6 @@ Public Class ucCompanyBank
             wbpMainCommands.Buttons.Item(BTN_NEW).Properties.ToolTip = "Add New Entry"
         End If
 
-        ' EDIT / CANCEL BUTTON
         If isEditable Then
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.Caption = " Cancel"
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_cancel_24
@@ -347,18 +377,24 @@ Public Class ucCompanyBank
     End Sub
 
     Public Sub ClearFields() Implements ICompanyBankMaintenanceView.ClearFields
-        Dim allFields As TextEdit() = {
+        Dim textFields As TextEdit() = {
             txtBankName, txtBankCode, txtAccountName, txtAccountNo, txtBranch,
             txtAddress1, txtAddress2, txtAddress3, txtCountry, txtPostCode,
-            txtTelephoneNo, txtFaxNo, txtContactPerson, txtContactPersonPosition, txtContactPersonEmail,
-            txtPersonInCharge1, txtPersonInCharge1Position, txtPersonInCharge1Email,
-            txtPersonInCharge2, txtPersonInCharge2Position, txtPersonInCharge2Email,
+            txtTelephoneNo, txtFaxNo,
+            txtContactPersonEmail, txtContactPersonPosition,
+            txtPersonInCharge1Email, txtPersonInCharge1Position,
+            txtPersonInCharge2Email, txtPersonInCharge2Position,
             txtSwiftCode, txtBranchNo, txtCustomerID
         }
 
-        For Each field In allFields
+        For Each field In textFields
             field.Text = String.Empty
         Next
+
+        lookupContactPerson.EditValue = Nothing
+        lookupPersonInCharge1.EditValue = Nothing
+        lookupPersonInCharge2.EditValue = Nothing
+
         chkActive.Checked = True
     End Sub
 
