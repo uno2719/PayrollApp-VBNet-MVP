@@ -112,10 +112,11 @@
     <Folder Include="Modules\MainMenu\Dashboard\Models\" />
     <Folder Include="Modules\MainMenu\Dashboard\Presenters\" />
     <Folder Include="Modules\MainMenu\Dashboard\Services\" />
-    <Folder Include="Modules\Settings\SysConfig\CompanyProfile\Models\" />
-    <Folder Include="Modules\Settings\SysConfig\IncomeTaxTable\Models\" />
-    <Folder Include="Modules\Settings\SysConfig\Master Data\Models\" />
-    <Folder Include="Modules\Settings\SysConfig\StatutorySettings\Models\" />
+    <Folder Include="Modules\Settings\PayrollConfig\CompanyProfile\Models\" />
+    <Folder Include="Modules\Settings\PayrollConfig\General Settings\Models\" />
+    <Folder Include="Modules\Settings\PayrollConfig\IncomeTaxTable\Models\" />
+    <Folder Include="Modules\Settings\PayrollConfig\Master Data\Models\" />
+    <Folder Include="Modules\Settings\PayrollConfig\Statutory Settings\Models\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,17 @@
-﻿Imports Payroll.DBConnection.Presenters
+﻿Imports Payroll.CompanyProfile.Data
+Imports Payroll.CompanyProfile.Presenters
+Imports Payroll.CompanyProfile.Services
+Imports Payroll.CompanyProfile.Views
+Imports Payroll.DBConnection.Presenters
 Imports Payroll.DBConnection.Services
 Imports Payroll.DBConnection.Views
 Imports Payroll.Employee.Data
 Imports Payroll.Employee.Presenters
 Imports Payroll.Employee.Services
 Imports Payroll.Employee.Views
+Imports Payroll.GeneralSettings.Data
+Imports Payroll.GeneralSettings.Presenters
+Imports Payroll.GeneralSettings.Services
 Imports Payroll.IncomeTaxTable.Data
 Imports Payroll.IncomeTaxTable.Presenters
 Imports Payroll.IncomeTaxTable.Services
@@ -23,10 +30,6 @@ Imports Payroll.StatutorySettings.Services
 Imports Payroll.Users.Presenters
 Imports Payroll.Users.Services
 Imports Payroll.Users.Views
-Imports Payroll.CompanyProfile.Data
-Imports Payroll.CompanyProfile.Presenters
-Imports Payroll.CompanyProfile.Services
-Imports Payroll.CompanyProfile.Views
 
 Public Class AppComposition
 
@@ -353,6 +356,30 @@ Public Class AppComposition
         bankView.SetPresenter(bankPresenter)
 
         Return New ucCompanyProfileShell(companyView, sssView, philHealthView, pagIbigView, birView, bankView)
+
+    End Function
+
+    Public Shared Function BuildGeneralSettingsView() As ucGeneralSettings
+
+        Dim settingsRepo As New GeneralSettingsRepository()
+        Dim settingsService As New GeneralSettingsService(settingsRepo)
+
+        ' Read-only lang ang gamit natin sa dalawang ito — para sa code
+        ' dropdowns (Basic Salary +/-, Absent, Late In, Early Out).
+        ' Direktang repository, walang bagong Service layer, kapareho ng
+        ' ginawa natin sa EmployeeRepository sa BuildCompanyProfileView.
+        Dim compensationRepo As New CompensationRepository()
+        Dim flaggedEntryRepo As New PayrollFlaggedEntryRepository()
+
+        Dim currentUser = AppSession.CurrentUser
+
+        Dim view As New ucGeneralSettings()
+        Dim presenter As New GeneralSettingsPresenter(
+            view, settingsService, compensationRepo, flaggedEntryRepo, currentUser)
+
+        view.SetPresenter(presenter)
+
+        Return view
 
     End Function
 

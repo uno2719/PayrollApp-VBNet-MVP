@@ -93,6 +93,9 @@ Public Class frmMain
             Case "settings_DatabaseSettings"
                 OpenDatabaseSettings()
 
+            Case "settings_General"
+                _nav.NavigateTo(Of ucGeneralSettings)(Function() AppComposition.BuildGeneralSettingsView())
+
             Case "logout"
                 PerformLogout()
 
