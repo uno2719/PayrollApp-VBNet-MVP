@@ -46,4 +46,5 @@ Namespace GlobalShared.Helpers
         End Sub
 
     End Module
+
 End Namespace

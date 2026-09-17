@@ -112,6 +112,7 @@
     <Folder Include="Modules\MainMenu\Dashboard\Models\" />
     <Folder Include="Modules\MainMenu\Dashboard\Presenters\" />
     <Folder Include="Modules\MainMenu\Dashboard\Services\" />
+    <Folder Include="Modules\Settings\AppSettings\Email Settings\Models\" />
     <Folder Include="Modules\Settings\PayrollConfig\CompanyProfile\Models\" />
     <Folder Include="Modules\Settings\PayrollConfig\General Settings\Models\" />
     <Folder Include="Modules\Settings\PayrollConfig\IncomeTaxTable\Models\" />

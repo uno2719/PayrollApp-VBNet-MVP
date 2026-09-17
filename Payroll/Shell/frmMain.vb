@@ -96,6 +96,9 @@ Public Class frmMain
             Case "settings_General"
                 _nav.NavigateTo(Of ucGeneralSettings)(Function() AppComposition.BuildGeneralSettingsView())
 
+            Case "settings_Email"
+                _nav.NavigateTo(Of ucEmailSettings)(Function() AppComposition.BuildEmailSettingsView())
+
             Case "logout"
                 PerformLogout()
 

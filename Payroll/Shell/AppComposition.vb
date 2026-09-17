@@ -5,6 +5,9 @@ Imports Payroll.CompanyProfile.Views
 Imports Payroll.DBConnection.Presenters
 Imports Payroll.DBConnection.Services
 Imports Payroll.DBConnection.Views
+Imports Payroll.EmailSettings.Data
+Imports Payroll.EmailSettings.Presenters
+Imports Payroll.EmailSettings.Services
 Imports Payroll.Employee.Data
 Imports Payroll.Employee.Presenters
 Imports Payroll.Employee.Services
@@ -376,6 +379,23 @@ Public Class AppComposition
         Dim view As New ucGeneralSettings()
         Dim presenter As New GeneralSettingsPresenter(
             view, settingsService, compensationRepo, flaggedEntryRepo, currentUser)
+
+        view.SetPresenter(presenter)
+
+        Return view
+
+    End Function
+
+
+    Public Shared Function BuildEmailSettingsView() As ucEmailSettings
+
+        Dim repo As New EmailSettingsRepository()
+        Dim service As New EmailSettingsService(repo)
+
+        Dim currentUser = AppSession.CurrentUser
+
+        Dim view As New ucEmailSettings()
+        Dim presenter As New EmailSettingsPresenter(view, service, currentUser)
 
         view.SetPresenter(presenter)
 
