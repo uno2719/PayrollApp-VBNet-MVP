@@ -84,7 +84,7 @@ Public Class frmMain
             Case "settings_Statutory"
                 _nav.NavigateTo(Of ucStatutorySettingsShell)(Function() AppComposition.BuildStatutorySettingsView())
 
-            Case "setting_Payroll"
+            Case "settings_Payroll"
                 _nav.NavigateTo(Of ucPayrollSettings)(Function() AppComposition.BuildPayrollSettingsView())
 
             Case "settings_TaxTable"
@@ -239,6 +239,12 @@ Public Class frmMain
         ' 👉 default page
         _nav.SetDefault(Of ucDashboard)()
         AccordionControl1.OptionsMinimizing.State = DevExpress.XtraBars.Navigation.AccordionControlState.Normal
+
+        ' =============================================
+        ' ADMINISTRATION ACCESS
+        ' =============================================
+        aceHeaderAdministration.Enabled = AppSession.IsAdmin
+
     End Sub
 
     ' Kinukuha sa assembly info ng project ang bersyon - hindi na kailangang
