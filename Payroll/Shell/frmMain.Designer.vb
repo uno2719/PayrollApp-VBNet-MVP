@@ -40,8 +40,8 @@ Partial Class frmMain
         aceSettingsMasterData = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsCutOff = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         AccordionControlSeparator6 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
-        aceSettingsPersonal = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettings_Leave = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceSettingsHolidays = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         AccordionControlSeparator7 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
         aceSettingsTaxTable = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsStatutory = New DevExpress.XtraBars.Navigation.AccordionControlElement()
@@ -52,7 +52,14 @@ Partial Class frmMain
         aceAppConfigEmailSettings = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceAppConfigThemes = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceHeaderReports = New DevExpress.XtraBars.Navigation.AccordionControlElement()
-        AccordionControlElement1 = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceReportsHR = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceReportsPayslip = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceReportsPayroll = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceReportsStatutory = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceReportsLoans = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        AccordionControlSeparator2 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
+        aceReportsAlphalist = New DevExpress.XtraBars.Navigation.AccordionControlElement()
+        aceReportsCustom = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceLogout = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceHeaderAdministration = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceAdminUsers = New DevExpress.XtraBars.Navigation.AccordionControlElement()
@@ -198,7 +205,7 @@ Partial Class frmMain
         ' 
         aceSettingsPayrollSetup.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsPayrollSetup.Appearance.Default.Options.UseFont = True
-        aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsMasterData, aceSettingsCutOff, AccordionControlSeparator6, aceSettingsPersonal, aceSettings_Leave, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
+        aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsMasterData, aceSettingsCutOff, AccordionControlSeparator6, aceSettings_Leave, aceSettingsHolidays, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
         aceSettingsPayrollSetup.Expanded = True
         aceSettingsPayrollSetup.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsPayrollSetup.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsPayrollSetup.ImageOptions.SvgImageSize = New Size(21, 21)
@@ -256,17 +263,6 @@ Partial Class frmMain
         ' 
         AccordionControlSeparator6.Name = "AccordionControlSeparator6"
         ' 
-        ' aceSettingsPersonal
-        ' 
-        aceSettingsPersonal.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
-        aceSettingsPersonal.Appearance.Default.Options.UseFont = True
-        aceSettingsPersonal.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsPersonal.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
-        aceSettingsPersonal.ImageOptions.SvgImageSize = New Size(18, 18)
-        aceSettingsPersonal.Name = "aceSettingsPersonal"
-        aceSettingsPersonal.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        aceSettingsPersonal.Tag = "settings_Personal"
-        aceSettingsPersonal.Text = "Personal"
-        ' 
         ' aceSettings_Leave
         ' 
         aceSettings_Leave.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
@@ -277,6 +273,17 @@ Partial Class frmMain
         aceSettings_Leave.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
         aceSettings_Leave.Tag = "settings_Leave"
         aceSettings_Leave.Text = "Leave Settings"
+        ' 
+        ' aceSettingsHolidays
+        ' 
+        aceSettingsHolidays.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
+        aceSettingsHolidays.Appearance.Default.Options.UseFont = True
+        aceSettingsHolidays.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsHolidays.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceSettingsHolidays.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceSettingsHolidays.Name = "aceSettingsHolidays"
+        aceSettingsHolidays.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceSettingsHolidays.Tag = "settings_Holidays"
+        aceSettingsHolidays.Text = "Holidays Settings"
         ' 
         ' AccordionControlSeparator7
         ' 
@@ -361,18 +368,79 @@ Partial Class frmMain
         ' 
         ' aceHeaderReports
         ' 
-        aceHeaderReports.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {AccordionControlElement1})
+        aceHeaderReports.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceReportsHR, aceReportsPayslip, aceReportsPayroll, aceReportsStatutory, aceReportsLoans, AccordionControlSeparator2, aceReportsAlphalist, aceReportsCustom})
         aceHeaderReports.Expanded = True
         aceHeaderReports.ImageOptions.SvgImage = CType(resources.GetObject("aceHeaderReports.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceHeaderReports.ImageOptions.SvgImageSize = New Size(27, 27)
         aceHeaderReports.Name = "aceHeaderReports"
         aceHeaderReports.Text = "Reports"
         ' 
-        ' AccordionControlElement1
+        ' aceReportsHR
         ' 
-        AccordionControlElement1.Name = "AccordionControlElement1"
-        AccordionControlElement1.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        AccordionControlElement1.Text = "Element1"
+        aceReportsHR.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsHR.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsHR.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsHR.Name = "aceReportsHR"
+        aceReportsHR.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsHR.Tag = "reports_HR"
+        aceReportsHR.Text = "HR"
+        ' 
+        ' aceReportsPayslip
+        ' 
+        aceReportsPayslip.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsPayslip.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsPayslip.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsPayslip.Name = "aceReportsPayslip"
+        aceReportsPayslip.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsPayslip.Tag = "reports_Payslip"
+        aceReportsPayslip.Text = "Payslip"
+        ' 
+        ' aceReportsPayroll
+        ' 
+        aceReportsPayroll.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsPayroll.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsPayroll.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsPayroll.Name = "aceReportsPayroll"
+        aceReportsPayroll.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsPayroll.Tag = "reports_Payroll"
+        aceReportsPayroll.Text = "Payroll"
+        ' 
+        ' aceReportsStatutory
+        ' 
+        aceReportsStatutory.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsStatutory.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsStatutory.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsStatutory.Name = "aceReportsStatutory"
+        aceReportsStatutory.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsStatutory.Tag = "reports_Statutory"
+        aceReportsStatutory.Text = "Statutory"
+        ' 
+        ' aceReportsLoans
+        ' 
+        aceReportsLoans.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsLoans.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsLoans.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsLoans.Name = "aceReportsLoans"
+        aceReportsLoans.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsLoans.Tag = "reports_Loans"
+        aceReportsLoans.Text = "Loans"
+        ' 
+        ' AccordionControlSeparator2
+        ' 
+        AccordionControlSeparator2.Name = "AccordionControlSeparator2"
+        ' 
+        ' aceReportsAlphalist
+        ' 
+        aceReportsAlphalist.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsAlphalist.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsAlphalist.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsAlphalist.Name = "aceReportsAlphalist"
+        aceReportsAlphalist.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsAlphalist.Tag = "reports_Alphalist"
+        aceReportsAlphalist.Text = "Alphalist"
+        ' 
+        ' aceReportsCustom
+        ' 
+        aceReportsCustom.ImageOptions.SvgImage = CType(resources.GetObject("aceReportsCustom.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
+        aceReportsCustom.ImageOptions.SvgImageSize = New Size(16, 16)
+        aceReportsCustom.Name = "aceReportsCustom"
+        aceReportsCustom.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
+        aceReportsCustom.Tag = "reports_Custom"
+        aceReportsCustom.Text = "Custom"
         ' 
         ' aceLogout
         ' 
@@ -682,7 +750,7 @@ Partial Class frmMain
     Friend WithEvents lblVersion As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblHost As DevExpress.XtraEditors.LabelControl
     Friend WithEvents aceSettingsCutOff As DevExpress.XtraBars.Navigation.AccordionControlElement
-    Friend WithEvents aceSettingsPersonal As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceSettingsHolidays As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettings_Leave As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsPayroll As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsAppConfig As DevExpress.XtraBars.Navigation.AccordionControlElement
@@ -701,5 +769,12 @@ Partial Class frmMain
     Friend WithEvents AccordionControlSeparator1 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
     Friend WithEvents aceLeave As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceHeaderReports As DevExpress.XtraBars.Navigation.AccordionControlElement
-    Friend WithEvents AccordionControlElement1 As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceReportsHR As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceReportsPayslip As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceReportsPayroll As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceReportsStatutory As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceReportsLoans As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents AccordionControlSeparator2 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
+    Friend WithEvents aceReportsAlphalist As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents aceReportsCustom As DevExpress.XtraBars.Navigation.AccordionControlElement
 End Class
