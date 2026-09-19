@@ -29,5 +29,12 @@
         ' ResetPasswordAsync dahil dapat MustChangePassword=1 pagkatapos
         ' (kabaligtaran ng self-service, na nagse-set ng 0).
         Function AdminResetPasswordAsync(recordId As Integer, newHash As String, newSalt As String) As Task(Of Boolean)
+
+        ' Ibinabalik ang flat na permission list ng isang user.
+        ' Naka-JOIN na ang tblModules kaya ModuleCode agad ang labas,
+        ' hindi ModuleId - ang UI kasi ay nakakakilala lang ng code.
+        Function GetUserPermissionsAsync(userId As Integer) _
+            As Task(Of List(Of Payroll.GlobalShared.Security.UserPermission))
+
     End Interface
 End Namespace

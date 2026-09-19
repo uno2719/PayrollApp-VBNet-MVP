@@ -18,6 +18,9 @@ Imports Payroll.GeneralSettings.Services
 Imports Payroll.IncomeTaxTable.Data
 Imports Payroll.IncomeTaxTable.Presenters
 Imports Payroll.IncomeTaxTable.Services
+Imports Payroll.Loans.Data
+Imports Payroll.Loans.Presenters
+Imports Payroll.Loans.Services
 Imports Payroll.Login.Data
 Imports Payroll.Login.Presenters
 Imports Payroll.Login.Services
@@ -402,5 +405,46 @@ Public Class AppComposition
         Return view
 
     End Function
+
+    Public Shared Function BuildLoansView() As ucLoans
+
+        ' 1. Repository + Service ng mismong module
+        Dim loanRepo As New EmployeeLoanRepository()
+        Dim loanService As New EmployeeLoanService(loanRepo)
+
+        ' 2. REUSED na dependencies - hindi tayo gumagawa ng bago:
+        '
+        '    - EmployeeService  : para sa employee masterlist sa gilid,
+        '                         kapareho ng ginagamit ng ucEmployees.
+        '
+        '    - LoanRepository   : para sa Loan Code dropdown. Galing ito
+        '      (PayrollSettings)  sa Payroll Settings > Loan tab. Direktang
+        '                         repository, walang bagong service layer -
+        '                         read-only lookup lang naman ang kailangan,
+        '                         kapareho ng ginawa natin sa
+        '                         BuildGeneralSettingsView at
+        '                         BuildCompanyProfileView.
+        Dim empRepo As New EmployeeRepository()
+        Dim empService As New EmployeeService(empRepo)
+
+        Dim loanCodeRepo As New PayrollSettings.Data.LoanRepository()
+
+        ' 3. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        Dim currentUser = AppSession.CurrentUser
+
+        ' 4. View
+        Dim view As New ucLoans()
+
+        ' 5. Presenter - i-inject ang View + lahat ng dependencies
+        Dim presenter As New EmployeeLoanPresenter(
+            view, loanService, empService, loanCodeRepo, currentUser)
+
+        ' 6. I-assign ang Presenter sa View
+        view.SetPresenter(presenter)
+
+        Return view
+
+    End Function
+
 
 End Class

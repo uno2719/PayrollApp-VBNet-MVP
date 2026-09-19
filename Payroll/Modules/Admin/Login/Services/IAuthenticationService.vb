@@ -3,6 +3,7 @@
     Public Interface IAuthenticationService
         Function AuthenticateAsync(username As String, password As String) As Task(Of AuthenticationResult)
         Function ChangePasswordAsync(username As String, currentPassword As String, newPassword As String) As Task(Of ChangePasswordResult)
+        Function GetUserPermissionsAsync(userId As Integer) As Task(Of List(Of Payroll.GlobalShared.Security.UserPermission))
     End Interface
 
     ' Hindi lang True/False ang gusto nating i-return - kailangan din natin ng

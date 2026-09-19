@@ -116,6 +116,18 @@ Namespace Login.Services
 
         End Function
 
+        ' Pass-through lang - walang business rule dito. Pero dumadaan
+        ' pa rin tayo sa Service layer imbes na tawagin ng Presenter
+        ' diretso ang Repository, para pare-pareho ang daan ng lahat
+        ' at hindi ka na magtataka mamaya kung bakit iba ang isa.
+        Public Async Function GetUserPermissionsAsync(userId As Integer) _
+            As Task(Of List(Of Payroll.GlobalShared.Security.UserPermission)) _
+            Implements IAuthenticationService.GetUserPermissionsAsync
+
+            Return Await _userRepo.GetUserPermissionsAsync(userId)
+
+        End Function
+
     End Class
 
 End Namespace

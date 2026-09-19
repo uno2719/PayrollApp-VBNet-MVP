@@ -200,7 +200,7 @@ Namespace Login.Data
                 SELECT RecordId, ModuleCode, ModuleName
                 FROM tblModules
                 WHERE IsActive = 1
-                ORDER BY DisplayOrder"
+                ORDER BY SortOrder"
 
             Using conn = GetConnection()
                 Dim results = Await conn.QueryAsync(Of Users.Models.ModuleInfo)(sql)
@@ -222,7 +222,7 @@ Namespace Login.Data
                 LEFT JOIN tblUserModuleAccess a
                     ON a.ModuleId = m.RecordId AND a.UserId = @userId
                 WHERE m.IsActive = 1
-                ORDER BY m.DisplayOrder"
+                ORDER BY m.SortOrder"
 
             Using conn = GetConnection()
                 Dim rows = Await conn.QueryAsync(Of ModuleAccessQueryRow)(sql, New With {userId})
@@ -247,6 +247,38 @@ Namespace Login.Data
             End Using
 
         End Function
+
+        Public Async Function GetUserPermissionsAsync(userId As Integer) _
+            As Task(Of List(Of Payroll.GlobalShared.Security.UserPermission)) _
+            Implements IUserRepository.GetUserPermissionsAsync
+
+            ' INNER JOIN (hindi LEFT JOIN) - sinasadya ito.
+            '
+            ' Sa GetModuleAccessAsync (yung ginagamit ng Users screen)
+            ' LEFT JOIN ang gamit dahil kailangan doong makita LAHAT ng
+            ' module kahit walang access, para may maipakitang dropdown
+            ' na naka-"No Access".
+            '
+            ' Dito naman, ang hinahanap lang natin ay kung ANO ang
+            ' pinapayagan. Ang walang row = walang access, at yun na
+            ' mismo ang default sa PermissionService.CanView().
+            Dim sql = "
+                SELECT  m.ModuleCode,
+                        a.CanView,
+                        a.CanEdit
+                FROM    tblUserModuleAccess a
+                INNER JOIN tblModules m ON m.RecordId = a.ModuleId
+                WHERE   a.UserId = @userId"
+
+            Using conn = GetConnection()
+                Dim rows = Await conn.QueryAsync(Of Payroll.GlobalShared.Security.UserPermission)(
+                    sql, New With {userId})
+
+                Return rows.ToList()
+            End Using
+
+        End Function
+
 
         Public Async Function SaveModuleAccessAsync(userId As Integer, accessList As List(Of Users.Models.ModuleAccessItem)) As Task(Of Boolean) _
             Implements IUserRepository.SaveModuleAccessAsync

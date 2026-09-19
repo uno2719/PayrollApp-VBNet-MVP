@@ -1,4 +1,6 @@
-﻿Namespace Login.Presenters
+﻿Imports Payroll.GlobalShared.Security
+
+Namespace Login.Presenters
 
     Public Class LoginPresenter
 
@@ -48,6 +50,13 @@
                 AppSession.IsAdmin = result.User.IsAdmin
                 AppSession.EmployeeNo = result.User.EmployeeNo
                 AppSession.DisplayName = $"{result.User.FirstName} {result.User.LastName}".Trim()
+
+                ' ============ MODULE ACCESS ============
+                ' I-load ang permissions ng user papasok sa in-memory
+                ' cache. Isang beses lang ito sa buong session.
+                Dim permissions = Await _authService.GetUserPermissionsAsync(result.User.RecordId)
+                PermissionService.Load(permissions, result.User.IsAdmin)
+                ' =======================================
 
                 ' I-save o i-clear yung Remember Me preference base sa checkbox
                 Dim prefs As New Models.LoginPreferences With {

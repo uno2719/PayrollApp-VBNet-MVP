@@ -5,6 +5,7 @@ Imports DevExpress.XtraEditors
 Imports Payroll.DBConnection.Services
 Imports Payroll.GlobalShared.Base
 Imports Payroll.GlobalShared.Database
+Imports Payroll.GlobalShared.Security
 
 Public Class frmMain
     ' Dictionary para i-cache ang mga modules (para hindi na i-New ulit pag binalikan)
@@ -54,12 +55,104 @@ Public Class frmMain
     End Sub
 
 
+    ' ========================================================
+    ' NAVIGATION VISIBILITY
+    ' ========================================================
+    ' Nililibot ang BUONG accordion tree at itinatago ang mga
+    ' elementong walang View access si user.
+    '
+    ' BAKIT RECURSIVE?
+    '   Ang AccordionControl ay puno (tree), hindi listahan.
+    '   May Elements sa ilalim ng Elements (Settings > Payroll
+    '   Setup > General). Kung For Each lang sa top level, ang
+    '   mga anak ay hindi mahahawakan.
+    '
+    ' BAKIT HIDE AT HINDI DISABLE?
+    '   Ang naka-disable na menu ay nagsasabi pa rin kay user na
+    '   "may ganito pala" - pinapakita mo ang mapa ng sistema sa
+    '   taong hindi dapat makakita. Ang naka-hide ay parang wala
+    '   talaga. (Exception: ang Administration header ay naka-
+    '   .Enabled = AppSession.IsAdmin na dati pa - hinayaan ko
+    '   na lang dahil tama naman siya.)
+    '
+    ' BAKIT KAILANGAN ITONG BOTTOM-UP?
+    '   Kapag lahat ng anak ay naka-hide, dapat matago na rin ang
+    '   magulang - kung hindi, may nakasabit na "Payroll Setup"
+    '   na walang laman kapag pinindot.
+    ' ========================================================
+    Private Sub ApplyModuleAccessToNavigation()
+
+        ' Ang Admin ay laging buo ang makikita - walang kailangang gawin.
+        If AppSession.IsAdmin Then Return
+
+        For Each element As AccordionControlElement In AccordionControl1.Elements
+            ApplyAccessToElement(element)
+        Next
+
+    End Sub
+
+    ' Ibinabalik: True kung dapat MANATILING VISIBLE ang element na ito.
+    Private Function ApplyAccessToElement(element As AccordionControlElement) As Boolean
+
+        If element Is Nothing Then Return False
+
+        ' ---- MAY ANAK? (group / header) ----
+        If element.Elements IsNot Nothing AndAlso element.Elements.Count > 0 Then
+
+            Dim anyChildVisible As Boolean = False
+
+            For Each child As AccordionControlElement In element.Elements
+                ' Sinasadyang hindi ako gumamit ng OrElse dito.
+                ' Kailangang MATAWAG ang ApplyAccessToElement sa
+                ' LAHAT ng anak - kung OrElse, titigil siya sa unang
+                ' True at hindi na matatago ang mga natitira.
+                Dim childVisible = ApplyAccessToElement(child)
+                anyChildVisible = anyChildVisible Or childVisible
+            Next
+
+            element.Visible = anyChildVisible
+            Return anyChildVisible
+
+        End If
+
+        ' ---- WALANG ANAK (leaf / aktwal na module) ----
+        Dim tag = element.Tag?.ToString()
+
+        ' Walang Tag = hindi module, hindi natin hinuhusgahan.
+        ' Hayaan mong nakikita para hindi ka mag-alala kung bakit
+        ' may nawawalang item na hindi mo naman pala sinecure.
+        If String.IsNullOrWhiteSpace(tag) Then
+            element.Visible = True
+            Return True
+        End If
+
+        Dim allowed = PermissionService.CanView(tag)
+        element.Visible = allowed
+
+        Return allowed
+
+    End Function
+
 
 
     ' Event Handler para sa AccordionControl Click
     Private Async Sub accordionControl1_ElementClick(sender As Object, e As ElementClickEventArgs) Handles AccordionControl1.ElementClick
         ' Siguraduhin na ang "Tag" property ng Accordion Element sa Designer ay may value
         If e.Element.Tag Is Nothing Then Return
+
+        ' ============ MODULE ACCESS GUARD ============
+        Dim moduleTag = e.Element.Tag.ToString()
+
+        If Not PermissionService.CanView(moduleTag) Then
+            XtraMessageBox.Show(
+                "You do not have access to this module." & Environment.NewLine &
+                "Please contact your system administrator.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning)
+            Return
+        End If
+        ' =============================================
 
         Await Task.Delay(50)
         Select Case e.Element.Tag.ToString()
@@ -71,6 +164,9 @@ Public Class frmMain
 
             Case "main_Payroll"
                 _nav.NavigateTo(Of ucPayroll)()
+
+            Case "main_Loan"
+                _nav.NavigateTo(Of ucLoans)(Function() AppComposition.BuildLoansView())
 
             Case "admin_UsersAccount"
                 _nav.NavigateTo(Of ucUsers)(Function() AppComposition.BuildUsersView())
@@ -211,6 +307,11 @@ Public Class frmMain
         AppSession.IsAdmin = False
         AppSession.EmployeeNo = String.Empty
 
+        ' ✅ I-clear din ang permission cache - kung hindi, madadala
+        ' ng susunod na mag-lolog-in ang permission ng nauna, dahil
+        ' buhay pa rin ang process at Shared ang cache.
+        PermissionService.Clear()
+
         _logout = True
 
         ' ✅ I-close ang current frmMain
@@ -244,6 +345,11 @@ Public Class frmMain
         ' ADMINISTRATION ACCESS
         ' =============================================
         aceHeaderAdministration.Enabled = AppSession.IsAdmin
+
+        ' =============================================
+        ' MODULE ACCESS - itago ang mga bawal
+        ' =============================================
+        ApplyModuleAccessToNavigation()
 
     End Sub
 

@@ -22,10 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="GlobalShared\Security\AuthorizationService.vb" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="App.config" />
     <None Remove="appsettings.json" />
     <None Remove="Resources\icon_add_personel_24.png" />
@@ -107,7 +103,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="GlobalShared\Security\" />
+    <Folder Include="Modules\MainMenu\Loans\Models\" />
     <Folder Include="Modules\MainMenu\Payroll\Data\" />
     <Folder Include="Modules\MainMenu\Payroll\Models\" />
     <Folder Include="Modules\MainMenu\Payroll\Presenters\" />

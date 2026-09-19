@@ -1,7 +1,11 @@
-﻿Imports DevExpress.XtraEditors
+﻿Imports System.ComponentModel
+Imports DevExpress.XtraEditors
 Imports DevExpress.XtraSplashScreen
 Imports Payroll.GlobalShared.Base
-Imports System.ComponentModel
+Imports Payroll.GlobalShared.Security
+Imports Payroll.GlobalShared.Constants
+Imports System.Linq
+
 
 Namespace GlobalShared.Base
     ' Ang DesignerGenerated attribute ay tumutulong para makita ang UI properties gaya ng Dock
@@ -68,6 +72,95 @@ Namespace GlobalShared.Base
                 Return "Dashboard"
             End Get
         End Property
+
+        ' ========================================================
+        ' MODULE ACCESS
+        ' ========================================================
+        ' I-override ito sa BAWAT view na gusto mong ma-secure.
+        ' Ang halaga ay dapat KAPAREHO ng Tag sa frmMain.Designer.vb
+        ' at ng ModuleCode sa tblModules.
+        '
+        ' Halimbawa sa ucEmployees.vb:
+        '
+        '     Public Overrides ReadOnly Property ModuleCode As String
+        '         Get
+        '             Return ModuleCodes.Main_Employees
+        '         End Get
+        '     End Property
+        '
+        ' Kapag hindi mo ino-override (default = ""), ang view ay
+        ' ituturing na hindi secured - mananatili siyang editable.
+        ' Sinasadya ito para hindi masira ang mga lumang view mo
+        ' habang unti-unti mo pang dinadagdagan ng ModuleCode.
+        ' ========================================================
+        Public Overridable ReadOnly Property ModuleCode As String
+            Get
+                Return String.Empty
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' True kung may Can Edit access si user sa module na ito.
+        ''' Kung walang ModuleCode ang view (hindi naka-override),
+        ''' True pa rin - hindi secured ang view na iyon.
+        ''' </summary>
+        Protected ReadOnly Property HasEditAccess As Boolean
+            Get
+                If String.IsNullOrWhiteSpace(ModuleCode) Then Return True
+                Return PermissionService.CanEdit(ModuleCode)
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' I-disable ang mga command button ng isang WindowsUIButtonPanel
+        ''' kung View Only lang si user.
+        '''
+        ''' Tawagin ito sa DULO ng LoadFormAsync ng view - dulo talaga,
+        ''' dahil marami sa mga view mo ang nag-e-enable ng buttons sa
+        ''' SetFormMode(). Kung mauuna ito, mao-overwrite siya.
+        '''
+        ''' Ang tag na "Refresh" ay sinasadyang hindi dine-disable -
+        ''' pagbabasa lang naman iyon, ligtas kahit View Only.
+        ''' </summary>
+        Protected Sub ApplyReadOnlyMode(
+            panel As DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel,
+            Optional allowedTags As String() = Nothing)
+
+            If panel Is Nothing Then Return
+            If HasEditAccess Then Return
+
+            Dim safeTags = If(allowedTags, New String() {"Refresh", "Details", "Export"})
+
+            ' PAALALA (bug fix): huwag i-TryCast si btn papuntang WindowsUIButton
+            ' (ang concrete class). Ang .Properties ay member ng IBaseButton
+            ' INTERFACE - kung ika-cast mo papunta sa concrete class, nawawala
+            ' ito sa paningin ng VB.NET (explicit interface implementation).
+            ' Kaya panatilihin nating naka-type sa IBaseButton si btn - dito
+            ' pa rin makikita ang .Properties, gaya ng ginagamit mo na sa
+            ' ibang parte ng code gaya ng wbpMainCommands.Buttons.Item(i).Properties.
+            For Each btn As DevExpress.XtraEditors.ButtonPanel.IBaseButton In panel.Buttons
+
+                ' Ang WindowsUISeparator ay wala namang Tag na sinasadya -
+                ' TypeOf lang ang gamit dito bilang FILTER (hindi cast),
+                ' kaya hindi nawawala ang access sa .Properties ni btn.
+                If Not TypeOf btn Is DevExpress.XtraBars.Docking2010.WindowsUIButton Then
+                    Continue For
+                End If
+
+                Dim tag = btn.Properties.Tag?.ToString().Trim()
+
+                If safeTags.Any(Function(t) String.Equals(t, tag, StringComparison.OrdinalIgnoreCase)) Then
+                    Continue For
+                End If
+
+                btn.Properties.Enabled = False
+                btn.Properties.ToolTip = "You have View Only access to this module."
+
+            Next
+
+        End Sub
+
+
 
         Protected Sub RaiseBreadcrumbChanged()
             RaiseEvent BreadcrumbChanged(Me, EventArgs.Empty)
