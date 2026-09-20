@@ -27,6 +27,9 @@ Imports Payroll.Login.Services
 Imports Payroll.Lookups.Data
 Imports Payroll.Lookups.Presenters
 Imports Payroll.Lookups.Services
+Imports Payroll.ModuleManagement.Data
+Imports Payroll.ModuleManagement.Presenters
+Imports Payroll.ModuleManagement.Services
 Imports Payroll.PayrollSettings.Data
 Imports Payroll.PayrollSettings.Presenters
 Imports Payroll.PayrollSettings.Services
@@ -446,5 +449,35 @@ Public Class AppComposition
 
     End Function
 
+    Public Shared Function BuildModuleManagementView() As ucModuleManagement
+
+        Dim currentUser = AppSession.CurrentUser
+
+        ' --- TAB 1: Module Catalog - bagong stack ---
+        Dim catalogRepo As New ModuleCatalogRepository()
+        Dim catalogService As New ModuleCatalogService(catalogRepo)
+        Dim catalogView As New ucModuleCatalog()
+        Dim catalogPresenter As New ModuleCatalogPresenter(catalogView, catalogService, currentUser)
+        catalogView.SetPresenter(catalogPresenter)
+
+        ' --- TAB 2: Access Editor - MULING GINAMIT ang IUserManagementService
+        ' na ginawa mo na para sa Users Account module. Iisa lang ang
+        ' totoong pinagmumulan ng access data - dito man o doon, parehong
+        ' UserRepository ang tinatawag sa likod. Kapareho ito ng syntax na
+        ' ginamit mo na sa BuildUsersView (walang extra qualifier - naka-
+        ' resolve na ito sa umiiral na Imports sa taas ng file). ---
+        Dim userRepo As New UserRepository()
+        Dim userMgmtService As New UserManagementService(userRepo)
+
+        Dim accessView As New ucModuleAccessEditor()
+        Dim accessPresenter As New ModuleAccessEditorPresenter(accessView, userMgmtService, currentUser)
+        accessView.SetPresenter(accessPresenter)
+
+        ' --- SHELL ---
+        Dim shellView As New ucModuleManagement(catalogView, accessView)
+
+        Return shellView
+
+    End Function
 
 End Class

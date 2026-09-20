@@ -23,6 +23,9 @@ Namespace Users.Services
         Function ResetUserPasswordAsync(recordId As Integer) As Task(Of String)
 
         Function DeleteUserAsync(recordId As Integer) As Task(Of Boolean)
+
+        Function SaveModuleAccessAsync(userId As Integer, accessList As List(Of Models.ModuleAccessItem)) As Task(Of Boolean)
+
     End Interface
 
     Public Class CreateUserResult

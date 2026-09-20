@@ -55,6 +55,7 @@ Public Class frmMain
     End Sub
 
 
+
     ' ========================================================
     ' NAVIGATION VISIBILITY
     ' ========================================================
@@ -135,12 +136,20 @@ Public Class frmMain
 
 
 
+
     ' Event Handler para sa AccordionControl Click
     Private Async Sub accordionControl1_ElementClick(sender As Object, e As ElementClickEventArgs) Handles AccordionControl1.ElementClick
         ' Siguraduhin na ang "Tag" property ng Accordion Element sa Designer ay may value
         If e.Element.Tag Is Nothing Then Return
 
         ' ============ MODULE ACCESS GUARD ============
+
+        ' Group header (may anak) - hindi ito module, expand/collapse
+        ' lang ang ginagawa nito. Huwag guardahan, tumuloy na lang.
+        If e.Element.Elements IsNot Nothing AndAlso e.Element.Elements.Count > 0 Then
+            Return
+        End If
+
         Dim moduleTag = e.Element.Tag.ToString()
 
         If Not PermissionService.CanView(moduleTag) Then
@@ -170,6 +179,9 @@ Public Class frmMain
 
             Case "admin_UsersAccount"
                 _nav.NavigateTo(Of ucUsers)(Function() AppComposition.BuildUsersView())
+
+            Case "admin_Modules"
+                _nav.NavigateTo(Of ucModuleManagement)(Function() AppComposition.BuildModuleManagementView())
 
             Case "settings_MasterData"
                 _nav.NavigateTo(Of ucSettingsLookups)(Function() AppComposition.BuildSettingsLookupsView())

@@ -197,7 +197,7 @@ Namespace Login.Data
             Implements IUserRepository.GetAllModulesAsync
 
             Dim sql = "
-                SELECT RecordId, ModuleCode, ModuleName
+                SELECT RecordId, ModuleCode, ModuleName, GroupName
                 FROM tblModules
                 WHERE IsActive = 1
                 ORDER BY SortOrder"

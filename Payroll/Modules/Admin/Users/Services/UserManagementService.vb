@@ -92,6 +92,12 @@ Namespace Users.Services
 
         End Function
 
+        Public Async Function SaveModuleAccessAsync(userId As Integer, accessList As List(Of Models.ModuleAccessItem)) As Task(Of Boolean) _
+            Implements IUserManagementService.SaveModuleAccessAsync
+
+            Return Await _userRepo.SaveModuleAccessAsync(userId, accessList)
+        End Function
+
         Public Async Function DeactivateUserAsync(recordId As Integer) As Task(Of Boolean) _
             Implements IUserManagementService.DeactivateUserAsync
 
