@@ -356,7 +356,8 @@ Public Class frmMain
         ' =============================================
         ' ADMINISTRATION ACCESS
         ' =============================================
-        aceHeaderAdministration.Enabled = AppSession.IsAdmin
+        aceHeaderAdministration.Visible = AppSession.IsAdmin
+        aceLogout.Visible = Not AppSession.IsAdmin
 
         ' =============================================
         ' MODULE ACCESS - itago ang mga bawal

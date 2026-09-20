@@ -1,6 +1,5 @@
 ﻿Imports DevExpress.XtraBars.Docking2010
 Imports DevExpress.XtraEditors
-Imports DevExpress.XtraGrid.Views.Base
 Imports Payroll.Login.Models
 Imports Payroll.ModuleManagement.Models
 Imports Payroll.ModuleManagement.Presenters
@@ -143,24 +142,18 @@ Public Class ucModuleAccessEditor
     Public Function PromptCopyFromUser(candidates As List(Of UserModel)) As Integer? _
         Implements IModuleAccessEditorView.PromptCopyFromUser
 
-        ' Simpleng InputBox-style na listahan gamit ang XtraInputBox -
-        ' hindi na kailangan ng bagong .Designer form para sa isang
-        ' one-time na dropdown pick.
         Dim displayItems = candidates.
             Select(Function(u) $"{u.FirstName} {u.LastName} ({u.Username})").
-            ToArray()
+            ToList()
 
-        Dim selected = DevExpress.XtraEditors.XtraInputBox.Show(
-            "Copy module access from:", "Copy Access From",
-            If(displayItems.Length > 0, displayItems(0), Nothing),
-            displayItems)
+        Using dlg As New frmPickUser("Copy module access from:", displayItems)
 
-        If selected Is Nothing Then Return Nothing
+            If dlg.ShowDialog(Me) <> DialogResult.OK Then Return Nothing
+            If Not dlg.SelectedIndex.HasValue Then Return Nothing
 
-        Dim idx = Array.IndexOf(displayItems, selected.ToString())
-        If idx < 0 Then Return Nothing
+            Return candidates(dlg.SelectedIndex.Value).RecordId
 
-        Return candidates(idx).RecordId
+        End Using
 
     End Function
 
