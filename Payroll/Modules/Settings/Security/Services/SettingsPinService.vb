@@ -2,7 +2,7 @@
 Imports System.Text.Json
 Imports Payroll.GlobalShared.Services
 
-Namespace DBConnection.Services
+Namespace SettingsSecurity.Services
 
     ' Naka-hash (hindi encrypted/reversible) ang PIN dito - kailangan lang
     ' natin i-VERIFY kung tugma, hindi natin kailangang "ibalik" ang plain
@@ -30,7 +30,6 @@ Namespace DBConnection.Services
 
         Public Function VerifyPin(enteredPin As String) As Boolean Implements ISettingsPinService.VerifyPin
             Dim stored = LoadPin()
-
             If Not stored.IsSet Then Return False
 
             Return PasswordHasher.VerifyPassword(enteredPin, stored.PinHash, stored.PinSalt)
@@ -47,6 +46,7 @@ Namespace DBConnection.Services
 
             Dim options = New JsonSerializerOptions With {.WriteIndented = True}
             Dim json = JsonSerializer.Serialize(pin, options)
+
             File.WriteAllText(_filePath, json)
         End Sub
 

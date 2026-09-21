@@ -1,4 +1,4 @@
-﻿Namespace DBConnection.Services
+﻿Namespace SettingsSecurity.Services
     Public Interface ISettingsPinService
         Function HasPin() As Boolean
         Function VerifyPin(enteredPin As String) As Boolean

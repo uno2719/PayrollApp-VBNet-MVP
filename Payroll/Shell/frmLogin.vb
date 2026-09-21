@@ -1,7 +1,7 @@
 ﻿Imports System.Drawing
 Imports DevExpress.XtraEditors
 Imports DevExpress.XtraEditors.Controls
-Imports Payroll.DBConnection.Services
+Imports Payroll.SettingsSecurity.Services
 Imports Payroll.Login.Presenters
 Imports Payroll.Login.Views
 

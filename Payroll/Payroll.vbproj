@@ -61,7 +61,7 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
-    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Dapper" Version="2.1.86" />
     <PackageReference Include="DevExpress.Win.BonusSkins" Version="26.1.3" />
     <PackageReference Include="DevExpress.Win.Dashboard" Version="26.1.3" />
     <PackageReference Include="DevExpress.Win.Dashboard.Design" Version="26.1.3" />

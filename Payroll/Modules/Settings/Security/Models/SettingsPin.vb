@@ -1,4 +1,4 @@
-﻿Namespace DBConnection.Models
+﻿Namespace SettingsSecurity.Models
     Public Class SettingsPin
         Public Property PinHash As String = String.Empty
         Public Property PinSalt As String = String.Empty

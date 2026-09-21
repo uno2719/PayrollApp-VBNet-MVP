@@ -2,7 +2,6 @@
 Imports DevExpress.XtraBars.FluentDesignSystem
 Imports DevExpress.XtraBars.Navigation
 Imports DevExpress.XtraEditors
-Imports Payroll.DBConnection.Services
 Imports Payroll.GlobalShared.Base
 Imports Payroll.GlobalShared.Database
 Imports Payroll.GlobalShared.Security
@@ -217,43 +216,30 @@ Public Class frmMain
     End Sub
 
     ' =============================================
-    ' DATABASE SETTINGS - Admin: diretso, walang PIN pa (naka-gate na
-    ' sa Admin login mismo). Ordinary user: kailangan pa rin ng PIN -
-    ' parehong PIN system (SettingsPinService) na ginagamit sa secret
-    ' gesture sa login screen, kaya iisa lang ang PIN na pinapanatili.
+    ' DATABASE SETTINGS - permission-based na ngayon, kapareho ng
+    ' ibang modules (settings_DatabaseSettings). Admin: laging pasado
+    ' (built-in na sa PermissionService.CanView). Ordinary user:
+    ' kailangang bigyan muna ng access via Users Account / Module
+    ' Management, gaya ng ibang Settings sub-area.
+    '
+    ' Ang Settings PIN (frmLogin secret gesture) ay hiwalay pa rin -
+    ' recovery path 'yon para sa sitwasyong SIRA ang DB connection
+    ' bago pa man makapag-login, kaya hindi puwedeng permission-based
+    ' dahil di pa naka-load ang PermissionService sa puntong 'yon.
     ' =============================================
     Private Sub OpenDatabaseSettings()
 
-        If AppSession.IsAdmin Then
-            ShowDatabaseSettingsDialog()
-            Return
-        End If
-
-        Dim pinService As New SettingsPinService()
-
-        If Not pinService.HasPin() Then
+        If Not AuthorizationService.CanAccess(ModuleCodes.Settings_DatabaseSettings) Then
             XtraMessageBox.Show(
-                "No Settings PIN has been set yet. Please use " &
-                "--set-settings-pin from the command line first.",
-                "Database Settings",
+                "You do not have access to this module." & Environment.NewLine &
+                "Please contact your system administrator.",
+                "Access Denied",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning)
             Return
         End If
 
-        Using pinPrompt As New frmSettingsPinPrompt()
-            If pinPrompt.ShowDialog() <> DialogResult.OK Then Return
-
-            If pinService.VerifyPin(pinPrompt.EnteredPin) Then
-                ShowDatabaseSettingsDialog()
-            Else
-                XtraMessageBox.Show(
-                    "Incorrect PIN.",
-                    "Database Settings",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error)
-            End If
-        End Using
+        ShowDatabaseSettingsDialog()
 
     End Sub
 

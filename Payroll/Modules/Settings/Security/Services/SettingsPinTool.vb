@@ -1,4 +1,4 @@
-﻿Namespace DBConnection.Services
+﻿Namespace SettingsSecurity.Services
 
     ' Command-line tool lang ito - hindi kailangan ng DB connection dito,
     ' kaya gagana ito kahit sirang-sira ang connection settings mo.

@@ -66,7 +66,7 @@ Namespace My
 
                 If argIndex >= 0 AndAlso argIndex + 1 < commandLineArgs.Count Then
                     Dim newPin = commandLineArgs(argIndex + 1)
-                    Dim resultMessage = DBConnection.Services.SettingsPinTool.SetSettingsPin(newPin)
+                    Dim resultMessage = SettingsSecurity.Services.SettingsPinTool.SetSettingsPin(newPin)
                     MessageBox.Show(resultMessage, "Set Settings PIN")
                 Else
                     MessageBox.Show(
