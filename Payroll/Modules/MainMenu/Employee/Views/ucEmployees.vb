@@ -137,7 +137,16 @@ Public Class ucEmployees
         ' Set initial state
         SetFormState(FormState.Idle)
 
+        ApplyReadOnlyMode(wbpMainCommands)
+
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Main_Employees
+        End Get
+    End Property
+
 
     ' =============================================
     ' SUBVIEW LOADERS

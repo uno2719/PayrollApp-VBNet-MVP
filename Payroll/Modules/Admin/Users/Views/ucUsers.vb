@@ -56,7 +56,14 @@ Public Class ucUsers
             ShowError(ex.Message)
         End Try
 
+        ApplyReadOnlyMode(wbpMainCommands)
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Admin_UsersAccount
+        End Get
+    End Property
 
     Private Sub SetupGrid()
         With gridviewUsersList

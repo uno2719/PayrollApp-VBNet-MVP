@@ -354,15 +354,14 @@ Public Class frmMain
         AccordionControl1.OptionsMinimizing.State = DevExpress.XtraBars.Navigation.AccordionControlState.Normal
 
         ' =============================================
-        ' ADMINISTRATION ACCESS
-        ' =============================================
-        aceHeaderAdministration.Visible = AppSession.IsAdmin
-        aceLogout.Visible = Not AppSession.IsAdmin
-
-        ' =============================================
         ' MODULE ACCESS - itago ang mga bawal
         ' =============================================
         ApplyModuleAccessToNavigation()
+
+        ' =============================================
+        ' ADMINISTRATION ACCESS
+        ' =============================================
+        aceHeaderAdministration.Visible = AppSession.IsAdmin
 
     End Sub
 

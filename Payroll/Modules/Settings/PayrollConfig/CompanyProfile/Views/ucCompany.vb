@@ -24,7 +24,16 @@ Public Class ucCompany
         Implements IAsyncLoadable.LoadFormAsync
 
         Await _presenter.LoadAsync()
+
+        btnSave.Enabled = HasEditAccess
+        btnUploadLogo.Enabled = HasEditAccess    ' nagpapalit ito ng naka-store na logo - mutating din
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Settings_Company
+        End Get
+    End Property
 
     Private Async Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         Await _presenter.SaveAsync()

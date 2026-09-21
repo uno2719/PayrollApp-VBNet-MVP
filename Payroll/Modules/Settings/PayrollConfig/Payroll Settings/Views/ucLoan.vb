@@ -48,7 +48,14 @@ Public Class ucLoan
             DisplayValidationError(ex.Message)
         End Try
 
+        ApplyReadOnlyMode(wbpMainCommands)
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Settings_Payroll
+        End Get
+    End Property
 
     Private Sub SetupGrid()
         With gridviewLoanList

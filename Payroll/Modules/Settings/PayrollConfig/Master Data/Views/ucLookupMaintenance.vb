@@ -63,7 +63,14 @@ Public Class ucLookupMaintenance
             DisplayValidationError(ex.Message)
         End Try
 
+        ApplyReadOnlyMode(wbpMainCommands)
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Settings_MasterData
+        End Get
+    End Property
 
     ' Sadyang naka-OFF ang inline grid editing (kahit pinagana natin ang
     ' NewItemRowPosition sa Designer) - ang TOP FORM (Code/Name/Active)

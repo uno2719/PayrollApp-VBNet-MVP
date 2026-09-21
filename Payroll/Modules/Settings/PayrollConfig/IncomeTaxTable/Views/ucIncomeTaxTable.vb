@@ -62,7 +62,14 @@ Public Class ucIncomeTaxTable
             DisplayValidationError(ex.Message)
         End Try
 
+        ApplyReadOnlyMode(wbpMainCommands)
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Settings_TaxTable
+        End Get
+    End Property
 
     Private Sub SetupGrid()
         With gridviewIncomeTaxList
@@ -326,6 +333,11 @@ Public Class ucIncomeTaxTable
         Select Case ExcelHelper.PromptImportOrExport($"{_tabTitle} - Import Data Options")
 
             Case ExcelAction.Import
+                If Not HasEditAccess Then
+                    DisplayValidationError("You have View Only access to this module and cannot import data.")
+                    Return
+                End If
+
                 Dim filePath = ExcelHelper.PromptOpenExcelFile($"Import {_tabTitle} Brackets from Excel")
                 If String.IsNullOrEmpty(filePath) Then Return
 

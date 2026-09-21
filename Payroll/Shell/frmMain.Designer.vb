@@ -60,7 +60,6 @@ Partial Class frmMain
         AccordionControlSeparator2 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
         aceReportsAlphalist = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceReportsCustom = New DevExpress.XtraBars.Navigation.AccordionControlElement()
-        aceLogout = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceHeaderAdministration = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceAdminUsers = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceAdminModules = New DevExpress.XtraBars.Navigation.AccordionControlElement()
@@ -107,7 +106,7 @@ Partial Class frmMain
         AccordionControl1.Appearance.Item.Default.Font = New Font("Segoe UI", 9.75F)
         AccordionControl1.Appearance.Item.Default.Options.UseFont = True
         AccordionControl1.Dock = DockStyle.Left
-        AccordionControl1.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceHeaderHome, aceHeaderSettings, aceHeaderReports, aceLogout, aceHeaderAdministration})
+        AccordionControl1.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceHeaderHome, aceHeaderSettings, aceHeaderReports, aceHeaderAdministration})
         AccordionControl1.Location = New Point(0, 31)
         AccordionControl1.Margin = New Padding(2)
         AccordionControl1.Name = "AccordionControl1"
@@ -442,21 +441,6 @@ Partial Class frmMain
         aceReportsCustom.Tag = "reports_Custom"
         aceReportsCustom.Text = "Custom"
         ' 
-        ' aceLogout
-        ' 
-        aceLogout.ControlFooterAlignment = DevExpress.XtraBars.Navigation.AccordionItemFooterAlignment.Far
-        aceLogout.Hint = "Logout"
-        aceLogout.ImageOptions.ImageLayoutMode = DevExpress.XtraBars.Navigation.ImageLayoutMode.Squeeze
-        aceLogout.ImageOptions.SvgImage = My.Resources.Resources.logout2_svg
-        aceLogout.ImageOptions.SvgImageSize = New Size(30, 30)
-        aceLogout.Name = "aceLogout"
-        aceLogout.ShortcutKey = New DevExpress.XtraBars.BarShortcut(Keys.Control Or Keys.L)
-        aceLogout.ShortcutKeyDisplayString = "Ctrl + L"
-        aceLogout.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        aceLogout.Tag = "logout"
-        aceLogout.Text = "Logout"
-        aceLogout.Visible = False
-        ' 
         ' aceHeaderAdministration
         ' 
         aceHeaderAdministration.ControlFooterAlignment = DevExpress.XtraBars.Navigation.AccordionItemFooterAlignment.Far
@@ -466,6 +450,7 @@ Partial Class frmMain
         aceHeaderAdministration.ImageOptions.SvgImageSize = New Size(30, 30)
         aceHeaderAdministration.Name = "aceHeaderAdministration"
         aceHeaderAdministration.Text = "Administration"
+        aceHeaderAdministration.Visible = False
         ' 
         ' aceAdminUsers
         ' 
@@ -755,7 +740,6 @@ Partial Class frmMain
     Friend WithEvents aceSettingsPayroll As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsAppConfig As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceAppConfigDBSettings As DevExpress.XtraBars.Navigation.AccordionControlElement
-    Friend WithEvents aceLogout As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsPayrollSetup As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceHeaderAdministration As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents AccordionControlSeparator6 As DevExpress.XtraBars.Navigation.AccordionControlSeparator

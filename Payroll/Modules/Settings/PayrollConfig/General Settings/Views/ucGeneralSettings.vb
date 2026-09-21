@@ -33,7 +33,15 @@ Public Class ucGeneralSettings
         cboPhilHealthBasedOn.Properties.Items.AddRange({"Progressive Earnings", "Fixed Basic"})
 
         Await _presenter.LoadAsync()
+
+        btnSave.Enabled = HasEditAccess
     End Function
+
+    Public Overrides ReadOnly Property ModuleCode As String
+        Get
+            Return Payroll.GlobalShared.Constants.ModuleCodes.Settings_General
+        End Get
+    End Property
 
     Private Async Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         Await _presenter.SaveAsync()
