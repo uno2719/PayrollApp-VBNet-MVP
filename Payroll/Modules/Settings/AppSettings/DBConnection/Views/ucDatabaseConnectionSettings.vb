@@ -1,6 +1,7 @@
 ﻿Imports DevExpress.XtraEditors
 Imports DevExpress.XtraEditors.Controls
 Imports Payroll.DBConnection.Presenters
+Imports Payroll.GlobalShared.Security
 
 Namespace DBConnection.Views
     Public Class ucDatabaseConnectionSettings
@@ -12,6 +13,13 @@ Namespace DBConnection.Views
         Public Sub SetPresenter(presenter As DatabaseConnectionSettingsPresenter)
             _presenter = presenter
             _presenter.LoadSettings()
+
+            ' View Only -> naka-disable ang Save (kapareho ng ginagawa na
+            ' natin sa ucEmailSettings via HasEditAccess). Hindi natin
+            ' idi-disable ang Test Connection - read-only/diagnostic lang
+            ' 'yon, walang na-sa-save, kaya safe pa rin kahit View Only,
+            ' kagaya ng "Refresh"/"Details" na palaging bukas sa ibang views.
+            btnSave.Enabled = AuthorizationService.CanModify(ModuleCodes.Settings_DatabaseSettings)
         End Sub
 
         Public Property ServerAddress As String Implements IDatabaseConnectionSettingsView.ServerAddress

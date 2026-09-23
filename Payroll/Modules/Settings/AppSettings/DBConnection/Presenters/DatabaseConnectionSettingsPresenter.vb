@@ -1,4 +1,6 @@
-﻿Namespace DBConnection.Presenters
+﻿Imports Payroll.GlobalShared.Security
+
+Namespace DBConnection.Presenters
 
     Public Class DatabaseConnectionSettingsPresenter
 
@@ -47,6 +49,16 @@
         End Function
 
         Public Sub SaveSettings()
+
+            ' Hindi lang UI-level (naka-disable na button) ang gate dito -
+            ' 'yon ay convenience lang, hindi enforcement. Ito ang totoong
+            ' bantay: kahit paano pa matawag ang SaveSettings() balewala
+            ' sa button state, hindi pa rin siya makakapag-save kung
+            ' walang CanModify.
+            If Not AuthorizationService.CanModify(ModuleCodes.Settings_DatabaseSettings) Then
+                _view.ShowError("You do not have permission to modify database connection settings.")
+                Return
+            End If
 
             If Not ValidateRequiredFields() Then Return
 
