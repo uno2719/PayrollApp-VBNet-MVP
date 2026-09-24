@@ -197,6 +197,9 @@ Public Class frmMain
             Case "settings_TaxTable"
                 _nav.NavigateTo(Of ucIncomeTaxTableShell)(Function() AppComposition.BuildIncomeTaxTableView())
 
+            Case "settings_Leave"
+                _nav.NavigateTo(Of ucLeaveSettingsShell)(Function() AppComposition.BuildLeaveSettingsView())
+
             Case "settings_DatabaseSettings"
                 OpenDatabaseSettings()
 

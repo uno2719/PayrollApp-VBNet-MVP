@@ -18,6 +18,9 @@ Imports Payroll.GeneralSettings.Services
 Imports Payroll.IncomeTaxTable.Data
 Imports Payroll.IncomeTaxTable.Presenters
 Imports Payroll.IncomeTaxTable.Services
+Imports Payroll.LeaveSettings.Data
+Imports Payroll.LeaveSettings.Presenters
+Imports Payroll.LeaveSettings.Services
 Imports Payroll.Loans.Data
 Imports Payroll.Loans.Presenters
 Imports Payroll.Loans.Services
@@ -237,6 +240,46 @@ Public Class AppComposition
 
         ' 6. Gawin ang Main View
         Return New ucStatutorySettingsShell(sssView, philHealthView, pagIbigView)
+
+    End Function
+
+    Public Shared Function BuildLeaveSettingsView() As ucLeaveSettingsShell
+
+        ' 1. Kasalukuyang naka-login na user - para sa CreatedBy/UpdatedBy
+        Dim currentUser = AppSession.CurrentUser
+
+        ' --- GROUP tab - reused na ucLookupMaintenance (tblLeaveGroup),
+        ' parehong LookupRepository/LookupService gaya ng Master Data -
+        ' walang bagong code para dito, iba lang ang nag-i-instantiate.
+        Dim lookupRepo As New LookupRepository()
+        Dim lookupService As New LookupService(lookupRepo)
+
+        Dim groupView As New ucLookupMaintenance()
+        Dim groupPresenter As New LookupPresenter(groupView, lookupService, "tblLeaveGroup", currentUser)
+        groupView.SetPresenter(groupPresenter, "Group")
+
+        ' --- TYPE tab - bagong dedikadong Repository/Service/Presenter
+        ' (may extra Category field na wala sa generic Lookup shape).
+        Dim leaveTypeRepo As New LeaveTypeRepository()
+        Dim leaveTypeService As New LeaveTypeService(leaveTypeRepo)
+
+        Dim typeView As New ucLeaveType()
+        Dim typePresenter As New LeaveTypePresenter(typeView, leaveTypeService, currentUser)
+        typeView.SetPresenter(typePresenter)
+
+        ' --- RULE tab - kailangan ng LeaveRuleService (header+brackets)
+        ' PLUS ang parehong lookupService (Leave Group combo) at
+        ' leaveTypeService (Leave Type combo) mula sa itaas - hiram
+        ' lang, hindi na kailangan pang gumawa ng bago.
+        Dim leaveRuleRepo As New LeaveRuleRepository()
+        Dim leaveRuleService As New LeaveRuleService(leaveRuleRepo)
+
+        Dim ruleView As New ucLeaveRule()
+        Dim rulePresenter As New LeaveRulePresenter(ruleView, leaveRuleService, lookupService, leaveTypeService, currentUser)
+        ruleView.SetPresenter(rulePresenter)
+
+        ' 2. Gawin ang Main View
+        Return New ucLeaveSettingsShell(groupView, typeView, ruleView)
 
     End Function
 

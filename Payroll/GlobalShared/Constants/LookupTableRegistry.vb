@@ -17,9 +17,10 @@
 
         ' NOTE: tblLeaveGroup is registered here (still readable for the
         ' Employee > Employment dropdown) but is intentionally NOT wired
-        ' into the new Lookups/Master Data maintenance tabs — Leave gets
-        ' its own future module (Group/Type/Rule/Holiday/Reason), matching
-        ' the existing aceSettings_Leave nav element.
+        ' into the Lookups/Master Data maintenance tabs - it's maintained
+        ' instead from its own Leave Settings > Group tab (reusing
+        ' ucLookupMaintenance directly - see AppComposition.
+        ' BuildLeaveSettingsView), alongside the Type and Rule tabs.
         Public Shared ReadOnly Tables As New Dictionary(Of String, LookupTableInfo) From {
             {"tblBranch", New LookupTableInfo With {.TableName = "tblBranch", .IdColumn = "BranchId", .CodeColumn = "BranchCode", .NameColumn = "BranchName"}},
             {"tblDepartment", New LookupTableInfo With {.TableName = "tblDepartment", .IdColumn = "DepartmentId", .CodeColumn = "DepartmentCode", .NameColumn = "DepartmentName"}},
