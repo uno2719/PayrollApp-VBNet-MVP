@@ -8,6 +8,8 @@ Imports Payroll.DBConnection.Views
 Imports Payroll.EmailSettings.Data
 Imports Payroll.EmailSettings.Presenters
 Imports Payroll.EmailSettings.Services
+Imports Payroll.Themes.Presenters
+Imports Payroll.Themes.Services
 Imports Payroll.Employee.Data
 Imports Payroll.Employee.Presenters
 Imports Payroll.Employee.Services
@@ -445,6 +447,23 @@ Public Class AppComposition
 
         Dim view As New ucEmailSettings()
         Dim presenter As New EmailSettingsPresenter(view, service, currentUser)
+
+        view.SetPresenter(presenter)
+
+        Return view
+
+    End Function
+
+    Public Shared Function BuildThemeSettingsView() As ucThemeSettings
+
+        ' Ang persistence (themesettings.json) ay yung existing na JsonThemeSettingsService -
+        ' isang file lang, kapareho ng ginagamit ng MyApplication sa startup.
+        Dim persistence As Payroll.GlobalShared.Contracts.IThemeSettingsService =
+            New Payroll.GlobalShared.Services.JsonThemeSettingsService()
+        Dim service As New ThemeCatalogService(persistence)
+
+        Dim view As New ucThemeSettings()
+        Dim presenter As New ThemeSettingsPresenter(view, service)
 
         view.SetPresenter(presenter)
 

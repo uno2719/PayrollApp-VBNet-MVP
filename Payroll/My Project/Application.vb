@@ -19,8 +19,13 @@ Namespace My
             ' ang skin registration at bago pa ang unang form. Isang lugar
             ' lang ito - awtomatikong susunod ang LAHAT ng DevExpress editors,
             ' grids, at labels sa buong app.
-            WindowsFormsSettings.DefaultFont = New Font("Segoe UI", 9.0F)
-            WindowsFormsSettings.DefaultMenuFont = New Font("Segoe UI", 9.0F)
+            ' Galing na sa Theme / Skin settings ang laki ng font at rounded corners
+            ' (default 9pt kung wala pang naka-save). Kaya dito na natin nilo-load ang theme.
+            Dim savedTheme = _themeSettingsService.Load()
+            WindowsFormsSettings.DefaultFont = New Font("Segoe UI", savedTheme.FontSize)
+            WindowsFormsSettings.DefaultMenuFont = New Font("Segoe UI", savedTheme.FontSize)
+            WindowsFormsSettings.AllowRoundedWindowCorners =
+                If(savedTheme.RoundedCorners, DevExpress.Utils.DefaultBoolean.True, DevExpress.Utils.DefaultBoolean.False)
 
             ' 🔥 REGISTER SKINS HERE
             DevExpress.UserSkins.BonusSkins.Register()
@@ -30,7 +35,6 @@ Namespace My
 
             ' 🔥 I-LOAD ang huling na-save na skin/palette, BAGO pa man
             ' lumabas ang frmLogin - dito pa lang, tama na agad ang itsura.
-            Dim savedTheme = _themeSettingsService.Load()
             If String.IsNullOrEmpty(savedTheme.PaletteName) Then
                 UserLookAndFeel.Default.SetSkinStyle(savedTheme.SkinName)
             Else
@@ -112,10 +116,11 @@ Namespace My
         End Function
 
         Private Sub OnThemeChanged(sender As Object, e As EventArgs)
-            Dim currentSettings As New ThemeSettings With {
-                .SkinName = UserLookAndFeel.Default.SkinName,
-                .PaletteName = UserLookAndFeel.Default.ActiveSvgPaletteName
-            }
+            ' LOAD-MODIFY-SAVE: skin/palette lang ang binabago dito. Kung bagong ThemeSettings
+            ' ang isasave, mabubura ang FontSize, RoundedCorners at Favorites ng Theme screen.
+            Dim currentSettings = _themeSettingsService.Load()
+            currentSettings.SkinName = UserLookAndFeel.Default.SkinName
+            currentSettings.PaletteName = UserLookAndFeel.Default.ActiveSvgPaletteName
             _themeSettingsService.Save(currentSettings)
         End Sub
 

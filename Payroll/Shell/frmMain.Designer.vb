@@ -91,10 +91,10 @@ Partial Class frmMain
         ' fluentMainContainer
         ' 
         fluentMainContainer.Dock = DockStyle.Fill
-        fluentMainContainer.Location = New Point(250, 90)
+        fluentMainContainer.Location = New Point(258, 90)
         fluentMainContainer.Margin = New Padding(2)
         fluentMainContainer.Name = "fluentMainContainer"
-        fluentMainContainer.Size = New Size(1148, 647)
+        fluentMainContainer.Size = New Size(1140, 647)
         fluentMainContainer.TabIndex = 0
         ' 
         ' AccordionControl1
@@ -115,7 +115,7 @@ Partial Class frmMain
         AccordionControl1.OptionsMinimizing.AllowFooterResizing = False
         AccordionControl1.RootDisplayMode = DevExpress.XtraBars.Navigation.AccordionControlRootDisplayMode.Footer
         AccordionControl1.ScrollBarMode = DevExpress.XtraBars.Navigation.ScrollBarMode.Touch
-        AccordionControl1.Size = New Size(250, 730)
+        AccordionControl1.Size = New Size(258, 730)
         AccordionControl1.TabIndex = 1
         AccordionControl1.ViewType = DevExpress.XtraBars.Navigation.AccordionControlViewType.HamburgerMenu
         ' 
@@ -216,7 +216,7 @@ Partial Class frmMain
         aceSettingsGeneral.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsGeneral.Appearance.Default.Options.UseFont = True
         aceSettingsGeneral.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsGeneral.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
-        aceSettingsGeneral.ImageOptions.SvgImageSize = New Size(18, 18)
+        aceSettingsGeneral.ImageOptions.SvgImageSize = New Size(17, 17)
         aceSettingsGeneral.Name = "aceSettingsGeneral"
         aceSettingsGeneral.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
         aceSettingsGeneral.Tag = "settings_General"
@@ -450,7 +450,6 @@ Partial Class frmMain
         aceHeaderAdministration.ImageOptions.SvgImageSize = New Size(30, 30)
         aceHeaderAdministration.Name = "aceHeaderAdministration"
         aceHeaderAdministration.Text = "Administration"
-        aceHeaderAdministration.Visible = False
         ' 
         ' aceAdminUsers
         ' 
@@ -517,10 +516,10 @@ Partial Class frmMain
         pnlHeaderMain.Controls.Add(lblPageTitle)
         pnlHeaderMain.Controls.Add(lblBreadcrumb)
         pnlHeaderMain.Dock = DockStyle.Top
-        pnlHeaderMain.Location = New Point(250, 31)
+        pnlHeaderMain.Location = New Point(258, 31)
         pnlHeaderMain.Name = "pnlHeaderMain"
         pnlHeaderMain.Padding = New Padding(5, 6, 5, 6)
-        pnlHeaderMain.Size = New Size(1148, 59)
+        pnlHeaderMain.Size = New Size(1140, 59)
         pnlHeaderMain.TabIndex = 3
         ' 
         ' btnForward
@@ -578,7 +577,7 @@ Partial Class frmMain
         lblCurrentUserDisplayedName.Appearance.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center
         lblCurrentUserDisplayedName.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
         lblCurrentUserDisplayedName.Dock = DockStyle.Right
-        lblCurrentUserDisplayedName.Location = New Point(730, 6)
+        lblCurrentUserDisplayedName.Location = New Point(722, 6)
         lblCurrentUserDisplayedName.Margin = New Padding(10)
         lblCurrentUserDisplayedName.Name = "lblCurrentUserDisplayedName"
         lblCurrentUserDisplayedName.Padding = New Padding(5)
@@ -590,7 +589,7 @@ Partial Class frmMain
         ' 
         PictureEdit1.Dock = DockStyle.Right
         PictureEdit1.EditValue = resources.GetObject("PictureEdit1.EditValue")
-        PictureEdit1.Location = New Point(1102, 6)
+        PictureEdit1.Location = New Point(1094, 6)
         PictureEdit1.Margin = New Padding(10)
         PictureEdit1.MenuManager = FluentFormDefaultManager1
         PictureEdit1.Name = "PictureEdit1"
@@ -636,9 +635,9 @@ Partial Class frmMain
         pnlFooterMain.Controls.Add(lblHost)
         pnlFooterMain.Controls.Add(lblVersion)
         pnlFooterMain.Dock = DockStyle.Bottom
-        pnlFooterMain.Location = New Point(250, 737)
+        pnlFooterMain.Location = New Point(258, 737)
         pnlFooterMain.Name = "pnlFooterMain"
-        pnlFooterMain.Size = New Size(1148, 24)
+        pnlFooterMain.Size = New Size(1140, 24)
         pnlFooterMain.TabIndex = 4
         ' 
         ' lblHost
@@ -649,7 +648,7 @@ Partial Class frmMain
         lblHost.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Far
         lblHost.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
         lblHost.Dock = DockStyle.Right
-        lblHost.Location = New Point(763, 2)
+        lblHost.Location = New Point(755, 2)
         lblHost.Name = "lblHost"
         lblHost.Padding = New Padding(8)
         lblHost.Size = New Size(383, 20)
