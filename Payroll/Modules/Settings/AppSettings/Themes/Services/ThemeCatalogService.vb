@@ -34,6 +34,8 @@ Namespace Themes.Services
             _persistence.Save(settings)
         End Sub
 
+        Private Const CompactSkinLabel As String = "WXI Compact"
+
         Public Sub Apply(settings As ThemeSettings) Implements IThemeCatalogService.Apply
             ' 1) global font + rounded corners (WindowsFormsSettings = app-wide defaults,
             '    kapareho ng ginagawa ng MyApplication.OnInitialize sa startup)
@@ -43,12 +45,20 @@ Namespace Themes.Services
             DevExpress.XtraEditors.WindowsFormsSettings.AllowRoundedWindowCorners =
                 If(settings.RoundedCorners, DevExpress.Utils.DefaultBoolean.True, DevExpress.Utils.DefaultBoolean.False)
 
-            ' 2) skin + palette. Babalik sa WXI kung wala na ang naka-save na skin.
-            Dim skin = If(SkinExists(settings.SkinName), settings.SkinName, FallbackSkin)
-            If String.IsNullOrEmpty(settings.PaletteName) Then
-                UserLookAndFeel.Default.SetSkinStyle(skin)
+            ' 2) skin + palette. "WXI Compact" ay HINDI naka-rehistro bilang sarili
+            ' niyang SkinContainer sa SkinManager.Default.Skins - variant lang ito ng
+            ' WXI (parehong palette pero mas siksik ang spacing), kaya may sariling
+            ' enum overload ito sa halip na ang normal na string-based SetSkinStyle.
+            If String.Equals(settings.SkinName, CompactSkinLabel, StringComparison.OrdinalIgnoreCase) Then
+                UserLookAndFeel.Default.SetSkinStyle(DevExpress.LookAndFeel.SkinStyle.WXICompact)
             Else
-                UserLookAndFeel.Default.SetSkinStyle(skin, settings.PaletteName)
+                ' Babalik sa WXI kung wala na ang naka-save na skin.
+                Dim skin = If(SkinExists(settings.SkinName), settings.SkinName, FallbackSkin)
+                If String.IsNullOrEmpty(settings.PaletteName) Then
+                    UserLookAndFeel.Default.SetSkinStyle(skin)
+                Else
+                    UserLookAndFeel.Default.SetSkinStyle(skin, settings.PaletteName)
+                End If
             End If
         End Sub
 
@@ -62,6 +72,16 @@ Namespace Themes.Services
                         ' kung hindi ma-preview ang isang skin, hindi lang siya ipapakita
                     End Try
                 Next
+
+                ' Manual na idinagdag: hindi ito nakikita sa SkinManager.Default.Skins
+                ' (tingnan ang paliwanag sa Apply), pero parehong preview colors lang
+                ' naman ng WXI ang gagamitin - ang pinagkaiba ng Compact ay spacing,
+                ' hindi kulay.
+                Dim wxi = list.FirstOrDefault(Function(s) String.Equals(s.Name, "WXI", StringComparison.OrdinalIgnoreCase))
+                If wxi IsNot Nothing Then
+                    list.Add(New ThemeSkinItem(CompactSkinLabel, wxi.Preview))
+                End If
+
                 list.Sort(Function(a, b) String.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase))
                 _skinCache = list
             End If

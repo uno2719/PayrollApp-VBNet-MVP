@@ -66,8 +66,14 @@ Public Class ucThemeSettings
 
     Private Sub OnLafChanged(sender As Object, e As EventArgs)
         If IsDisposed OrElse Not IsHandleCreated Then Return
-        RaiseEvent ExternalStyleChanged(UserLookAndFeel.Default.ActiveSkinName,
-                                        UserLookAndFeel.Default.ActiveSvgPaletteName)
+        ' ActiveSkinName ay "WXI" pa rin kahit Compact ang mode - kailangang tignan
+        ' muna ang CompactUIModeForced (tingnan din ang parehong bagay sa
+        ' Application.vb.OnThemeChanged) para tama ang lumalabas na naka-select
+        ' sa gallery, kahit galing sa top button o sa palette dialog ang pagbabago.
+        Dim skinName = If(UserLookAndFeel.Default.CompactUIModeForced,
+                           "WXI Compact",
+                           UserLookAndFeel.Default.ActiveSkinName)
+        RaiseEvent ExternalStyleChanged(skinName, UserLookAndFeel.Default.ActiveSvgPaletteName)
     End Sub
 
     ' ------------------------------------------------------------------ IThemeSettingsView

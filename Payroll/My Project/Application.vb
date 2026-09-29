@@ -35,7 +35,14 @@ Namespace My
 
             ' 🔥 I-LOAD ang huling na-save na skin/palette, BAGO pa man
             ' lumabas ang frmLogin - dito pa lang, tama na agad ang itsura.
-            If String.IsNullOrEmpty(savedTheme.PaletteName) Then
+            '
+            ' "WXI Compact" ay hindi literal na SkinName na kilala ng SetSkinStyle(String) -
+            ' variant lang ito ng WXI, kaya may sarili itong enum overload. Kung hindi ito
+            ' i-special-case dito, babalik lagi sa plain WXI ang app pagkatapos i-restart
+            ' (ito mismo ang naging bug bago ito naayos).
+            If String.Equals(savedTheme.SkinName, "WXI Compact", StringComparison.OrdinalIgnoreCase) Then
+                UserLookAndFeel.Default.SetSkinStyle(DevExpress.LookAndFeel.SkinStyle.WXICompact)
+            ElseIf String.IsNullOrEmpty(savedTheme.PaletteName) Then
                 UserLookAndFeel.Default.SetSkinStyle(savedTheme.SkinName)
             Else
                 UserLookAndFeel.Default.SetSkinStyle(savedTheme.SkinName, savedTheme.PaletteName)
@@ -119,7 +126,15 @@ Namespace My
             ' LOAD-MODIFY-SAVE: skin/palette lang ang binabago dito. Kung bagong ThemeSettings
             ' ang isasave, mabubura ang FontSize, RoundedCorners at Favorites ng Theme screen.
             Dim currentSettings = _themeSettingsService.Load()
-            currentSettings.SkinName = UserLookAndFeel.Default.SkinName
+
+            ' UserLookAndFeel.Default.SkinName ay "WXI" pa rin kahit naka-Compact mode -
+            ' ang CompactUIModeForced lang ang nagsasabi kung alin talaga sa dalawang WXI
+            ' variant ang aktibo ngayon. Kaya dito natin ito hinuhuli bago mawala.
+            If UserLookAndFeel.Default.CompactUIModeForced Then
+                currentSettings.SkinName = "WXI Compact"
+            Else
+                currentSettings.SkinName = UserLookAndFeel.Default.SkinName
+            End If
             currentSettings.PaletteName = UserLookAndFeel.Default.ActiveSvgPaletteName
             _themeSettingsService.Save(currentSettings)
         End Sub
