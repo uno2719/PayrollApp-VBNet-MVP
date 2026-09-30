@@ -23,6 +23,8 @@
             txtServerAddress = New DevExpress.XtraEditors.TextEdit()
             lblDatabaseName = New DevExpress.XtraEditors.LabelControl()
             txtDatabaseName = New DevExpress.XtraEditors.TextEdit()
+            lblAuthType = New DevExpress.XtraEditors.LabelControl()
+            cboAuthType = New DevExpress.XtraEditors.ComboBoxEdit()
             lblSqlUsername = New DevExpress.XtraEditors.LabelControl()
             txtSqlUsername = New DevExpress.XtraEditors.TextEdit()
             lblSqlPassword = New DevExpress.XtraEditors.LabelControl()
@@ -32,6 +34,7 @@
             btnSave = New DevExpress.XtraEditors.SimpleButton()
             CType(txtServerAddress.Properties, ComponentModel.ISupportInitialize).BeginInit()
             CType(txtDatabaseName.Properties, ComponentModel.ISupportInitialize).BeginInit()
+            CType(cboAuthType.Properties, ComponentModel.ISupportInitialize).BeginInit()
             CType(txtSqlUsername.Properties, ComponentModel.ISupportInitialize).BeginInit()
             CType(txtSqlPassword.Properties, ComponentModel.ISupportInitialize).BeginInit()
             SuspendLayout()
@@ -78,61 +81,80 @@
             txtDatabaseName.Size = New Size(340, 20)
             txtDatabaseName.TabIndex = 4
             ' 
+            ' lblAuthType
+            ' 
+            lblAuthType.Location = New Point(20, 162)
+            lblAuthType.Name = "lblAuthType"
+            lblAuthType.Size = New Size(75, 13)
+            lblAuthType.TabIndex = 5
+            lblAuthType.Text = "Authentication"
+            ' 
+            ' cboAuthType
+            ' 
+            cboAuthType.EditValue = "SQL Server Authentication"
+            cboAuthType.Location = New Point(20, 180)
+            cboAuthType.Name = "cboAuthType"
+            cboAuthType.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+            cboAuthType.Properties.Items.AddRange(New Object() {"SQL Server Authentication", "Windows Authentication"})
+            cboAuthType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+            cboAuthType.Size = New Size(340, 20)
+            cboAuthType.TabIndex = 6
+            ' 
             ' lblSqlUsername
             ' 
-            lblSqlUsername.Location = New Point(20, 162)
+            lblSqlUsername.Location = New Point(20, 214)
             lblSqlUsername.Name = "lblSqlUsername"
             lblSqlUsername.Size = New Size(70, 13)
-            lblSqlUsername.TabIndex = 5
+            lblSqlUsername.TabIndex = 7
             lblSqlUsername.Text = "SQL Username"
             ' 
             ' txtSqlUsername
             ' 
-            txtSqlUsername.Location = New Point(20, 180)
+            txtSqlUsername.Location = New Point(20, 232)
             txtSqlUsername.Name = "txtSqlUsername"
             txtSqlUsername.Size = New Size(340, 20)
-            txtSqlUsername.TabIndex = 6
+            txtSqlUsername.TabIndex = 8
             ' 
             ' lblSqlPassword
             ' 
-            lblSqlPassword.Location = New Point(20, 214)
+            lblSqlPassword.Location = New Point(20, 266)
             lblSqlPassword.Name = "lblSqlPassword"
             lblSqlPassword.Size = New Size(68, 13)
-            lblSqlPassword.TabIndex = 7
+            lblSqlPassword.TabIndex = 9
             lblSqlPassword.Text = "SQL Password"
             ' 
             ' txtSqlPassword
             ' 
-            txtSqlPassword.Location = New Point(20, 232)
+            txtSqlPassword.Location = New Point(20, 284)
             txtSqlPassword.Name = "txtSqlPassword"
             txtSqlPassword.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Glyph)})
             txtSqlPassword.Properties.NullValuePrompt = "Blangko lang kung hindi papalitan"
             txtSqlPassword.Properties.PasswordChar = "●"c
             txtSqlPassword.Size = New Size(340, 20)
-            txtSqlPassword.TabIndex = 8
+            txtSqlPassword.TabIndex = 10
             ' 
             ' lblStatusMessage
             ' 
             lblStatusMessage.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
-            lblStatusMessage.Location = New Point(20, 268)
+            lblStatusMessage.Location = New Point(20, 320)
             lblStatusMessage.Name = "lblStatusMessage"
             lblStatusMessage.Size = New Size(340, 26)
-            lblStatusMessage.TabIndex = 9
+            lblStatusMessage.TabIndex = 11
             ' 
             ' btnTestConnection
             ' 
-            btnTestConnection.Location = New Point(20, 302)
+            btnTestConnection.Location = New Point(20, 354)
             btnTestConnection.Name = "btnTestConnection"
             btnTestConnection.Size = New Size(165, 34)
-            btnTestConnection.TabIndex = 10
+            btnTestConnection.TabIndex = 12
             btnTestConnection.Text = "Test Connection"
             ' 
             ' btnSave
             ' 
-            btnSave.Location = New Point(195, 302)
+            btnSave.Location = New Point(195, 354)
             btnSave.Name = "btnSave"
             btnSave.Size = New Size(165, 34)
-            btnSave.TabIndex = 11
+            btnSave.TabIndex = 13
             btnSave.Text = "Save"
             ' 
             ' ucDatabaseConnectionSettings
@@ -144,6 +166,8 @@
             Controls.Add(lblSqlPassword)
             Controls.Add(txtSqlUsername)
             Controls.Add(lblSqlUsername)
+            Controls.Add(cboAuthType)
+            Controls.Add(lblAuthType)
             Controls.Add(txtDatabaseName)
             Controls.Add(lblDatabaseName)
             Controls.Add(txtServerAddress)
@@ -153,9 +177,10 @@
             AutoScaleMode = AutoScaleMode.Font
 
             Name = "ucDatabaseConnectionSettings"
-            Size = New Size(380, 360)
+            Size = New Size(380, 412)
             CType(txtServerAddress.Properties, ComponentModel.ISupportInitialize).EndInit()
             CType(txtDatabaseName.Properties, ComponentModel.ISupportInitialize).EndInit()
+            CType(cboAuthType.Properties, ComponentModel.ISupportInitialize).EndInit()
             CType(txtSqlUsername.Properties, ComponentModel.ISupportInitialize).EndInit()
             CType(txtSqlPassword.Properties, ComponentModel.ISupportInitialize).EndInit()
             ResumeLayout(False)
@@ -168,6 +193,8 @@
         Friend WithEvents txtServerAddress As DevExpress.XtraEditors.TextEdit
         Friend WithEvents lblDatabaseName As DevExpress.XtraEditors.LabelControl
         Friend WithEvents txtDatabaseName As DevExpress.XtraEditors.TextEdit
+        Friend WithEvents lblAuthType As DevExpress.XtraEditors.LabelControl
+        Friend WithEvents cboAuthType As DevExpress.XtraEditors.ComboBoxEdit
         Friend WithEvents lblSqlUsername As DevExpress.XtraEditors.LabelControl
         Friend WithEvents txtSqlUsername As DevExpress.XtraEditors.TextEdit
         Friend WithEvents lblSqlPassword As DevExpress.XtraEditors.LabelControl

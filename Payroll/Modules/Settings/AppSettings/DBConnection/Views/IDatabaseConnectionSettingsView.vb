@@ -2,6 +2,7 @@
     Public Interface IDatabaseConnectionSettingsView
         Property ServerAddress As String
         Property DatabaseName As String
+        Property AuthenticationType As Models.DbAuthenticationType
         Property SqlUsername As String
         Property SqlPassword As String
 

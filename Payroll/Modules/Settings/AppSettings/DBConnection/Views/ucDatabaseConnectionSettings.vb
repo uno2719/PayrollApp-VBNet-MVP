@@ -40,6 +40,19 @@ Namespace DBConnection.Views
             End Set
         End Property
 
+        Public Property AuthenticationType As Models.DbAuthenticationType _
+            Implements IDatabaseConnectionSettingsView.AuthenticationType
+            Get
+                Return If(cboAuthType.SelectedIndex = 1,
+                          Models.DbAuthenticationType.WindowsAuthentication,
+                          Models.DbAuthenticationType.SqlServerAuthentication)
+            End Get
+            Set(value As Models.DbAuthenticationType)
+                cboAuthType.SelectedIndex = If(value = Models.DbAuthenticationType.WindowsAuthentication, 1, 0)
+                UpdateAuthFields()
+            End Set
+        End Property
+
         Public Property SqlUsername As String Implements IDatabaseConnectionSettingsView.SqlUsername
             Get
                 Return txtSqlUsername.Text
@@ -94,6 +107,24 @@ Namespace DBConnection.Views
             txtSqlPassword.Properties.PasswordChar = If(_isPasswordVisible, Nothing, ChrW(9679))
             e.Button.ImageOptions.Image = If(_isPasswordVisible, My.Resources.icon_showPW, My.Resources.icon_hidePW)
             txtSqlPassword.Refresh()
+        End Sub
+
+        Private Sub cboAuthType_SelectedIndexChanged(sender As Object, e As EventArgs) _
+            Handles cboAuthType.SelectedIndexChanged
+
+            UpdateAuthFields()
+        End Sub
+
+        ' Windows Authentication -> i-disable ang Username/Password (hindi
+        ' ginagamit). Hindi natin binubura ang tina-type, para kung magbago
+        ' ng isip si user at bumalik sa SQL Auth, nandoon pa rin.
+        Private Sub UpdateAuthFields()
+            Dim isSql = (cboAuthType.SelectedIndex <> 1)
+
+            lblSqlUsername.Enabled = isSql
+            txtSqlUsername.Enabled = isSql
+            lblSqlPassword.Enabled = isSql
+            txtSqlPassword.Enabled = isSql
         End Sub
 
         Private Async Sub btnTestConnection_Click(sender As Object, e As EventArgs) Handles btnTestConnection.Click

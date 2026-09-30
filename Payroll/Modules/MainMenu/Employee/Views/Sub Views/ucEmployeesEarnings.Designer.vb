@@ -112,59 +112,59 @@ Partial Class ucEmployeesEarnings
         ' 
         ' txtBasicSalary
         ' 
-        txtBasicSalary.Location = New Point(128, 55)
+        txtBasicSalary.Location = New Point(125, 56)
         txtBasicSalary.Name = "txtBasicSalary"
-        txtBasicSalary.Size = New Size(401, 24)
+        txtBasicSalary.Size = New Size(404, 22)
         txtBasicSalary.StyleController = lcEarnings
         txtBasicSalary.TabIndex = 4
         ' 
         ' txtDailyRate
         ' 
-        txtDailyRate.Location = New Point(128, 83)
+        txtDailyRate.Location = New Point(125, 82)
         txtDailyRate.Name = "txtDailyRate"
-        txtDailyRate.Size = New Size(401, 24)
+        txtDailyRate.Size = New Size(404, 22)
         txtDailyRate.StyleController = lcEarnings
         txtDailyRate.TabIndex = 5
         ' 
         ' txtHourlyRate
         ' 
-        txtHourlyRate.Location = New Point(128, 111)
+        txtHourlyRate.Location = New Point(125, 108)
         txtHourlyRate.Name = "txtHourlyRate"
-        txtHourlyRate.Size = New Size(401, 24)
+        txtHourlyRate.Size = New Size(404, 22)
         txtHourlyRate.StyleController = lcEarnings
         txtHourlyRate.TabIndex = 6
         ' 
         ' txtDaysInYear
         ' 
         txtDaysInYear.EnterMoveNextControl = True
-        txtDaysInYear.Location = New Point(128, 139)
+        txtDaysInYear.Location = New Point(125, 134)
         txtDaysInYear.Name = "txtDaysInYear"
         txtDaysInYear.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtDaysInYear.Properties.Appearance.Options.UseFont = True
         txtDaysInYear.Properties.MaskSettings.Set("MaskManagerType", GetType(DevExpress.Data.Mask.NumericMaskManager))
         txtDaysInYear.Properties.MaskSettings.Set("mask", "d")
         txtDaysInYear.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        txtDaysInYear.Size = New Size(401, 22)
+        txtDaysInYear.Size = New Size(404, 22)
         txtDaysInYear.StyleController = lcEarnings
         txtDaysInYear.TabIndex = 7
         ' 
         ' txtWorkHourPer
         ' 
         txtWorkHourPer.EnterMoveNextControl = True
-        txtWorkHourPer.Location = New Point(128, 165)
+        txtWorkHourPer.Location = New Point(125, 160)
         txtWorkHourPer.Name = "txtWorkHourPer"
         txtWorkHourPer.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtWorkHourPer.Properties.Appearance.Options.UseFont = True
         txtWorkHourPer.Properties.MaskSettings.Set("MaskManagerType", GetType(DevExpress.Data.Mask.NumericMaskManager))
         txtWorkHourPer.Properties.MaskSettings.Set("mask", "f3")
         txtWorkHourPer.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        txtWorkHourPer.Size = New Size(401, 22)
+        txtWorkHourPer.Size = New Size(404, 22)
         txtWorkHourPer.StyleController = lcEarnings
         txtWorkHourPer.TabIndex = 8
         ' 
         ' chkPayrollFlag
         ' 
-        chkPayrollFlag.Location = New Point(12, 191)
+        chkPayrollFlag.Location = New Point(12, 186)
         chkPayrollFlag.Name = "chkPayrollFlag"
         chkPayrollFlag.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         chkPayrollFlag.Properties.Appearance.Options.UseFont = True
@@ -175,7 +175,7 @@ Partial Class ucEmployeesEarnings
         ' 
         ' chkMinimumWage
         ' 
-        chkMinimumWage.Location = New Point(12, 215)
+        chkMinimumWage.Location = New Point(12, 210)
         chkMinimumWage.Name = "chkMinimumWage"
         chkMinimumWage.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         chkMinimumWage.Properties.Appearance.Options.UseFont = True
@@ -186,43 +186,43 @@ Partial Class ucEmployeesEarnings
         ' 
         ' cboPayCycle
         ' 
-        cboPayCycle.Location = New Point(661, 103)
+        cboPayCycle.Location = New Point(658, 104)
         cboPayCycle.Name = "cboPayCycle"
-        cboPayCycle.Properties.Items.AddRange(New Object() {"Weekly", "Bi-Weekly", "Semi-Monthly", "Monthly"})
-        cboPayCycle.Size = New Size(394, 24)
+        cboPayCycle.Properties.Items.AddRange(New Object() {"Daily", "Weekly", "Semi-Monthly", "Monthly"})
+        cboPayCycle.Size = New Size(397, 22)
         cboPayCycle.StyleController = lcEarnings
         cboPayCycle.TabIndex = 11
         ' 
         ' cboTaxFlag
         ' 
-        cboTaxFlag.Location = New Point(661, 131)
+        cboTaxFlag.Location = New Point(658, 130)
         cboTaxFlag.Name = "cboTaxFlag"
-        cboTaxFlag.Properties.Items.AddRange(New Object() {"Weekly", "Bi-Weekly", "Semi-Monthly", "Monthly"})
-        cboTaxFlag.Size = New Size(394, 24)
+        cboTaxFlag.Properties.Items.AddRange(New Object() {"Daily", "Weekly", "Semi-Monthly", "Monthly"})
+        cboTaxFlag.Size = New Size(397, 22)
         cboTaxFlag.StyleController = lcEarnings
         cboTaxFlag.TabIndex = 12
         ' 
         ' cboPayBy
         ' 
-        cboPayBy.Location = New Point(661, 159)
+        cboPayBy.Location = New Point(658, 156)
         cboPayBy.Name = "cboPayBy"
         cboPayBy.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Down)})
         cboPayBy.Properties.Items.AddRange(New Object() {"Bank", "Cash", "Cheque"})
-        cboPayBy.Size = New Size(394, 24)
+        cboPayBy.Size = New Size(397, 22)
         cboPayBy.StyleController = lcEarnings
         cboPayBy.TabIndex = 13
         ' 
         ' sleBank
         ' 
         sleBank.EnterMoveNextControl = True
-        sleBank.Location = New Point(661, 187)
+        sleBank.Location = New Point(658, 182)
         sleBank.Name = "sleBank"
         sleBank.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         sleBank.Properties.Appearance.Options.UseFont = True
         sleBank.Properties.NullText = ""
         sleBank.Properties.PopupView = sleBankView
         sleBank.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        sleBank.Size = New Size(394, 22)
+        sleBank.Size = New Size(397, 22)
         sleBank.StyleController = lcEarnings
         sleBank.TabIndex = 14
         ' 
@@ -238,27 +238,27 @@ Partial Class ucEmployeesEarnings
         ' txtBankAccount
         ' 
         txtBankAccount.EnterMoveNextControl = True
-        txtBankAccount.Location = New Point(661, 213)
+        txtBankAccount.Location = New Point(658, 208)
         txtBankAccount.Name = "txtBankAccount"
         txtBankAccount.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtBankAccount.Properties.Appearance.Options.UseFont = True
         txtBankAccount.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        txtBankAccount.Size = New Size(394, 22)
+        txtBankAccount.Size = New Size(397, 22)
         txtBankAccount.StyleController = lcEarnings
         txtBankAccount.TabIndex = 15
         ' 
         ' SeparatorHeader
         ' 
-        SeparatorHeader.Location = New Point(12, 31)
+        SeparatorHeader.Location = New Point(12, 32)
         SeparatorHeader.Name = "SeparatorHeader"
         SeparatorHeader.Size = New Size(1043, 20)
         SeparatorHeader.TabIndex = 16
         ' 
         ' SeparatorPayment
         ' 
-        SeparatorPayment.Location = New Point(545, 74)
+        SeparatorPayment.Location = New Point(545, 76)
         SeparatorPayment.Name = "SeparatorPayment"
-        SeparatorPayment.Size = New Size(510, 25)
+        SeparatorPayment.Size = New Size(510, 24)
         SeparatorPayment.TabIndex = 17
         ' 
         ' Root_Earnings
@@ -279,60 +279,60 @@ Partial Class ucEmployeesEarnings
         lciHeader.Control = SeparatorHeader
         lciHeader.Location = New Point(0, 0)
         lciHeader.Name = "lciHeader"
-        lciHeader.Size = New Size(1047, 43)
+        lciHeader.Size = New Size(1047, 44)
         lciHeader.Text = "Earnings Details"
         lciHeader.TextLocation = DevExpress.Utils.Locations.Top
-        lciHeader.TextSize = New Size(104, 16)
+        lciHeader.TextSize = New Size(101, 17)
         ' 
         ' lciBasicSalary
         ' 
         lciBasicSalary.Control = txtBasicSalary
-        lciBasicSalary.Location = New Point(0, 43)
+        lciBasicSalary.Location = New Point(0, 44)
         lciBasicSalary.Name = "lciBasicSalary"
-        lciBasicSalary.Size = New Size(521, 28)
+        lciBasicSalary.Size = New Size(521, 26)
         lciBasicSalary.Text = "Basic Salary"
-        lciBasicSalary.TextSize = New Size(104, 17)
+        lciBasicSalary.TextSize = New Size(101, 15)
         ' 
         ' lciDailyRate
         ' 
         lciDailyRate.Control = txtDailyRate
-        lciDailyRate.Location = New Point(0, 71)
+        lciDailyRate.Location = New Point(0, 70)
         lciDailyRate.Name = "lciDailyRate"
-        lciDailyRate.Size = New Size(521, 28)
+        lciDailyRate.Size = New Size(521, 26)
         lciDailyRate.Text = "Daily Rate"
-        lciDailyRate.TextSize = New Size(104, 17)
+        lciDailyRate.TextSize = New Size(101, 15)
         ' 
         ' lciHourlyRate
         ' 
         lciHourlyRate.Control = txtHourlyRate
-        lciHourlyRate.Location = New Point(0, 99)
+        lciHourlyRate.Location = New Point(0, 96)
         lciHourlyRate.Name = "lciHourlyRate"
-        lciHourlyRate.Size = New Size(521, 28)
+        lciHourlyRate.Size = New Size(521, 26)
         lciHourlyRate.Text = "Hourly Rate"
-        lciHourlyRate.TextSize = New Size(104, 17)
+        lciHourlyRate.TextSize = New Size(101, 15)
         ' 
         ' lciDaysInYear
         ' 
         lciDaysInYear.Control = txtDaysInYear
-        lciDaysInYear.Location = New Point(0, 127)
+        lciDaysInYear.Location = New Point(0, 122)
         lciDaysInYear.Name = "lciDaysInYear"
         lciDaysInYear.Size = New Size(521, 26)
         lciDaysInYear.Text = "Days in Year"
-        lciDaysInYear.TextSize = New Size(104, 17)
+        lciDaysInYear.TextSize = New Size(101, 15)
         ' 
         ' lciWorkHourPer
         ' 
         lciWorkHourPer.Control = txtWorkHourPer
-        lciWorkHourPer.Location = New Point(0, 153)
+        lciWorkHourPer.Location = New Point(0, 148)
         lciWorkHourPer.Name = "lciWorkHourPer"
         lciWorkHourPer.Size = New Size(521, 26)
         lciWorkHourPer.Text = "Work Hour Per"
-        lciWorkHourPer.TextSize = New Size(104, 17)
+        lciWorkHourPer.TextSize = New Size(101, 15)
         ' 
         ' lciPayrollFlag
         ' 
         lciPayrollFlag.Control = chkPayrollFlag
-        lciPayrollFlag.Location = New Point(0, 179)
+        lciPayrollFlag.Location = New Point(0, 174)
         lciPayrollFlag.Name = "lciPayrollFlag"
         lciPayrollFlag.Size = New Size(521, 24)
         lciPayrollFlag.TextVisible = False
@@ -340,7 +340,7 @@ Partial Class ucEmployeesEarnings
         ' lciMinimumWage
         ' 
         lciMinimumWage.Control = chkMinimumWage
-        lciMinimumWage.Location = New Point(0, 203)
+        lciMinimumWage.Location = New Point(0, 198)
         lciMinimumWage.Name = "lciMinimumWage"
         lciMinimumWage.Size = New Size(521, 24)
         lciMinimumWage.TextVisible = False
@@ -350,69 +350,69 @@ Partial Class ucEmployeesEarnings
         lciSeparatorPayment.AppearanceItemCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold)
         lciSeparatorPayment.AppearanceItemCaption.Options.UseFont = True
         lciSeparatorPayment.Control = SeparatorPayment
-        lciSeparatorPayment.Location = New Point(533, 43)
+        lciSeparatorPayment.Location = New Point(533, 44)
         lciSeparatorPayment.Name = "lciSeparatorPayment"
         lciSeparatorPayment.Size = New Size(514, 48)
         lciSeparatorPayment.Text = "Payment Details"
         lciSeparatorPayment.TextLocation = DevExpress.Utils.Locations.Top
-        lciSeparatorPayment.TextSize = New Size(104, 16)
+        lciSeparatorPayment.TextSize = New Size(101, 17)
         ' 
         ' lciPayCycle
         ' 
         lciPayCycle.Control = cboPayCycle
-        lciPayCycle.Location = New Point(533, 91)
+        lciPayCycle.Location = New Point(533, 92)
         lciPayCycle.Name = "lciPayCycle"
-        lciPayCycle.Size = New Size(514, 28)
+        lciPayCycle.Size = New Size(514, 26)
         lciPayCycle.Text = "Pay Cycle"
-        lciPayCycle.TextSize = New Size(104, 17)
+        lciPayCycle.TextSize = New Size(101, 15)
         ' 
         ' lciTaxFlag
         ' 
         lciTaxFlag.Control = cboTaxFlag
-        lciTaxFlag.Location = New Point(533, 119)
+        lciTaxFlag.Location = New Point(533, 118)
         lciTaxFlag.Name = "lciTaxFlag"
-        lciTaxFlag.Size = New Size(514, 28)
+        lciTaxFlag.Size = New Size(514, 26)
         lciTaxFlag.Text = "Tax Flag"
-        lciTaxFlag.TextSize = New Size(104, 17)
+        lciTaxFlag.TextSize = New Size(101, 15)
         ' 
         ' lciPayBy
         ' 
         lciPayBy.Control = cboPayBy
-        lciPayBy.Location = New Point(533, 147)
+        lciPayBy.Location = New Point(533, 144)
         lciPayBy.Name = "lciPayBy"
-        lciPayBy.Size = New Size(514, 28)
+        lciPayBy.Size = New Size(514, 26)
         lciPayBy.Text = "Pay By"
-        lciPayBy.TextSize = New Size(104, 17)
+        lciPayBy.TextSize = New Size(101, 15)
         ' 
         ' lciBank
         ' 
         lciBank.Control = sleBank
-        lciBank.Location = New Point(533, 175)
+        lciBank.Location = New Point(533, 170)
         lciBank.Name = "lciBank"
         lciBank.Size = New Size(514, 26)
         lciBank.Text = "Bank Name"
-        lciBank.TextSize = New Size(104, 17)
+        lciBank.TextSize = New Size(101, 15)
         ' 
         ' lciBankAccount
         ' 
         lciBankAccount.Control = txtBankAccount
-        lciBankAccount.Location = New Point(533, 201)
+        lciBankAccount.Location = New Point(533, 196)
         lciBankAccount.Name = "lciBankAccount"
         lciBankAccount.Size = New Size(514, 26)
         lciBankAccount.Text = "Bank Account"
-        lciBankAccount.TextSize = New Size(104, 17)
+        lciBankAccount.TextSize = New Size(101, 15)
         ' 
         ' emptyGap
         ' 
-        emptyGap.Location = New Point(521, 43)
+        emptyGap.Location = New Point(521, 44)
         emptyGap.Name = "emptyGap"
-        emptyGap.Size = New Size(12, 184)
+        emptyGap.Size = New Size(12, 178)
         ' 
         ' emptyBottom
         ' 
-        emptyBottom.Location = New Point(0, 227)
+        emptyBottom.Location = New Point(0, 222)
         emptyBottom.Name = "emptyBottom"
-        emptyBottom.Size = New Size(1047, 466)
+        emptyBottom.Size = New Size(1047, 471)
         ' 
         ' ucEmployeesEarnings
         ' 

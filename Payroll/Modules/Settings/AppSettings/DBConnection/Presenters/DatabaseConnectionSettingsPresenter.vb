@@ -20,6 +20,7 @@ Namespace DBConnection.Presenters
 
             _view.ServerAddress = settings.ServerAddress
             _view.DatabaseName = settings.DatabaseName
+            _view.AuthenticationType = settings.AuthenticationType
             _view.SqlUsername = settings.SqlUsername
 
             ' Sinadyang HINDI natin ipapakita ulit ang dating password
@@ -33,7 +34,7 @@ Namespace DBConnection.Presenters
             If Not ValidateRequiredFields() Then Return
 
             Dim settings = BuildSettingsFromView()
-            Dim connString = _settingsService.BuildConnectionString(settings, _view.SqlPassword)
+            Dim connString = _settingsService.BuildConnectionString(settings, ResolvePasswordForTest())
 
             Try
                 Using conn As New System.Data.SqlClient.SqlConnection(connString)
@@ -80,20 +81,49 @@ Namespace DBConnection.Presenters
                 Return False
             End If
 
+            ' Windows Authentication: walang username/password na kailangan -
+            ' ang Windows account na nagpapatakbo ng app ang gagamitin.
+            If _view.AuthenticationType = Models.DbAuthenticationType.WindowsAuthentication Then
+                Return True
+            End If
+
             If String.IsNullOrWhiteSpace(_view.SqlUsername) Then
                 _view.ShowError("SQL Username is required.")
+                Return False
+            End If
+
+            ' Blangko ang password field = "huwag palitan ang naka-save".
+            ' Pero kung WALA namang naka-save (hal. bagong lipat mula sa
+            ' Windows Authentication), kailangan talaga itong i-type.
+            If String.IsNullOrEmpty(_view.SqlPassword) AndAlso
+               String.IsNullOrEmpty(GetSavedPassword()) Then
+                _view.ShowError("SQL Password is required.")
                 Return False
             End If
 
             Return True
         End Function
 
+        Private Function GetSavedPassword() As String
+            Return _settingsService.GetDecryptedSqlPassword(_settingsService.Load())
+        End Function
+
+        ' Para sa Test Connection: kung blangko ang password field, gamitin
+        ' ang naka-save na password (kapareho ng ginagawa ng Save).
+        Private Function ResolvePasswordForTest() As String
+            If Not String.IsNullOrEmpty(_view.SqlPassword) Then Return _view.SqlPassword
+            Return GetSavedPassword()
+        End Function
+
         Private Function BuildSettingsFromView() As Models.DatabaseConnectionSettings
+            Dim authType = _view.AuthenticationType
+
             Return New Models.DatabaseConnectionSettings With {
                 .ServerAddress = _view.ServerAddress,
                 .DatabaseName = _view.DatabaseName,
-                .SqlUsername = _view.SqlUsername,
-                .AuthenticationType = Models.DbAuthenticationType.SqlServerAuthentication
+                .AuthenticationType = authType,
+                .SqlUsername = If(authType = Models.DbAuthenticationType.SqlServerAuthentication,
+                                  _view.SqlUsername, String.Empty)
             }
         End Function
 
