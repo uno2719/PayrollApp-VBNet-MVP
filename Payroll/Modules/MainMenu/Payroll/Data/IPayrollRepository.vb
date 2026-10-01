@@ -1,0 +1,30 @@
+Imports System.Data
+Imports Payroll.PayrollProcessing.Models
+
+Namespace PayrollProcessing.Data
+
+    Public Interface IPayrollInputRepository
+
+        Function GetCutoffsAsync() As Task(Of List(Of CutoffModel))
+        Function CreateCutoffAsync(cutoff As CutoffModel) As Task(Of Integer)
+
+        ''' <summary>Core fixed columns + one column per active Overtime/Holiday/Compensation/Bonus catalog row.</summary>
+        Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
+
+        ''' <summary>
+        ''' A row per employee eligible for this Cutoff's CycleType, with one
+        ''' Decimal column per entry in <paramref name="columns"/>, pre-filled
+        ''' from any previously saved Payroll Input Entry values.
+        ''' </summary>
+        Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable)
+
+        ''' <summary>
+        ''' Replaces all Payroll-Input-Entry-sourced transactions for this Cutoff
+        ''' in one transaction (delete-then-reinsert per employee, scoped to
+        ''' TxnSrc so other sources' rows are never touched).
+        ''' </summary>
+        Function SaveInputDataAsync(cutoffId As Integer, table As DataTable, columns As List(Of PayrollInputColumnModel), modifiedBy As String) As Task
+
+    End Interface
+
+End Namespace

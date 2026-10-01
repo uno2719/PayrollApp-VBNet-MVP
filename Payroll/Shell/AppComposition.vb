@@ -8,8 +8,6 @@ Imports Payroll.DBConnection.Views
 Imports Payroll.EmailSettings.Data
 Imports Payroll.EmailSettings.Presenters
 Imports Payroll.EmailSettings.Services
-Imports Payroll.Themes.Presenters
-Imports Payroll.Themes.Services
 Imports Payroll.Employee.Data
 Imports Payroll.Employee.Presenters
 Imports Payroll.Employee.Services
@@ -35,12 +33,17 @@ Imports Payroll.Lookups.Services
 Imports Payroll.ModuleManagement.Data
 Imports Payroll.ModuleManagement.Presenters
 Imports Payroll.ModuleManagement.Services
+Imports Payroll.PayrollProcessing.Data
+Imports Payroll.PayrollProcessing.Presenters
+Imports Payroll.PayrollProcessing.Services
 Imports Payroll.PayrollSettings.Data
 Imports Payroll.PayrollSettings.Presenters
 Imports Payroll.PayrollSettings.Services
 Imports Payroll.StatutorySettings.Data
 Imports Payroll.StatutorySettings.Presenters
 Imports Payroll.StatutorySettings.Services
+Imports Payroll.Themes.Presenters
+Imports Payroll.Themes.Services
 Imports Payroll.Users.Presenters
 Imports Payroll.Users.Services
 Imports Payroll.Users.Views
@@ -539,6 +542,32 @@ Public Class AppComposition
         Dim shellView As New ucModuleManagement(catalogView, accessView)
 
         Return shellView
+
+    End Function
+
+    Public Shared Function BuildPayrollView() As ucPayroll
+
+        ' Reuse the Payroll Settings repos as-is — same catalogs
+        ' (tblOvertime/tblHoliday/tblCompensation/tblBonus), no duplicated SQL.
+        Dim rateEntryRepo As New PayrollRateEntryRepository()
+        Dim compensationRepo As New CompensationRepository()
+        Dim flaggedEntryRepo As New PayrollFlaggedEntryRepository()
+
+        Dim inputRepo As New PayrollInputRepository(rateEntryRepo, compensationRepo, flaggedEntryRepo)
+        Dim inputService As New PayrollInputService(inputRepo)
+
+        Dim currentUser = AppSession.CurrentUser
+
+        ' Input tab
+        Dim inputEntryView As New ucPayrollInputEntry()
+        Dim inputEntryPresenter As New PayrollInputEntryPresenter(inputEntryView, inputService, currentUser)
+        inputEntryView.SetPresenter(inputEntryPresenter)
+
+        ' Output tab — scaffold only for now; shares the same service for its Cutoff filter.
+        Dim outputView As New ucPayrollOutput()
+        outputView.SetService(inputService)
+
+        Return New ucPayroll(inputEntryView, outputView)
 
     End Function
 
