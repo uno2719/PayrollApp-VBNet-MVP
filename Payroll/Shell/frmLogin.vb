@@ -198,7 +198,8 @@ Public Class frmLogin
             If pinPrompt.ShowDialog() = DialogResult.OK Then
 
                 If pinService.VerifyPin(pinPrompt.EnteredPin) Then
-                    Dim settingsView = AppComposition.BuildDatabaseConnectionSettingsView()
+                    Dim settingsView = AppComposition.BuildDatabaseConnectionSettingsView(allowEdit:=True)
+
                     Using dlg As New frmDatabaseConnectionSettingsDialog(settingsView)
                         dlg.ShowDialog()
                     End Using

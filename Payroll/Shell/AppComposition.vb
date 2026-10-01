@@ -103,19 +103,39 @@ Public Class AppComposition
 
     End Function
 
-    Public Shared Function BuildDatabaseConnectionSettingsView() As ucDatabaseConnectionSettings
+    'Public Shared Function BuildDatabaseConnectionSettingsView() As ucDatabaseConnectionSettings
 
-        ' 1. Service (walang Repository - local JSON file lang ang storage)
+    '    ' 1. Service (walang Repository - local JSON file lang ang storage)
+    '    Dim settingsService As New DatabaseConnectionSettingsService()
+
+    '    ' 2. View
+    '    Dim view As New ucDatabaseConnectionSettings()
+
+    '    ' 3. Presenter - i-inject ang View + Service
+    '    Dim presenter As New DatabaseConnectionSettingsPresenter(view, settingsService)
+
+    '    ' 4. I-assign ang Presenter sa View
+    '    view.SetPresenter(presenter)
+
+    '    Return view
+
+    'End Function
+    Public Shared Function BuildDatabaseConnectionSettingsView(Optional allowEdit As Boolean = False) As ucDatabaseConnectionSettings
+
+        ' 1. Service
         Dim settingsService As New DatabaseConnectionSettingsService()
 
         ' 2. View
         Dim view As New ucDatabaseConnectionSettings()
 
-        ' 3. Presenter - i-inject ang View + Service
-        Dim presenter As New DatabaseConnectionSettingsPresenter(view, settingsService)
+        ' 3. Presenter
+        Dim presenter As New DatabaseConnectionSettingsPresenter(
+        view,
+        settingsService,
+        allowEdit)
 
-        ' 4. I-assign ang Presenter sa View
-        view.SetPresenter(presenter)
+        ' 4. Assign Presenter
+        view.SetPresenter(presenter, allowEdit)
 
         Return view
 

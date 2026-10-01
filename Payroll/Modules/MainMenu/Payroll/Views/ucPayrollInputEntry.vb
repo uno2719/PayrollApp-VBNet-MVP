@@ -69,7 +69,7 @@ Public Class ucPayrollInputEntry
     End Sub
 
     Private Sub btnColumns_Click(sender As Object, e As EventArgs) Handles btnColumns.Click
-        gridView.ShowCustomizationForm()
+        gridView.ColumnsCustomization()
     End Sub
 
 #Region "IPayrollInputEntryView"
@@ -108,12 +108,22 @@ Public Class ucPayrollInputEntry
     End Sub
 
     Private Sub AddReferenceColumn(fieldName As String, caption As String, visibleIndex As Integer)
+
         Dim col = gridView.Columns.AddField(fieldName)
+
         col.Caption = caption
         col.Visible = True
         col.VisibleIndex = visibleIndex
+
+        ' Reference columns - hindi editable
         col.OptionsColumn.AllowEdit = False
+
+        ' Huwag isama sa Columns Customization
         col.OptionsColumn.ShowInCustomizationForm = False
+
+        ' Manatiling visible habang nag-horizontal scroll
+        col.Fixed = DevExpress.XtraGrid.Columns.FixedStyle.Left
+
     End Sub
 
     Public Sub DisplayData(table As DataTable) Implements IPayrollInputEntryView.DisplayData

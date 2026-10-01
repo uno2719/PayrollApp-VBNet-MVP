@@ -10,16 +10,12 @@ Namespace DBConnection.Views
         Private _presenter As DatabaseConnectionSettingsPresenter
         Private _isPasswordVisible As Boolean = False
 
-        Public Sub SetPresenter(presenter As DatabaseConnectionSettingsPresenter)
+        Public Sub SetPresenter(presenter As DatabaseConnectionSettingsPresenter, Optional allowEdit As Boolean = False)
+
             _presenter = presenter
             _presenter.LoadSettings()
 
-            ' View Only -> naka-disable ang Save (kapareho ng ginagawa na
-            ' natin sa ucEmailSettings via HasEditAccess). Hindi natin
-            ' idi-disable ang Test Connection - read-only/diagnostic lang
-            ' 'yon, walang na-sa-save, kaya safe pa rin kahit View Only,
-            ' kagaya ng "Refresh"/"Details" na palaging bukas sa ibang views.
-            btnSave.Enabled = AuthorizationService.CanModify(ModuleCodes.Settings_DatabaseSettings)
+            btnSave.Enabled = allowEdit OrElse AuthorizationService.CanModify(ModuleCodes.Settings_DatabaseSettings)
         End Sub
 
         Public Property ServerAddress As String Implements IDatabaseConnectionSettingsView.ServerAddress

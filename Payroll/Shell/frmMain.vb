@@ -171,7 +171,7 @@ Public Class frmMain
                 _nav.NavigateTo(Of ucEmployees)(Function() AppComposition.BuildEmployeeView())
 
             Case "main_Payroll"
-                _nav.NavigateTo(Of ucPayroll)()
+                _nav.NavigateTo(Of ucPayroll)(Function() AppComposition.BuildPayrollView())
 
             Case "main_Loan"
                 _nav.NavigateTo(Of ucLoans)(Function() AppComposition.BuildLoansView())

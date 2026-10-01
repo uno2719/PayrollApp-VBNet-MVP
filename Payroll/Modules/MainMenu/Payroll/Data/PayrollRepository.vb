@@ -116,7 +116,10 @@ Namespace PayrollProcessing.Data
                     "SELECT RecordId, TxnCode, Qty, Rate
                      FROM tblPayrollInputTxn
                      WHERE CutoffID = @CutoffID AND TxnSrc = @TxnSrc",
-                    New With {cutoffId, TxnSrc = TxnSource})).ToLookup(Function(t) t.RecordId)
+                    New With {
+                                cutoffId,
+                                .TxnSrc = TxnSource
+                            })).ToLookup(Function(t) t.RecordId)
 
                 Dim modeByCode = columns.ToDictionary(Function(c) c.ColumnName, Function(c) c.ValueMode)
 
@@ -154,7 +157,10 @@ Namespace PayrollProcessing.Data
                         ' Delete-then-reinsert, scoped to this Cutoff + our own source tag.
                         Await conn.ExecuteAsync(
                             "DELETE FROM tblPayrollInputTxn WHERE CutoffID = @CutoffID AND RecordId = @RecordId AND TxnSrc = @TxnSrc",
-                            New With {cutoffId, recordId, TxnSrc = TxnSource}, tx)
+                            New With {
+                                        cutoffId,
+                                        .TxnSrc = TxnSource
+                                    }, tx)
 
                         For Each col In columns
                             Dim value = Convert.ToDecimal(row(col.ColumnName))
@@ -172,7 +178,7 @@ Namespace PayrollProcessing.Data
                                     .TxnCategory = categoryByCode(col.ColumnName),
                                     .TxnCode = col.ColumnName,
                                     qty, rate,
-                                    TxnSrc = TxnSource,
+                                    .TxnSrc = TxnSource,
                                     modifiedBy
                                 }, tx)
                         Next

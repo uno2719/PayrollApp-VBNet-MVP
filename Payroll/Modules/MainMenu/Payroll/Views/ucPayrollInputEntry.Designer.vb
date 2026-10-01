@@ -21,6 +21,7 @@ Partial Class ucPayrollInputEntry
         pnlTop = New System.Windows.Forms.Panel()
         btnColumns = New DevExpress.XtraEditors.SimpleButton()
         btnProcess = New DevExpress.XtraEditors.SimpleButton()
+        btnSave = New DevExpress.XtraEditors.SimpleButton()
         cboCutoff = New DevExpress.XtraEditors.LookUpEdit()
         lblCutoff = New DevExpress.XtraEditors.LabelControl()
         gridControl = New DevExpress.XtraGrid.GridControl()
