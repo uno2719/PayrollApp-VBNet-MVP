@@ -17,85 +17,96 @@ Partial Class ucPayrollInputEntry
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        components = New System.ComponentModel.Container()
-        pnlTop = New System.Windows.Forms.Panel()
+        PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         btnColumns = New DevExpress.XtraEditors.SimpleButton()
         btnProcess = New DevExpress.XtraEditors.SimpleButton()
-        btnSave = New DevExpress.XtraEditors.SimpleButton()
         cboCutoff = New DevExpress.XtraEditors.LookUpEdit()
         lblCutoff = New DevExpress.XtraEditors.LabelControl()
+        lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         gridControl = New DevExpress.XtraGrid.GridControl()
         gridView = New DevExpress.XtraGrid.Views.Grid.GridView()
-        pnlTop.SuspendLayout()
+        CType(PanelControl1, System.ComponentModel.ISupportInitialize).BeginInit()
+        PanelControl1.SuspendLayout()
         CType(cboCutoff.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(gridControl, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(gridView, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
-        'pnlTop
+        ' PanelControl1 — same title-bar convention as ucLookupMaintenance (Settings module):
+        ' title on the left, right-anchored buttons so they stay pinned to the right edge on resize.
         '
-        pnlTop.Controls.Add(btnColumns)
-        pnlTop.Controls.Add(btnProcess)
-        pnlTop.Controls.Add(btnSave)
-        pnlTop.Controls.Add(cboCutoff)
-        pnlTop.Controls.Add(lblCutoff)
-        pnlTop.Dock = System.Windows.Forms.DockStyle.Top
-        pnlTop.Location = New System.Drawing.Point(0, 0)
-        pnlTop.Name = "pnlTop"
-        pnlTop.Size = New System.Drawing.Size(1100, 44)
-        pnlTop.TabIndex = 0
+        PanelControl1.Controls.Add(btnColumns)
+        PanelControl1.Controls.Add(btnProcess)
+        PanelControl1.Controls.Add(cboCutoff)
+        PanelControl1.Controls.Add(lblCutoff)
+        PanelControl1.Controls.Add(lblTabPageTitle)
+        PanelControl1.Dock = System.Windows.Forms.DockStyle.Top
+        PanelControl1.Location = New System.Drawing.Point(4, 4)
+        PanelControl1.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
+        PanelControl1.Name = "PanelControl1"
+        PanelControl1.Padding = New System.Windows.Forms.Padding(3, 2, 3, 2)
+        PanelControl1.Size = New System.Drawing.Size(1092, 70)
+        PanelControl1.TabIndex = 0
         '
-        'lblCutoff
+        ' lblTabPageTitle
         '
-        lblCutoff.Location = New System.Drawing.Point(12, 15)
+        lblTabPageTitle.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left
+        lblTabPageTitle.Appearance.Font = New System.Drawing.Font("Segoe UI", 15.0F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CByte(0))
+        lblTabPageTitle.Appearance.Options.UseFont = True
+        lblTabPageTitle.Location = New System.Drawing.Point(8, 17)
+        lblTabPageTitle.Name = "lblTabPageTitle"
+        lblTabPageTitle.Size = New System.Drawing.Size(248, 28)
+        lblTabPageTitle.TabIndex = 0
+        lblTabPageTitle.Text = "PAYROLL INPUT ENTRY"
+        '
+        ' lblCutoff
+        '
+        lblCutoff.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
+        lblCutoff.Location = New System.Drawing.Point(300, 28)
         lblCutoff.Name = "lblCutoff"
         lblCutoff.Size = New System.Drawing.Size(34, 13)
-        lblCutoff.TabIndex = 0
+        lblCutoff.TabIndex = 1
         lblCutoff.Text = "Cutoff:"
         '
-        'cboCutoff
+        ' cboCutoff
         '
-        cboCutoff.Location = New System.Drawing.Point(60, 12)
+        cboCutoff.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
+        cboCutoff.Location = New System.Drawing.Point(348, 25)
         cboCutoff.Name = "cboCutoff"
         cboCutoff.Properties.NullText = "Select a Cutoff..."
-        cboCutoff.Size = New System.Drawing.Size(320, 20)
-        cboCutoff.TabIndex = 1
+        cboCutoff.Size = New System.Drawing.Size(280, 20)
+        cboCutoff.TabIndex = 2
         '
-        'btnSave
+        ' btnProcess
         '
-        btnSave.Location = New System.Drawing.Point(788, 10)
-        btnSave.Name = "btnSave"
-        btnSave.Size = New System.Drawing.Size(88, 25)
-        btnSave.TabIndex = 2
-        btnSave.Text = "Save"
-        '
-        'btnProcess
-        '
-        btnProcess.Location = New System.Drawing.Point(884, 10)
+        btnProcess.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
+        btnProcess.Location = New System.Drawing.Point(876, 20)
         btnProcess.Name = "btnProcess"
         btnProcess.Size = New System.Drawing.Size(100, 25)
         btnProcess.TabIndex = 3
         btnProcess.Text = "Process"
         '
-        'btnColumns
+        ' btnColumns
         '
-        btnColumns.Location = New System.Drawing.Point(992, 10)
+        btnColumns.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
+        btnColumns.Location = New System.Drawing.Point(984, 20)
         btnColumns.Name = "btnColumns"
-        btnColumns.Size = New System.Drawing.Size(96, 25)
+        btnColumns.Size = New System.Drawing.Size(100, 25)
         btnColumns.TabIndex = 4
         btnColumns.Text = "Columns..."
         '
-        'gridControl
+        ' gridControl
         '
         gridControl.Dock = System.Windows.Forms.DockStyle.Fill
-        gridControl.Location = New System.Drawing.Point(0, 44)
+        gridControl.Location = New System.Drawing.Point(4, 74)
         gridControl.MainView = gridView
+        gridControl.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
         gridControl.Name = "gridControl"
-        gridControl.Size = New System.Drawing.Size(1100, 556)
+        gridControl.Size = New System.Drawing.Size(1092, 456)
         gridControl.TabIndex = 1
         gridControl.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridView})
         '
-        'gridView
+        ' gridView
         '
         gridView.GridControl = gridControl
         gridView.Name = "gridView"
@@ -103,14 +114,18 @@ Partial Class ucPayrollInputEntry
         gridView.OptionsCustomization.AllowQuickHideColumns = True
         gridView.OptionsView.ShowGroupPanel = False
         '
-        'ucPayrollInputEntry
+        ' ucPayrollInputEntry
         '
+        AutoScaleDimensions = New System.Drawing.SizeF(6.0F, 13.0F)
+        AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(gridControl)
-        Me.Controls.Add(pnlTop)
+        Me.Controls.Add(PanelControl1)
         Me.Name = "ucPayrollInputEntry"
-        Me.Size = New System.Drawing.Size(1100, 600)
-        pnlTop.ResumeLayout(False)
-        pnlTop.PerformLayout()
+        Me.Padding = New System.Windows.Forms.Padding(4)
+        Me.Size = New System.Drawing.Size(1100, 534)
+        CType(PanelControl1, System.ComponentModel.ISupportInitialize).EndInit()
+        PanelControl1.ResumeLayout(False)
+        PanelControl1.PerformLayout()
         CType(cboCutoff.Properties, System.ComponentModel.ISupportInitialize).EndInit()
         CType(gridControl, System.ComponentModel.ISupportInitialize).EndInit()
         CType(gridView, System.ComponentModel.ISupportInitialize).EndInit()
@@ -118,10 +133,10 @@ Partial Class ucPayrollInputEntry
 
     End Sub
 
-    Friend WithEvents pnlTop As System.Windows.Forms.Panel
+    Friend WithEvents PanelControl1 As DevExpress.XtraEditors.PanelControl
+    Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblCutoff As DevExpress.XtraEditors.LabelControl
     Friend WithEvents cboCutoff As DevExpress.XtraEditors.LookUpEdit
-    Friend WithEvents btnSave As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnProcess As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnColumns As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents gridControl As DevExpress.XtraGrid.GridControl
