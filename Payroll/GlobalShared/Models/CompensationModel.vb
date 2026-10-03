@@ -19,6 +19,7 @@
         Public Property CeilingAmount As Decimal
         Public Property Frequency As String
         Public Property IsActive As Boolean = True
+        Public Property IsEssential As Boolean
 
         ' Audit
         Public Property CreatedAt As DateTime?

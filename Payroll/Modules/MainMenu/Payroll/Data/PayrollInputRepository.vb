@@ -1,4 +1,4 @@
-Imports System.Data
+﻿Imports System.Data
 Imports Dapper
 Imports Payroll.GlobalShared.Base
 Imports Payroll.GlobalShared.Models
@@ -8,56 +8,49 @@ Imports Payroll.PayrollSettings.Data
 Namespace PayrollProcessing.Data
 
     Public Class PayrollInputRepository
-        Inherits BaseRepository(Of CutoffModel)
+        Inherits BaseRepository(Of PayrollInputColumnModel)
         Implements IPayrollInputRepository
 
         Private Const TxnSource As String = "PIE"   ' Payroll Input Entry
 
         ' Reused as-is from Payroll Settings — same catalogs, no duplicated SQL.
+        ' Cutoff CRUD itself now lives in CutoffRepository (Payroll Settings' new
+        ' Cutoff tab) — this class only READS the list, via the same repository.
+        Private ReadOnly _cutoffRepo As CutoffRepository
         Private ReadOnly _rateEntryRepo As PayrollRateEntryRepository
         Private ReadOnly _compensationRepo As CompensationRepository
         Private ReadOnly _flaggedEntryRepo As PayrollFlaggedEntryRepository
 
-        Public Sub New(rateEntryRepo As PayrollRateEntryRepository,
+        Public Sub New(cutoffRepo As CutoffRepository,
+                       rateEntryRepo As PayrollRateEntryRepository,
                        compensationRepo As CompensationRepository,
                        flaggedEntryRepo As PayrollFlaggedEntryRepository)
+            _cutoffRepo = cutoffRepo
             _rateEntryRepo = rateEntryRepo
             _compensationRepo = compensationRepo
             _flaggedEntryRepo = flaggedEntryRepo
         End Sub
 
-        Public Async Function GetCutoffsAsync() As Task(Of List(Of CutoffModel)) Implements IPayrollInputRepository.GetCutoffsAsync
-            Return Await MyBase.GetAllAsync("SELECT * FROM tblCutoff ORDER BY CutoffStart DESC")
-        End Function
-
-        Public Async Function CreateCutoffAsync(cutoff As CutoffModel) As Task(Of Integer) Implements IPayrollInputRepository.CreateCutoffAsync
-            Dim sql = "
-                INSERT INTO tblCutoff (CycleType, CutoffYear, CutoffStart, CutoffEnd, PayDate, CutoffLabel, Status, CreatedBy)
-                OUTPUT INSERTED.CutoffID
-                VALUES (@CycleType, @CutoffYear, @CutoffStart, @CutoffEnd, @PayDate, @CutoffLabel, @Status, @CreatedBy)"
-
-            Using conn = GetConnection()
-                Return Await conn.ExecuteScalarAsync(Of Integer)(sql, cutoff)
-            End Using
+        Public Function GetCutoffsAsync() As Task(Of List(Of CutoffModel)) Implements IPayrollInputRepository.GetCutoffsAsync
+            Return _cutoffRepo.GetAllAsync()
         End Function
 
         Public Async Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel)) Implements IPayrollInputRepository.GetColumnsAsync
             Dim columns As New List(Of PayrollInputColumnModel)
 
-            ' Fixed core columns — always present, always "essential".
-            For Each c In CoreTxnCode.Columns
-                columns.Add(New PayrollInputColumnModel With {
-                    .ColumnName = c.Code, .Caption = c.Caption, .Category = PayrollInputCategory.Core,
-                    .ValueMode = c.Mode, .IsEssential = True
-                })
-            Next
+            ' No more hardcoded Core columns (Basic/RegularHours/Late/LWOP/NightDiff/SIL) —
+            ' confirmed out of scope for Payroll Input Entry entirely. Those will come from
+            ' Employee's own stored rate and a future Fixed Transaction/Timekeeping feature,
+            ' not from manual grid entry here. Every column now comes from Payroll Settings.
 
-            ' Dynamic: one column per active Overtime/Holiday row.
+            ' Dynamic: one column per active Overtime/Holiday row. IsEssential now
+            ' comes straight from the catalog row — set it via the "show by default
+            ' in Payroll Input Entry" checkbox in Payroll Settings, not hardcoded here.
             Dim overtimeRows = Await _rateEntryRepo.GetAllAsync("tblOvertime")
             For Each r In overtimeRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
                     .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Overtime,
-                    .ValueMode = PayrollTxnValueMode.Quantity, .IsEssential = False
+                    .ValueMode = PayrollTxnValueMode.Quantity, .IsEssential = r.IsEssential
                 })
             Next
 
@@ -65,7 +58,7 @@ Namespace PayrollProcessing.Data
             For Each r In holidayRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
                     .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Holiday,
-                    .ValueMode = PayrollTxnValueMode.Quantity, .IsEssential = False
+                    .ValueMode = PayrollTxnValueMode.Quantity, .IsEssential = r.IsEssential
                 })
             Next
 
@@ -74,7 +67,7 @@ Namespace PayrollProcessing.Data
             For Each r In compensationRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
                     .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Compensation,
-                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = False
+                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = r.IsEssential
                 })
             Next
 
@@ -83,7 +76,19 @@ Namespace PayrollProcessing.Data
             For Each r In bonusRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
                     .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Bonus,
-                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = False
+                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = r.IsEssential
+                })
+            Next
+
+            ' Dynamic: one column per active Deduction row — confirmed separate from
+            ' SSS/PhilHealth/Pag-IBIG/Loan (those stay automatic; tblLoan has its own
+            ' table). tblDeduction covers ad-hoc deductions (uniform, cash advance, etc.)
+            ' that DO belong here as manual, per-cutoff input.
+            Dim deductionRows = Await _flaggedEntryRepo.GetAllAsync("tblDeduction")
+            For Each r In deductionRows.Where(Function(x) x.IsActive)
+                columns.Add(New PayrollInputColumnModel With {
+                    .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Deduction,
+                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = r.IsEssential
                 })
             Next
 

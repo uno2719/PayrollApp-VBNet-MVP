@@ -11,6 +11,7 @@ Namespace PayrollSettings.Views
         Property PhilHealthFlag As Boolean
         Property PagIbigFlag As Boolean
         Property IsActive As Boolean
+        Property IsEssential As Boolean
 
         ' Grid
         Sub BindList(items As List(Of PayrollFlaggedEntryModel))

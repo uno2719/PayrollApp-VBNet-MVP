@@ -48,6 +48,7 @@ Namespace PayrollSettings.Presenters
 
             _view.ClearFields()
             _view.IsActive = True
+            _view.IsEssential = False
             _view.SetFormMode(True, True)
         End Sub
 
@@ -65,6 +66,7 @@ Namespace PayrollSettings.Presenters
                 _view.PhilHealthFlag = selected.PhilHealthFlag
                 _view.PagIbigFlag = selected.PagIbigFlag
                 _view.IsActive = selected.IsActive
+                _view.IsEssential = selected.IsEssential
             End If
 
             _view.SetFormMode(False, False)
@@ -89,7 +91,8 @@ Namespace PayrollSettings.Presenters
                 .SSSFlag = _view.SSSFlag,
                 .PhilHealthFlag = _view.PhilHealthFlag,
                 .PagIbigFlag = _view.PagIbigFlag,
-                .IsActive = _view.IsActive
+                .IsActive = _view.IsActive,
+                .IsEssential = _view.IsEssential
             }
 
             Dim result = Await _service.SaveAsync(_tableName, item, _userName)

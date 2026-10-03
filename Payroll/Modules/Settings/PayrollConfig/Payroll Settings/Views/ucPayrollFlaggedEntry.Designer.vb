@@ -40,6 +40,7 @@ Partial Class ucPayrollFlaggedEntry
         colPhilHealthFlag = New DevExpress.XtraGrid.Columns.GridColumn()
         colPagIbigFlag = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
+        chkIsEssential = New DevExpress.XtraEditors.CheckEdit()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
@@ -53,6 +54,7 @@ Partial Class ucPayrollFlaggedEntry
         CType(txtCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridconFlaggedEntryList, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridviewFlaggedEntryList, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' PanelControl1
@@ -76,7 +78,7 @@ Partial Class ucPayrollFlaggedEntry
         lblTabPageTitle.Appearance.Options.UseForeColor = True
         lblTabPageTitle.Location = New Point(8, 17)
         lblTabPageTitle.Name = "lblTabPageTitle"
-        lblTabPageTitle.Size = New Size(150, 28)
+        lblTabPageTitle.Size = New Size(116, 28)
         lblTabPageTitle.TabIndex = 2
         lblTabPageTitle.Text = "DEDUCTION"
         ' 
@@ -104,6 +106,7 @@ Partial Class ucPayrollFlaggedEntry
         grpDetails.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpDetails.AppearanceCaption.Options.UseFont = True
+        grpDetails.Controls.Add(chkIsEssential)
         grpDetails.Controls.Add(chkActive)
         grpDetails.Controls.Add(chkPagIbigFlag)
         grpDetails.Controls.Add(chkPhilHealthFlag)
@@ -180,7 +183,7 @@ Partial Class ucPayrollFlaggedEntry
         lblDescription.Location = New Point(280, 32)
         lblDescription.Margin = New Padding(3, 2, 3, 2)
         lblDescription.Name = "lblDescription"
-        lblDescription.Size = New Size(58, 13)
+        lblDescription.Size = New Size(53, 13)
         lblDescription.TabIndex = 2
         lblDescription.Text = "Description"
         ' 
@@ -285,6 +288,14 @@ Partial Class ucPayrollFlaggedEntry
         colActive.VisibleIndex = 6
         colActive.Width = 70
         ' 
+        ' chkIsEssential
+        ' 
+        chkIsEssential.Location = New Point(150, 121)
+        chkIsEssential.Name = "chkIsEssential"
+        chkIsEssential.Properties.Caption = "Show by default in Payroll Input Entry"
+        chkIsEssential.Size = New Size(260, 20)
+        chkIsEssential.TabIndex = 12
+        ' 
         ' ucPayrollFlaggedEntry
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -312,6 +323,7 @@ Partial Class ucPayrollFlaggedEntry
         CType(txtCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(gridconFlaggedEntryList, ComponentModel.ISupportInitialize).EndInit()
         CType(gridviewFlaggedEntryList, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -337,5 +349,6 @@ Partial Class ucPayrollFlaggedEntry
     Friend WithEvents colPagIbigFlag As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colActive As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents chkIsEssential As DevExpress.XtraEditors.CheckEdit
 
 End Class

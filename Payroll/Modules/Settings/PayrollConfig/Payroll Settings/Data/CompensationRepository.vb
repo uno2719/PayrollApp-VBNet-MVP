@@ -23,7 +23,7 @@ Namespace PayrollSettings.Data
                 SELECT {IdColumn} AS Id, Code, Description,
                        TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag,
                        Component2316, DeminimisFlag, CeilingAmount, Frequency,
-                       IsActive, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
+                       IsActive, IsEssential, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
                 FROM {TableName}
                 ORDER BY Code"
 
@@ -54,18 +54,18 @@ Namespace PayrollSettings.Data
                 INSERT INTO {TableName}
                     (Code, Description, TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag,
                      Component2316, DeminimisFlag, CeilingAmount, Frequency,
-                     IsActive, CreatedAt, CreatedBy)
+                     IsActive, IsEssential, CreatedAt, CreatedBy)
                 OUTPUT INSERTED.{IdColumn}
                 VALUES
                     (@Code, @Description, @TaxFlag, @SSSFlag, @PhilHealthFlag, @PagIbigFlag,
                      @Component2316, @DeminimisFlag, @CeilingAmount, @Frequency,
-                     @IsActive, GETDATE(), @UserName)"
+                     @IsActive, @IsEssential, GETDATE(), @UserName)"
 
             Using conn = GetConnection()
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
                     item.Code, item.Description, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag,
                     item.Component2316, item.DeminimisFlag, item.CeilingAmount, item.Frequency,
-                    item.IsActive, userName
+                    item.IsActive, item.IsEssential, userName
                 })
             End Using
         End Function
@@ -87,6 +87,7 @@ Namespace PayrollSettings.Data
                     CeilingAmount = @CeilingAmount,
                     Frequency = @Frequency,
                     IsActive = @IsActive,
+                    IsEssential = @IsEssential,
                     UpdatedAt = GETDATE(),
                     UpdatedBy = @UserName
                 WHERE {IdColumn} = @Id"
@@ -94,7 +95,7 @@ Namespace PayrollSettings.Data
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
                 item.Id, item.Code, item.Description, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag,
                 item.Component2316, item.DeminimisFlag, item.CeilingAmount, item.Frequency,
-                item.IsActive, userName
+                item.IsActive, item.IsEssential, userName
             })
             Return rows > 0
         End Function

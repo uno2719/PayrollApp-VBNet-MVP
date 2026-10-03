@@ -1,3 +1,4 @@
+﻿Imports Payroll.GlobalShared.Models
 Imports System.Data
 Imports Payroll.PayrollProcessing.Models
 
@@ -5,10 +6,10 @@ Namespace PayrollProcessing.Data
 
     Public Interface IPayrollInputRepository
 
+        ''' <summary>Reads the Cutoff list — creating/editing Cutoffs now happens in Payroll Settings' Cutoff tab.</summary>
         Function GetCutoffsAsync() As Task(Of List(Of CutoffModel))
-        Function CreateCutoffAsync(cutoff As CutoffModel) As Task(Of Integer)
 
-        ''' <summary>Core fixed columns + one column per active Overtime/Holiday/Compensation/Bonus catalog row.</summary>
+        ''' <summary>Core fixed columns + one column per active Overtime/Holiday/Compensation/Bonus/Deduction catalog row.</summary>
         Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
 
         ''' <summary>

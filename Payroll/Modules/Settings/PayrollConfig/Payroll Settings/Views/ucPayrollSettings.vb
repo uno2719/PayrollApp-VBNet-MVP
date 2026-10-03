@@ -1,9 +1,5 @@
 ﻿Imports System.Linq
 
-' Shell na host ng 6 tabs. 4 distinct View classes lang (Compensation
-' at Loan - 1 instance bawat isa; FlaggedEntry at RateEntry - 2
-' instances bawat isa), gaya ng ginawa sa ucSettingsLookups (8 instances
-' ng iisang ucLookupMaintenance class).
 Public Class ucPayrollSettings
     Implements IAsyncLoadable
 
@@ -15,6 +11,7 @@ Public Class ucPayrollSettings
     Private ReadOnly _ucHoliday As ucPayrollRateEntry
     Private ReadOnly _ucBonus As ucPayrollFlaggedEntry
     Private ReadOnly _ucLoan As ucLoan
+    Private ReadOnly _ucCutoff As ucCutoff
 
     Public Sub New(
         compensationView As ucCompensation,
@@ -22,7 +19,8 @@ Public Class ucPayrollSettings
         overtimeView As ucPayrollRateEntry,
         holidayView As ucPayrollRateEntry,
         bonusView As ucPayrollFlaggedEntry,
-        loanView As ucLoan)
+        loanView As ucLoan,
+        cutoffView As ucCutoff)
 
         InitializeComponent()
 
@@ -32,6 +30,7 @@ Public Class ucPayrollSettings
         _ucHoliday = holidayView
         _ucBonus = bonusView
         _ucLoan = loanView
+        _ucCutoff = cutoffView
 
         DockAllViews()
     End Sub
@@ -54,11 +53,11 @@ Public Class ucPayrollSettings
 
         _ucLoan.Dock = DockStyle.Fill
         tabpageLoan.Controls.Add(_ucLoan)
+
+        _ucCutoff.Dock = DockStyle.Fill
+        tabpageCutoff.Controls.Add(_ucCutoff)
     End Sub
 
-    ' =============================================
-    ' BREADCRUMB / TITLE
-    ' =============================================
     Public Overrides ReadOnly Property Breadcrumb As String
         Get
             Return $"Settings > Payroll Setup > Payroll > {_currentTab}"
@@ -71,19 +70,12 @@ Public Class ucPayrollSettings
         End Get
     End Property
 
-    ' =============================================
-    ' LOAD - Compensation lang (unang tab) ang agad nilo-load.
-    ' Ang ibang 5 ay lazy - tingnan tabconPayrollSettings_SelectedPageChanged.
-    ' =============================================
     Public Overrides Async Function LoadFormAsync() As Task _
         Implements IAsyncLoadable.LoadFormAsync
 
         Await _ucCompensation.EnsureLoadedAsync()
     End Function
 
-    ' =============================================
-    ' TAB CHANGED
-    ' =============================================
     Private Async Sub tabconPayrollSettings_SelectedPageChanged(
         sender As Object, e As DevExpress.XtraTab.TabPageChangedEventArgs) _
         Handles tabconPayrollSettings.SelectedPageChanged

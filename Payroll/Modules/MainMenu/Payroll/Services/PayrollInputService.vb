@@ -1,3 +1,4 @@
+﻿Imports Payroll.GlobalShared.Models
 Imports System.Data
 Imports Payroll.GlobalShared.Base
 Imports Payroll.PayrollProcessing.Data
@@ -17,13 +18,6 @@ Namespace PayrollProcessing.Services
 
         Public Function GetCutoffsAsync() As Task(Of List(Of CutoffModel)) Implements IPayrollInputService.GetCutoffsAsync
             Return _repository.GetCutoffsAsync()
-        End Function
-
-        Public Function CreateCutoffAsync(cutoff As CutoffModel) As Task(Of Integer) Implements IPayrollInputService.CreateCutoffAsync
-            If cutoff.CutoffEnd < cutoff.CutoffStart Then
-                Throw New PayrollInputValidationException("Cutoff End date cannot be earlier than Cutoff Start date.")
-            End If
-            Return _repository.CreateCutoffAsync(cutoff)
         End Function
 
         Public Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel)) Implements IPayrollInputService.GetColumnsAsync

@@ -149,6 +149,15 @@ Public Class ucPayrollFlaggedEntry
         End Set
     End Property
 
+    Public Property IsEssential As Boolean Implements IPayrollFlaggedEntryMaintenanceView.IsEssential
+        Get
+            Return chkIsEssential.Checked
+        End Get
+        Set(value As Boolean)
+            chkIsEssential.Checked = value
+        End Set
+    End Property
+
     ' =============================================
     ' IPayrollFlaggedEntryMaintenanceView - GRID
     ' =============================================
@@ -214,6 +223,7 @@ Public Class ucPayrollFlaggedEntry
         chkPhilHealthFlag.Checked = False
         chkPagIbigFlag.Checked = False
         chkActive.Checked = True
+        chkIsEssential.Checked = False
     End Sub
 
     Public Sub DisplayInfo(message As String) Implements IPayrollFlaggedEntryMaintenanceView.ShowMessage

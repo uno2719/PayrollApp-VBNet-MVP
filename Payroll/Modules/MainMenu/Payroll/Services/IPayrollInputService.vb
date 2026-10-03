@@ -1,3 +1,4 @@
+﻿Imports Payroll.GlobalShared.Models
 Imports System.Data
 Imports Payroll.PayrollProcessing.Models
 
@@ -5,7 +6,6 @@ Namespace PayrollProcessing.Services
 
     Public Interface IPayrollInputService
         Function GetCutoffsAsync() As Task(Of List(Of CutoffModel))
-        Function CreateCutoffAsync(cutoff As CutoffModel) As Task(Of Integer)
         Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
         Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable)
 

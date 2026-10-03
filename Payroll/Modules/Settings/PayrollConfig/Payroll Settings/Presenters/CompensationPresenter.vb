@@ -69,6 +69,7 @@ Namespace PayrollSettings.Presenters
                 _view.CeilingAmount = selected.CeilingAmount
                 _view.Frequency = selected.Frequency
                 _view.IsActive = selected.IsActive
+                _view.IsEssential = selected.IsEssential
             End If
 
             _view.SetFormMode(False, False)
@@ -97,7 +98,8 @@ Namespace PayrollSettings.Presenters
                 .DeminimisFlag = _view.DeminimisFlag,
                 .CeilingAmount = _view.CeilingAmount,
                 .Frequency = _view.Frequency,
-                .IsActive = _view.IsActive
+                .IsActive = _view.IsActive,
+                .IsEssential = _view.IsEssential
             }
 
             Dim result = Await _service.SaveAsync(item, _userName)

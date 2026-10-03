@@ -166,6 +166,15 @@ Public Class ucPayrollRateEntry
         End Set
     End Property
 
+    Public Property IsEssential As Boolean Implements IPayrollRateEntryMaintenanceView.IsEssential
+        Get
+            Return chkIsEssential.Checked
+        End Get
+        Set(value As Boolean)
+            chkIsEssential.Checked = value
+        End Set
+    End Property
+
     ' =============================================
     ' IPayrollRateEntryMaintenanceView - GRID
     ' =============================================

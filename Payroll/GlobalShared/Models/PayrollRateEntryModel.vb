@@ -19,7 +19,8 @@
         Public Property PagIbigFlag As Boolean
         Public Property Rate As Decimal
         Public Property MapCode As String
-        Public Property IsActive As Boolean = True
+        Public Property IsActive As Boolean
+        Public Property IsEssential As Boolean
 
         ' Audit
         Public Property CreatedAt As DateTime?

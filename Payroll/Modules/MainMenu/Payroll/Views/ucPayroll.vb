@@ -32,11 +32,18 @@ Public Class ucPayroll
         End Get
     End Property
 
-    ' Both child tabs load up front (Input's Cutoff list + Output's Cutoff filter
-    ' are both cheap); only the grid DATA for Input loads lazily, on Cutoff selection.
+    ' Input tab loads up front (it's the default-selected page); Output is lazy —
+    ' same EnsureLoadedAsync pattern as ucPayrollSettings' 6 Settings tabs.
     Public Overrides Async Function LoadFormAsync() As Task Implements IAsyncLoadable.LoadFormAsync
-        Await _inputEntryView.LoadFormAsync()
-        Await _outputView.LoadFormAsync()
+        Await _inputEntryView.EnsureLoadedAsync()
     End Function
+
+    Private Async Sub TabPane1_SelectedPageChanged(sender As Object, e As EventArgs) Handles TabPane1.SelectedPageChanged
+        RaiseBreadcrumbChanged()
+
+        If TabPane1.SelectedPage Is TabNavigationPage2 Then
+            Await _outputView.EnsureLoadedAsync()
+        End If
+    End Sub
 
 End Class

@@ -19,7 +19,7 @@ Namespace PayrollSettings.Data
                 SELECT {info.IdColumn} AS Id, Code, Description,
                        TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag,
                        Rate, MapCode,
-                       IsActive, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
+                       IsActive, IsEssential, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
                 FROM {tableName}
                 ORDER BY Code"
 
@@ -52,15 +52,15 @@ Namespace PayrollSettings.Data
 
             Dim sql = $"
                 INSERT INTO {tableName}
-                    (Code, Description, TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag, Rate, MapCode, IsActive, CreatedAt, CreatedBy)
+                    (Code, Description, TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag, Rate, MapCode, IsActive, IsEssential, CreatedAt, CreatedBy)
                 OUTPUT INSERTED.{info.IdColumn}
                 VALUES
-                    (@Code, @Description, @TaxFlag, @SSSFlag, @PhilHealthFlag, @PagIbigFlag, @Rate, @MapCode, @IsActive, GETDATE(), @UserName)"
+                    (@Code, @Description, @TaxFlag, @SSSFlag, @PhilHealthFlag, @PagIbigFlag, @Rate, @MapCode, @IsActive, @IsEssential, GETDATE(), @UserName)"
 
             Using conn = GetConnection()
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
                     item.Code, item.Description, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag,
-                    item.Rate, item.MapCode, item.IsActive, userName
+                    item.Rate, item.MapCode, item.IsActive, item.IsEssential, userName
                 })
             End Using
         End Function
@@ -82,13 +82,14 @@ Namespace PayrollSettings.Data
                     Rate = @Rate,
                     MapCode = @MapCode,
                     IsActive = @IsActive,
+                    IsEssential = @IsEssential,
                     UpdatedAt = GETDATE(),
                     UpdatedBy = @UserName
                 WHERE {info.IdColumn} = @Id"
 
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
                 item.Id, item.Code, item.Description, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag,
-                item.Rate, item.MapCode, item.IsActive, userName
+                item.Rate, item.MapCode, item.IsActive, item.IsEssential, userName
             })
             Return rows > 0
         End Function

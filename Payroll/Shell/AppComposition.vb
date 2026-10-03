@@ -360,8 +360,15 @@ Public Class AppComposition
         bonusView.SetPresenter(bonusPresenter, "Bonus")
         loanView.SetPresenter(loanPresenter)
 
+        Dim cutoffRepo As New CutoffRepository()
+        Dim cutoffService As New CutoffService(cutoffRepo)
+        Dim cutoffView As New ucCutoff()
+        Dim cutoffPresenter As New CutoffPresenter(cutoffView, cutoffService, AppSession.CurrentUser)
+        cutoffView.SetPresenter(cutoffPresenter)
+
         ' 6. Gawin ang Main View
-        Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView)
+        'Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView)
+        Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView, cutoffView)
 
     End Function
 
@@ -567,13 +574,14 @@ Public Class AppComposition
 
     Public Shared Function BuildPayrollView() As ucPayroll
 
-        ' Reuse the Payroll Settings repos as-is — same catalogs
-        ' (tblOvertime/tblHoliday/tblCompensation/tblBonus), no duplicated SQL.
+        ' CutoffRepository now lives under Payroll Settings (it also backs the new
+        ' Cutoff tab there) — Input Entry just reads from it via GetCutoffsAsync.
+        Dim cutoffRepo As New CutoffRepository()
         Dim rateEntryRepo As New PayrollRateEntryRepository()
         Dim compensationRepo As New CompensationRepository()
         Dim flaggedEntryRepo As New PayrollFlaggedEntryRepository()
 
-        Dim inputRepo As New PayrollInputRepository(rateEntryRepo, compensationRepo, flaggedEntryRepo)
+        Dim inputRepo As New PayrollInputRepository(cutoffRepo, rateEntryRepo, compensationRepo, flaggedEntryRepo)
         Dim inputService As New PayrollInputService(inputRepo)
 
         Dim currentUser = AppSession.CurrentUser

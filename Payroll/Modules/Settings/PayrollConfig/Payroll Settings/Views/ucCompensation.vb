@@ -198,6 +198,15 @@ Public Class ucCompensation
         End Set
     End Property
 
+    Public Property IsEssential As Boolean Implements ICompensationMaintenanceView.IsEssential
+        Get
+            Return chkIsEssential.Checked
+        End Get
+        Set(value As Boolean)
+            chkIsEssential.Checked = value
+        End Set
+    End Property
+
     ' =============================================
     ' ICompensationMaintenanceView - GRID
     ' =============================================
@@ -271,6 +280,7 @@ Public Class ucCompensation
         txtCeilingAmount.Text = "0.00"
         cboFrequency.Text = String.Empty
         chkActive.Checked = True
+        chkIsEssential.Checked = True
     End Sub
 
     Public Sub DisplayInfo(message As String) Implements ICompensationMaintenanceView.ShowMessage

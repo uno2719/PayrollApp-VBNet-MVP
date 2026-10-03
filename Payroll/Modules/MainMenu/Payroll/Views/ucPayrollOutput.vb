@@ -1,4 +1,5 @@
 ﻿Imports Payroll.GlobalShared.Constants
+Imports Payroll.GlobalShared.Models
 Imports Payroll.PayrollProcessing.Models
 Imports Payroll.PayrollProcessing.Services
 

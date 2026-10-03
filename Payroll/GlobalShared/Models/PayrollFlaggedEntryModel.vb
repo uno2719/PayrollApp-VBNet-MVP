@@ -16,6 +16,7 @@
         Public Property PhilHealthFlag As Boolean
         Public Property PagIbigFlag As Boolean
         Public Property IsActive As Boolean = True
+        Public Property IsEssential As Boolean
 
         ' Audit
         Public Property CreatedAt As DateTime?

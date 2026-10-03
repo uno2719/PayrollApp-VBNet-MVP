@@ -51,6 +51,7 @@ Partial Class ucCompensation
         colCeilingAmount = New DevExpress.XtraGrid.Columns.GridColumn()
         colFrequency = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
+        chkIsEssential = New DevExpress.XtraEditors.CheckEdit()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
@@ -68,6 +69,7 @@ Partial Class ucCompensation
         CType(txtCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridconCompensationList, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridviewCompensationList, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' PanelControl1
@@ -91,7 +93,7 @@ Partial Class ucCompensation
         lblTabPageTitle.Appearance.Options.UseForeColor = True
         lblTabPageTitle.Location = New Point(8, 17)
         lblTabPageTitle.Name = "lblTabPageTitle"
-        lblTabPageTitle.Size = New Size(190, 28)
+        lblTabPageTitle.Size = New Size(159, 28)
         lblTabPageTitle.TabIndex = 2
         lblTabPageTitle.Text = "COMPENSATION"
         ' 
@@ -119,6 +121,7 @@ Partial Class ucCompensation
         grpDetails.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpDetails.AppearanceCaption.Options.UseFont = True
+        grpDetails.Controls.Add(chkIsEssential)
         grpDetails.Controls.Add(chkActive)
         grpDetails.Controls.Add(chkDeminimisFlag)
         grpDetails.Controls.Add(chkPagIbigFlag)
@@ -213,7 +216,7 @@ Partial Class ucCompensation
         lblCeilingAmount.Location = New Point(536, 81)
         lblCeilingAmount.Margin = New Padding(3, 2, 3, 2)
         lblCeilingAmount.Name = "lblCeilingAmount"
-        lblCeilingAmount.Size = New Size(75, 13)
+        lblCeilingAmount.Size = New Size(71, 13)
         lblCeilingAmount.TabIndex = 4
         lblCeilingAmount.Text = "Ceiling Amount"
         ' 
@@ -231,7 +234,7 @@ Partial Class ucCompensation
         lblFrequency.Location = New Point(280, 81)
         lblFrequency.Margin = New Padding(3, 2, 3, 2)
         lblFrequency.Name = "lblFrequency"
-        lblFrequency.Size = New Size(54, 13)
+        lblFrequency.Size = New Size(51, 13)
         lblFrequency.TabIndex = 2
         lblFrequency.Text = "Frequency"
         ' 
@@ -249,7 +252,7 @@ Partial Class ucCompensation
         lbl2316Component.Location = New Point(24, 81)
         lbl2316Component.Margin = New Padding(3, 2, 3, 2)
         lbl2316Component.Name = "lbl2316Component"
-        lbl2316Component.Size = New Size(76, 13)
+        lbl2316Component.Size = New Size(82, 13)
         lbl2316Component.TabIndex = 0
         lbl2316Component.Text = "2316 Component"
         ' 
@@ -267,7 +270,7 @@ Partial Class ucCompensation
         lblDescription.Location = New Point(280, 32)
         lblDescription.Margin = New Padding(3, 2, 3, 2)
         lblDescription.Name = "lblDescription"
-        lblDescription.Size = New Size(58, 13)
+        lblDescription.Size = New Size(53, 13)
         lblDescription.TabIndex = 14
         lblDescription.Text = "Description"
         ' 
@@ -408,6 +411,14 @@ Partial Class ucCompensation
         colActive.VisibleIndex = 10
         colActive.Width = 60
         ' 
+        ' chkIsEssential
+        ' 
+        chkIsEssential.Location = New Point(150, 171)
+        chkIsEssential.Name = "chkIsEssential"
+        chkIsEssential.Properties.Caption = "Show by default in Payroll Input Entry"
+        chkIsEssential.Size = New Size(260, 20)
+        chkIsEssential.TabIndex = 17
+        ' 
         ' ucCompensation
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -439,6 +450,7 @@ Partial Class ucCompensation
         CType(txtCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(gridconCompensationList, ComponentModel.ISupportInitialize).EndInit()
         CType(gridviewCompensationList, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -475,5 +487,6 @@ Partial Class ucCompensation
     Friend WithEvents colFrequency As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colActive As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents chkIsEssential As DevExpress.XtraEditors.CheckEdit
 
 End Class

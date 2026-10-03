@@ -66,6 +66,7 @@ Namespace PayrollSettings.Presenters
                 _view.Rate = selected.Rate
                 _view.MapCode = selected.MapCode
                 _view.IsActive = selected.IsActive
+                _view.IsEssential = selected.IsEssential
             End If
 
             _view.SetFormMode(False, False)
@@ -92,7 +93,8 @@ Namespace PayrollSettings.Presenters
                 .PagIbigFlag = _view.PagIbigFlag,
                 .Rate = _view.Rate,
                 .MapCode = If(_view.MapCode, "").Trim(),
-                .IsActive = _view.IsActive
+                .IsActive = _view.IsActive,
+                .IsEssential = _view.IsEssential
             }
 
             Dim result = Await _service.SaveAsync(_tableName, item, _userName)

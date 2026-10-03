@@ -1,4 +1,5 @@
-﻿Imports System.Data
+﻿Imports Payroll.GlobalShared.Models
+Imports System.Data
 Imports Payroll.GlobalShared.Constants
 Imports Payroll.PayrollProcessing.Models
 Imports Payroll.PayrollProcessing.Presenters

@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Modules\MainMenu\Payroll\Models\Cutoff.vb" />
     <Compile Remove="Modules\MainMenu\Payroll\Models\PayrollInputRow.vb" />
-    <Compile Remove="Modules\MainMenu\Payroll\Models\PayrollTxnCode.vb" />
   </ItemGroup>
 
   <ItemGroup>

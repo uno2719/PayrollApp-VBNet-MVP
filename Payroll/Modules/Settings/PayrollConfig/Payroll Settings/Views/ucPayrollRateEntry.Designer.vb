@@ -23,6 +23,7 @@ Partial Class ucPayrollRateEntry
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
         grpDetails = New DevExpress.XtraEditors.GroupControl()
         chkActive = New DevExpress.XtraEditors.CheckEdit()
+        chkIsEssential = New DevExpress.XtraEditors.CheckEdit()
         chkPagIbigFlag = New DevExpress.XtraEditors.CheckEdit()
         chkPhilHealthFlag = New DevExpress.XtraEditors.CheckEdit()
         chkSSSFlag = New DevExpress.XtraEditors.CheckEdit()
@@ -51,6 +52,7 @@ Partial Class ucPayrollRateEntry
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
         grpDetails.SuspendLayout()
         CType(chkActive.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPagIbigFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPhilHealthFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkSSSFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -78,13 +80,13 @@ Partial Class ucPayrollRateEntry
         ' lblTabPageTitle
         ' 
         lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
-        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         lblTabPageTitle.Appearance.ForeColor = Color.Black
         lblTabPageTitle.Appearance.Options.UseFont = True
         lblTabPageTitle.Appearance.Options.UseForeColor = True
         lblTabPageTitle.Location = New Point(8, 17)
         lblTabPageTitle.Name = "lblTabPageTitle"
-        lblTabPageTitle.Size = New Size(150, 28)
+        lblTabPageTitle.Size = New Size(100, 28)
         lblTabPageTitle.TabIndex = 2
         lblTabPageTitle.Text = "OVERTIME"
         ' 
@@ -113,6 +115,7 @@ Partial Class ucPayrollRateEntry
         grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpDetails.AppearanceCaption.Options.UseFont = True
         grpDetails.Controls.Add(chkActive)
+        grpDetails.Controls.Add(chkIsEssential)
         grpDetails.Controls.Add(chkPagIbigFlag)
         grpDetails.Controls.Add(chkPhilHealthFlag)
         grpDetails.Controls.Add(chkSSSFlag)
@@ -141,6 +144,14 @@ Partial Class ucPayrollRateEntry
         chkActive.Properties.Caption = "Active"
         chkActive.Size = New Size(90, 20)
         chkActive.TabIndex = 10
+        ' 
+        ' chkIsEssential
+        ' 
+        chkIsEssential.Location = New Point(150, 171)
+        chkIsEssential.Name = "chkIsEssential"
+        chkIsEssential.Properties.Caption = "Show by default in Payroll Input Entry"
+        chkIsEssential.Size = New Size(260, 20)
+        chkIsEssential.TabIndex = 11
         ' 
         ' chkPagIbigFlag
         ' 
@@ -192,7 +203,7 @@ Partial Class ucPayrollRateEntry
         lblMapCode.Location = New Point(536, 81)
         lblMapCode.Margin = New Padding(3, 2, 3, 2)
         lblMapCode.Name = "lblMapCode"
-        lblMapCode.Size = New Size(53, 13)
+        lblMapCode.Size = New Size(48, 13)
         lblMapCode.TabIndex = 4
         lblMapCode.Text = "Map Code"
         ' 
@@ -230,7 +241,7 @@ Partial Class ucPayrollRateEntry
         lblDescription.Location = New Point(280, 32)
         lblDescription.Margin = New Padding(3, 2, 3, 2)
         lblDescription.Name = "lblDescription"
-        lblDescription.Size = New Size(58, 13)
+        lblDescription.Size = New Size(53, 13)
         lblDescription.TabIndex = 0
         lblDescription.Text = "Description"
         ' 
@@ -357,7 +368,7 @@ Partial Class ucPayrollRateEntry
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6F, 13F)
+        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(gridconRateEntryList)
         Controls.Add(grpDetails)
@@ -372,6 +383,7 @@ Partial Class ucPayrollRateEntry
         grpDetails.ResumeLayout(False)
         grpDetails.PerformLayout()
         CType(chkActive.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPagIbigFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPhilHealthFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkSSSFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -389,6 +401,7 @@ Partial Class ucPayrollRateEntry
     Friend WithEvents wbpMainCommands As DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel
     Friend WithEvents grpDetails As DevExpress.XtraEditors.GroupControl
     Friend WithEvents chkActive As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents chkIsEssential As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkPagIbigFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkPhilHealthFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkSSSFlag As DevExpress.XtraEditors.CheckEdit

@@ -35,6 +35,7 @@
         Holiday
         Compensation
         Bonus
+        Deduction
     End Enum
 
     ''' <summary>

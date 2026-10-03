@@ -13,6 +13,7 @@ Namespace PayrollSettings.Views
         Property Rate As Decimal
         Property MapCode As String
         Property IsActive As Boolean
+        Property IsEssential As Boolean
 
         ' Grid
         Sub BindList(items As List(Of PayrollRateEntryModel))
