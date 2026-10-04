@@ -181,6 +181,7 @@ Public Class ucPayrollFlaggedEntry
         chkPhilHealthFlag.Properties.ReadOnly = Not isEditable
         chkPagIbigFlag.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
+        chkIsEssential.Properties.ReadOnly = Not isEditable
 
         gridconFlaggedEntryList.Enabled = Not isEditable
 

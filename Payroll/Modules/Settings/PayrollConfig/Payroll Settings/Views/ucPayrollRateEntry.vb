@@ -200,6 +200,7 @@ Public Class ucPayrollRateEntry
         txtRate.Properties.ReadOnly = Not isEditable
         txtMapCode.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
+        chkIsEssential.Properties.ReadOnly = Not isEditable
 
         gridconRateEntryList.Enabled = Not isEditable
 

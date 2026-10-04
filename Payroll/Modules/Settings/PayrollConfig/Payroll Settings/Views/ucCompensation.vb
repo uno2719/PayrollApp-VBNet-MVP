@@ -234,6 +234,7 @@ Public Class ucCompensation
         txtCeilingAmount.Properties.ReadOnly = Not isEditable
         cboFrequency.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
+        chkIsEssential.Properties.ReadOnly = Not isEditable
 
         gridconCompensationList.Enabled = Not isEditable
 

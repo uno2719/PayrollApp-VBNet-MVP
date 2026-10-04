@@ -80,7 +80,7 @@ Partial Class ucPayrollRateEntry
         ' lblTabPageTitle
         ' 
         lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
-        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         lblTabPageTitle.Appearance.ForeColor = Color.Black
         lblTabPageTitle.Appearance.Options.UseFont = True
         lblTabPageTitle.Appearance.Options.UseForeColor = True
@@ -368,7 +368,7 @@ Partial Class ucPayrollRateEntry
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
+        AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(gridconRateEntryList)
         Controls.Add(grpDetails)
