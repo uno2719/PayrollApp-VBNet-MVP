@@ -315,13 +315,16 @@ Public Class AppComposition
         ' Statutory - stateless naman sila, tableName mismo ang variable
         ' sa FlaggedEntry/RateEntry).
         Dim compensationRepo As New CompensationRepository()
-        Dim compensationService As New CompensationService(compensationRepo)
+        ' Binabantayan ang pagpalit ng InputUnit ng isang catalog code (lock kapag may processed cutoff na)
+        Dim inputUnitGuard As New InputUnitGuard(New InputUnitUsageRepository())
+
+        Dim compensationService As New CompensationService(compensationRepo, inputUnitGuard)
 
         Dim flaggedEntryRepo As New PayrollFlaggedEntryRepository()
-        Dim flaggedEntryService As New PayrollFlaggedEntryService(flaggedEntryRepo)
+        Dim flaggedEntryService As New PayrollFlaggedEntryService(flaggedEntryRepo, inputUnitGuard)
 
         Dim rateEntryRepo As New PayrollRateEntryRepository()
-        Dim rateEntryService As New PayrollRateEntryService(rateEntryRepo)
+        Dim rateEntryService As New PayrollRateEntryService(rateEntryRepo, inputUnitGuard)
 
         Dim loanRepo As New LoanRepository()
         Dim loanService As New LoanService(loanRepo)
@@ -360,15 +363,31 @@ Public Class AppComposition
         bonusView.SetPresenter(bonusPresenter, "Bonus")
         loanView.SetPresenter(loanPresenter)
 
+        ' Pay Cycle Settings - rate basis + cutoff pattern ng bawat pay cycle.
+        ' Ito ang pinagmumulan ng Generate Cut-off sa Cutoff tab.
+        Dim payCycleRepo As New PayCycleRepository()
+        Dim payCycleService As New PayCycleService(payCycleRepo)
+        Dim payCycleView As New ucPayCycle()
+        Dim payCyclePresenter As New PayCyclePresenter(payCycleView, payCycleService, AppSession.CurrentUser)
+        payCycleView.SetPresenter(payCyclePresenter)
+
         Dim cutoffRepo As New CutoffRepository()
-        Dim cutoffService As New CutoffService(cutoffRepo)
+        Dim cutoffService As New CutoffService(cutoffRepo, payCycleRepo)
         Dim cutoffView As New ucCutoff()
         Dim cutoffPresenter As New CutoffPresenter(cutoffView, cutoffService, AppSession.CurrentUser)
-        cutoffView.SetPresenter(cutoffPresenter)
+
+        ' Ang [New] sa Cutoff tab ay nagbubukas ng Generate Cut-off dialog - bagong
+        ' dialog (at presenter) sa bawat bukas para laging sariwa ang laman.
+        cutoffView.SetPresenter(cutoffPresenter,
+            Function()
+                Dim dialog As New frmGenerateCutoff()
+                dialog.SetPresenter(New GenerateCutoffPresenter(dialog, cutoffService, AppSession.CurrentUser))
+                Return dialog
+            End Function)
 
         ' 6. Gawin ang Main View
         'Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView)
-        Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView, cutoffView)
+        Return New ucPayrollSettings(compensationView, deductionView, overtimeView, holidayView, bonusView, loanView, payCycleView, cutoffView)
 
     End Function
 

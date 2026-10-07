@@ -1,6 +1,8 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports DevExpress.XtraGrid.Views.Grid
 Imports DevExpress.XtraEditors
+Imports DevExpress.XtraGrid.Columns
+Imports Payroll.GlobalShared.Constants
 
 Namespace GlobalShared.Extensions
     Public Module DevExpressExtensions
@@ -52,6 +54,28 @@ Namespace GlobalShared.Extensions
                 Next
             End With
 
+        End Sub
+
+
+        ' Display + edit + mask ng DateEdit ay laging AppConstants.DisplayDateFormat
+        ' (MM/dd/yyyy), hindi umaasa sa regional settings ng Windows ng PC.
+        <Extension()>
+        Public Sub ApplyDisplayDateFormat(edit As DateEdit)
+            With edit.Properties
+                .DisplayFormat.FormatType = DevExpress.Utils.FormatType.DateTime
+                .DisplayFormat.FormatString = AppConstants.DisplayDateFormat
+                .EditFormat.FormatType = DevExpress.Utils.FormatType.DateTime
+                .EditFormat.FormatString = AppConstants.DisplayDateFormat
+                .Mask.EditMask = AppConstants.DisplayDateFormat
+                .Mask.UseMaskAsDisplayFormat = True
+            End With
+        End Sub
+
+        ' Para sa date column ng grid
+        <Extension()>
+        Public Sub ApplyDisplayDateFormat(column As GridColumn)
+            column.DisplayFormat.FormatType = DevExpress.Utils.FormatType.DateTime
+            column.DisplayFormat.FormatString = AppConstants.DisplayDateFormat
         End Sub
 
     End Module

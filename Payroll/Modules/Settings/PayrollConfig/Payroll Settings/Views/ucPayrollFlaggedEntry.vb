@@ -149,6 +149,21 @@ Public Class ucPayrollFlaggedEntry
         End Set
     End Property
 
+    Public Property InputUnit As PayrollInputUnit Implements IPayrollFlaggedEntryMaintenanceView.InputUnit
+        Get
+            Return CType(Math.Max(cboInputUnit.SelectedIndex, 0), PayrollInputUnit)
+        End Get
+        Set(value As PayrollInputUnit)
+            cboInputUnit.SelectedIndex = CInt(value)
+        End Set
+    End Property
+
+    Public Function ConfirmUnitChange(message As String) As Boolean Implements IPayrollFlaggedEntryMaintenanceView.ConfirmUnitChange
+        Return DevExpress.XtraEditors.XtraMessageBox.Show(message, "Change Input Unit",
+                                                          MessageBoxButtons.YesNo,
+                                                          MessageBoxIcon.Warning) = DialogResult.Yes
+    End Function
+
     Public Property IsEssential As Boolean Implements IPayrollFlaggedEntryMaintenanceView.IsEssential
         Get
             Return chkIsEssential.Checked
@@ -182,6 +197,7 @@ Public Class ucPayrollFlaggedEntry
         chkPagIbigFlag.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
         chkIsEssential.Properties.ReadOnly = Not isEditable
+        cboInputUnit.Properties.ReadOnly = Not isEditable
 
         gridconFlaggedEntryList.Enabled = Not isEditable
 
@@ -225,6 +241,7 @@ Public Class ucPayrollFlaggedEntry
         chkPagIbigFlag.Checked = False
         chkActive.Checked = True
         chkIsEssential.Checked = False
+        cboInputUnit.SelectedIndex = 0
     End Sub
 
     Public Sub DisplayInfo(message As String) Implements IPayrollFlaggedEntryMaintenanceView.ShowMessage

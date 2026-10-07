@@ -48,6 +48,7 @@
         Public Property Caption As String
         Public Property Category As PayrollInputCategory
         Public Property ValueMode As PayrollTxnValueMode
+        Public Property InputUnit As Payroll.GlobalShared.Models.PayrollInputUnit = Payroll.GlobalShared.Models.PayrollInputUnit.Amount   ' galing sa catalog row (Payroll Settings)
         Public Property IsEssential As Boolean       ' shown by default; others start hidden via Column Chooser
     End Class
 

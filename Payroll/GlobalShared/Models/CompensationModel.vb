@@ -21,6 +21,14 @@
         Public Property IsActive As Boolean = True
         Public Property IsEssential As Boolean
 
+        ' Anong klaseng value ang tinatanggap ng column na ito sa Payroll Input Entry
+        Public Property InputUnit As PayrollInputUnit = PayrollInputUnit.Amount
+        Public ReadOnly Property InputUnitText As String
+            Get
+                Return PayrollInputUnits.Text(InputUnit)
+            End Get
+        End Property
+
         ' Audit
         Public Property CreatedAt As DateTime?
         Public Property CreatedBy As String

@@ -24,6 +24,9 @@ Partial Class ucPayrollRateEntry
         grpDetails = New DevExpress.XtraEditors.GroupControl()
         chkActive = New DevExpress.XtraEditors.CheckEdit()
         chkIsEssential = New DevExpress.XtraEditors.CheckEdit()
+        lblInputUnit = New DevExpress.XtraEditors.LabelControl()
+        cboInputUnit = New DevExpress.XtraEditors.ComboBoxEdit()
+        colInputUnit = New DevExpress.XtraGrid.Columns.GridColumn()
         chkPagIbigFlag = New DevExpress.XtraEditors.CheckEdit()
         chkPhilHealthFlag = New DevExpress.XtraEditors.CheckEdit()
         chkSSSFlag = New DevExpress.XtraEditors.CheckEdit()
@@ -53,6 +56,7 @@ Partial Class ucPayrollRateEntry
         grpDetails.SuspendLayout()
         CType(chkActive.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboInputUnit.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPagIbigFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPhilHealthFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkSSSFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -116,6 +120,8 @@ Partial Class ucPayrollRateEntry
         grpDetails.AppearanceCaption.Options.UseFont = True
         grpDetails.Controls.Add(chkActive)
         grpDetails.Controls.Add(chkIsEssential)
+        grpDetails.Controls.Add(cboInputUnit)
+        grpDetails.Controls.Add(lblInputUnit)
         grpDetails.Controls.Add(chkPagIbigFlag)
         grpDetails.Controls.Add(chkPhilHealthFlag)
         grpDetails.Controls.Add(chkSSSFlag)
@@ -152,6 +158,33 @@ Partial Class ucPayrollRateEntry
         chkIsEssential.Properties.Caption = "Show by default in Payroll Input Entry"
         chkIsEssential.Size = New Size(260, 20)
         chkIsEssential.TabIndex = 11
+        ' 
+        ' lblInputUnit
+        ' 
+        lblInputUnit.Location = New Point(24, 81)
+        lblInputUnit.Name = "lblInputUnit"
+        lblInputUnit.Size = New Size(49, 13)
+        lblInputUnit.TabIndex = 30
+        lblInputUnit.Text = "Input unit"
+        ' 
+        ' cboInputUnit - anong klaseng value ang tinatanggap ng column na ito sa Payroll Input Entry
+        ' 
+        cboInputUnit.Location = New Point(24, 99)
+        cboInputUnit.Name = "cboInputUnit"
+        cboInputUnit.Properties.Items.AddRange(New Object() {"Hours", "Minutes", "Days", "Amount"})
+        cboInputUnit.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboInputUnit.Size = New Size(230, 20)
+        cboInputUnit.TabIndex = 31
+        cboInputUnit.ToolTip = "Hours / Minutes / Days = quantity (computed using the employee's rate). Amount = direct peso. Locked once used in a processed cutoff."
+        ' 
+        ' colInputUnit
+        ' 
+        colInputUnit.Caption = "Input unit"
+        colInputUnit.FieldName = "InputUnitText"
+        colInputUnit.Name = "colInputUnit"
+        colInputUnit.Visible = True
+        colInputUnit.VisibleIndex = 9
+        colInputUnit.Width = 90
         ' 
         ' chkPagIbigFlag
         ' 
@@ -276,7 +309,7 @@ Partial Class ucPayrollRateEntry
         ' 
         ' gridviewRateEntryList
         ' 
-        gridviewRateEntryList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colRate, colTaxFlag, colSSSFlag, colPhilHealthFlag, colPagIbigFlag, colActive, colMapCode})
+        gridviewRateEntryList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colRate, colTaxFlag, colSSSFlag, colPhilHealthFlag, colPagIbigFlag, colActive, colMapCode, colInputUnit})
         gridviewRateEntryList.GridControl = gridconRateEntryList
         gridviewRateEntryList.Name = "gridviewRateEntryList"
         gridviewRateEntryList.OptionsPrint.PrintFilterInfo = True
@@ -384,6 +417,7 @@ Partial Class ucPayrollRateEntry
         grpDetails.PerformLayout()
         CType(chkActive.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboInputUnit.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPagIbigFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPhilHealthFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkSSSFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -402,6 +436,9 @@ Partial Class ucPayrollRateEntry
     Friend WithEvents grpDetails As DevExpress.XtraEditors.GroupControl
     Friend WithEvents chkActive As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkIsEssential As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents lblInputUnit As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboInputUnit As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents colInputUnit As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents chkPagIbigFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkPhilHealthFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkSSSFlag As DevExpress.XtraEditors.CheckEdit

@@ -11,6 +11,7 @@ Public Class ucPayrollSettings
     Private ReadOnly _ucHoliday As ucPayrollRateEntry
     Private ReadOnly _ucBonus As ucPayrollFlaggedEntry
     Private ReadOnly _ucLoan As ucLoan
+    Private ReadOnly _ucPayCycle As ucPayCycle
     Private ReadOnly _ucCutoff As ucCutoff
 
     Public Sub New(
@@ -20,6 +21,7 @@ Public Class ucPayrollSettings
         holidayView As ucPayrollRateEntry,
         bonusView As ucPayrollFlaggedEntry,
         loanView As ucLoan,
+        payCycleView As ucPayCycle,
         cutoffView As ucCutoff)
 
         InitializeComponent()
@@ -30,6 +32,7 @@ Public Class ucPayrollSettings
         _ucHoliday = holidayView
         _ucBonus = bonusView
         _ucLoan = loanView
+        _ucPayCycle = payCycleView
         _ucCutoff = cutoffView
 
         DockAllViews()
@@ -53,6 +56,9 @@ Public Class ucPayrollSettings
 
         _ucLoan.Dock = DockStyle.Fill
         tabpageLoan.Controls.Add(_ucLoan)
+
+        _ucPayCycle.Dock = DockStyle.Fill
+        tabpagePayCycle.Controls.Add(_ucPayCycle)
 
         _ucCutoff.Dock = DockStyle.Fill
         tabpageCutoff.Controls.Add(_ucCutoff)

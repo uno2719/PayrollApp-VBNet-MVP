@@ -3,8 +3,8 @@ Imports Payroll.GlobalShared.Models
 Namespace PayrollSettings.Views
     Public Interface ICutoffMaintenanceView
 
-        ' Form fields — also doubles as the input for "Generate for Year"
-        ' (CycleType + CutoffYear are reused for both single-add and batch-generate).
+        ' Detalye ng napiling Cutoff (Edit lang ang pwede dito - ang paggawa ng
+        ' bagong Cutoff ay sa Generate Cut-off dialog na nagbubukas sa [New]).
         Property CycleType As String
         Property CutoffYear As Integer
         Property CutoffStart As Date
@@ -13,15 +13,19 @@ Namespace PayrollSettings.Views
         Property CutoffLabel As String
         Property Status As CutoffStatus
 
+        ' Filter - Nothing/"" = (All)
+        Property FilterCycleType As String
+        Property FilterYear As Integer?
+        Sub BindFilters(cycleTypes As List(Of String), years As List(Of Integer))
+
         ' Grid
         Sub BindList(items As List(Of CutoffModel))
 
         ' State/UX
-        Sub SetFormMode(isEditable As Boolean, isNewRecord As Boolean)
+        Sub SetFormMode(isEditable As Boolean)
         Sub ClearFields()
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
-        Function ConfirmGenerate(cycleType As String, year As Integer) As Boolean
 
     End Interface
 End Namespace

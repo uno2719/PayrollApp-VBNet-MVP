@@ -12,6 +12,7 @@ Namespace PayrollSettings.Views
         Property PagIbigFlag As Boolean
         Property IsActive As Boolean
         Property IsEssential As Boolean
+        Property InputUnit As PayrollInputUnit
 
         ' Grid
         Sub BindList(items As List(Of PayrollFlaggedEntryModel))
@@ -21,6 +22,9 @@ Namespace PayrollSettings.Views
         Sub ClearFields()
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
+
+        ''' <summary>Tanong na Yes/No (hal. i-clear ang draft entries kapag pinalitan ang Input Unit).</summary>
+        Function ConfirmUnitChange(message As String) As Boolean
 
     End Interface
 End Namespace

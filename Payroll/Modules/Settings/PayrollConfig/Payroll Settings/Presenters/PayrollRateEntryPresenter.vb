@@ -47,6 +47,7 @@ Namespace PayrollSettings.Presenters
 
             _view.ClearFields()
             _view.IsActive = True
+            _view.InputUnit = PayrollInputUnits.DefaultForTable(_tableName)
             _view.SetFormMode(True, True)
         End Sub
 
@@ -67,6 +68,7 @@ Namespace PayrollSettings.Presenters
                 _view.MapCode = selected.MapCode
                 _view.IsActive = selected.IsActive
                 _view.IsEssential = selected.IsEssential
+                _view.InputUnit = selected.InputUnit
             End If
 
             _view.SetFormMode(False, False)
@@ -94,10 +96,17 @@ Namespace PayrollSettings.Presenters
                 .Rate = _view.Rate,
                 .MapCode = If(_view.MapCode, "").Trim(),
                 .IsActive = _view.IsActive,
-                .IsEssential = _view.IsEssential
+                .IsEssential = _view.IsEssential,
+                .InputUnit = _view.InputUnit
             }
 
             Dim result = Await _service.SaveAsync(_tableName, item, _userName)
+
+            ' May naka-save nang entries sa mga cutoff na Draft pa - hihingan ng kumpirmasyon bago i-clear
+            If Not result.Success AndAlso result.NeedsConfirmation Then
+                If Not _view.ConfirmUnitChange(result.ErrorMessage) Then Return
+                result = Await _service.SaveAsync(_tableName, item, _userName, True)
+            End If
 
             If Not result.Success Then
                 _view.ShowError(result.ErrorMessage)

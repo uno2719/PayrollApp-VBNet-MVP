@@ -52,6 +52,9 @@ Partial Class ucCompensation
         colFrequency = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
         chkIsEssential = New DevExpress.XtraEditors.CheckEdit()
+        lblInputUnit = New DevExpress.XtraEditors.LabelControl()
+        cboInputUnit = New DevExpress.XtraEditors.ComboBoxEdit()
+        colInputUnit = New DevExpress.XtraGrid.Columns.GridColumn()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
@@ -70,6 +73,7 @@ Partial Class ucCompensation
         CType(gridconCompensationList, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridviewCompensationList, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboInputUnit.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' PanelControl1
@@ -122,6 +126,8 @@ Partial Class ucCompensation
         grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpDetails.AppearanceCaption.Options.UseFont = True
         grpDetails.Controls.Add(chkIsEssential)
+        grpDetails.Controls.Add(cboInputUnit)
+        grpDetails.Controls.Add(lblInputUnit)
         grpDetails.Controls.Add(chkActive)
         grpDetails.Controls.Add(chkDeminimisFlag)
         grpDetails.Controls.Add(chkPagIbigFlag)
@@ -305,7 +311,7 @@ Partial Class ucCompensation
         ' 
         ' gridviewCompensationList
         ' 
-        gridviewCompensationList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colTaxFlag, colSSSFlag, colPhilHealthFlag, colPagIbigFlag, col2316Component, colDeminimisFlag, colCeilingAmount, colFrequency, colActive})
+        gridviewCompensationList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colTaxFlag, colSSSFlag, colPhilHealthFlag, colPagIbigFlag, col2316Component, colDeminimisFlag, colCeilingAmount, colFrequency, colActive, colInputUnit})
         gridviewCompensationList.GridControl = gridconCompensationList
         gridviewCompensationList.Name = "gridviewCompensationList"
         gridviewCompensationList.OptionsPrint.PrintFilterInfo = True
@@ -419,6 +425,33 @@ Partial Class ucCompensation
         chkIsEssential.Size = New Size(260, 20)
         chkIsEssential.TabIndex = 17
         ' 
+        ' lblInputUnit
+        ' 
+        lblInputUnit.Location = New Point(700, 81)
+        lblInputUnit.Name = "lblInputUnit"
+        lblInputUnit.Size = New Size(49, 13)
+        lblInputUnit.TabIndex = 30
+        lblInputUnit.Text = "Input unit"
+        ' 
+        ' cboInputUnit - anong klaseng value ang tinatanggap ng column na ito sa Payroll Input Entry
+        ' 
+        cboInputUnit.Location = New Point(700, 99)
+        cboInputUnit.Name = "cboInputUnit"
+        cboInputUnit.Properties.Items.AddRange(New Object() {"Hours", "Minutes", "Days", "Amount"})
+        cboInputUnit.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboInputUnit.Size = New Size(200, 20)
+        cboInputUnit.TabIndex = 31
+        cboInputUnit.ToolTip = "Hours / Minutes / Days = quantity (computed using the employee's rate). Amount = direct peso. Locked once used in a processed cutoff."
+        ' 
+        ' colInputUnit
+        ' 
+        colInputUnit.Caption = "Input unit"
+        colInputUnit.FieldName = "InputUnitText"
+        colInputUnit.Name = "colInputUnit"
+        colInputUnit.Visible = True
+        colInputUnit.VisibleIndex = 20
+        colInputUnit.Width = 90
+        ' 
         ' ucCompensation
         ' 
         Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -451,6 +484,7 @@ Partial Class ucCompensation
         CType(gridconCompensationList, ComponentModel.ISupportInitialize).EndInit()
         CType(gridviewCompensationList, ComponentModel.ISupportInitialize).EndInit()
         CType(chkIsEssential.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboInputUnit.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -488,5 +522,8 @@ Partial Class ucCompensation
     Friend WithEvents colActive As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
     Friend WithEvents chkIsEssential As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents lblInputUnit As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboInputUnit As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents colInputUnit As DevExpress.XtraGrid.Columns.GridColumn
 
 End Class

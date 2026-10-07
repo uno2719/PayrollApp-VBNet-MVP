@@ -198,6 +198,21 @@ Public Class ucCompensation
         End Set
     End Property
 
+    Public Property InputUnit As PayrollInputUnit Implements ICompensationMaintenanceView.InputUnit
+        Get
+            Return CType(Math.Max(cboInputUnit.SelectedIndex, 0), PayrollInputUnit)
+        End Get
+        Set(value As PayrollInputUnit)
+            cboInputUnit.SelectedIndex = CInt(value)
+        End Set
+    End Property
+
+    Public Function ConfirmUnitChange(message As String) As Boolean Implements ICompensationMaintenanceView.ConfirmUnitChange
+        Return DevExpress.XtraEditors.XtraMessageBox.Show(message, "Change Input Unit",
+                                                          MessageBoxButtons.YesNo,
+                                                          MessageBoxIcon.Warning) = DialogResult.Yes
+    End Function
+
     Public Property IsEssential As Boolean Implements ICompensationMaintenanceView.IsEssential
         Get
             Return chkIsEssential.Checked
@@ -235,6 +250,7 @@ Public Class ucCompensation
         cboFrequency.Properties.ReadOnly = Not isEditable
         chkActive.Properties.ReadOnly = Not isEditable
         chkIsEssential.Properties.ReadOnly = Not isEditable
+        cboInputUnit.Properties.ReadOnly = Not isEditable
 
         gridconCompensationList.Enabled = Not isEditable
 
@@ -282,6 +298,7 @@ Public Class ucCompensation
         cboFrequency.Text = String.Empty
         chkActive.Checked = True
         chkIsEssential.Checked = True
+        cboInputUnit.SelectedIndex = 0
     End Sub
 
     Public Sub DisplayInfo(message As String) Implements ICompensationMaintenanceView.ShowMessage

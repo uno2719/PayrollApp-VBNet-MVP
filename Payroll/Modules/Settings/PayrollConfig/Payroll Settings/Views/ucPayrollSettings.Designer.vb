@@ -21,6 +21,7 @@ Partial Class ucPayrollSettings
         tabpageHoliday = New DevExpress.XtraTab.XtraTabPage()
         tabpageBonus = New DevExpress.XtraTab.XtraTabPage()
         tabpageLoan = New DevExpress.XtraTab.XtraTabPage()
+        tabpagePayCycle = New DevExpress.XtraTab.XtraTabPage()
         tabpageCutoff = New DevExpress.XtraTab.XtraTabPage()
         CType(tabconPayrollSettings, ComponentModel.ISupportInitialize).BeginInit()
         tabconPayrollSettings.SuspendLayout()
@@ -44,7 +45,7 @@ Partial Class ucPayrollSettings
         tabconPayrollSettings.SelectedTabPage = tabpageCompensation
         tabconPayrollSettings.Size = New Size(900, 480)
         tabconPayrollSettings.TabIndex = 0
-        tabconPayrollSettings.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageCompensation, tabpageDeduction, tabpageOvertime, tabpageHoliday, tabpageBonus, tabpageLoan, tabpageCutoff})
+        tabconPayrollSettings.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageCompensation, tabpageDeduction, tabpageOvertime, tabpageHoliday, tabpageBonus, tabpageLoan, tabpagePayCycle, tabpageCutoff})
         ' 
         ' tabpageCompensation
         ' 
@@ -88,6 +89,13 @@ Partial Class ucPayrollSettings
         tabpageLoan.Size = New Size(898, 451)
         tabpageLoan.Text = "Loan"
         ' 
+        ' tabpagePayCycle
+        '
+        tabpagePayCycle.Margin = New Padding(3, 2, 3, 2)
+        tabpagePayCycle.Name = "tabpagePayCycle"
+        tabpagePayCycle.Size = New Size(898, 451)
+        tabpagePayCycle.Text = "Pay Cycle"
+        '
         ' tabpageCutoff
         ' 
         tabpageCutoff.Margin = New Padding(3, 2, 3, 2)
@@ -115,6 +123,7 @@ Partial Class ucPayrollSettings
     Friend WithEvents tabpageHoliday As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageBonus As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageLoan As DevExpress.XtraTab.XtraTabPage
+    Friend WithEvents tabpagePayCycle As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageCutoff As DevExpress.XtraTab.XtraTabPage
 
 End Class

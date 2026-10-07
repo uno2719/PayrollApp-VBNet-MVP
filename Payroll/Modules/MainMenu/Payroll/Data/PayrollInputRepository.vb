@@ -35,6 +35,14 @@ Namespace PayrollProcessing.Data
             Return _cutoffRepo.GetAllAsync()
         End Function
 
+        ''' <summary>
+        ''' Hours/Minutes/Days = Quantity (Qty ang naka-save, ang halaga ay kukuhanin sa rate ng employee);
+        ''' Amount = direktang peso (naka-save sa Rate, Qty = 1).
+        ''' </summary>
+        Private Shared Function ModeOf(unit As PayrollInputUnit) As PayrollTxnValueMode
+            Return If(unit = PayrollInputUnit.Amount, PayrollTxnValueMode.Amount, PayrollTxnValueMode.Quantity)
+        End Function
+
         Public Async Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel)) Implements IPayrollInputRepository.GetColumnsAsync
             Dim columns As New List(Of PayrollInputColumnModel)
 
@@ -43,22 +51,25 @@ Namespace PayrollProcessing.Data
             ' Employee's own stored rate and a future Fixed Transaction/Timekeeping feature,
             ' not from manual grid entry here. Every column now comes from Payroll Settings.
 
+            ' Ang unit (Hours/Minutes/Days/Amount) ng bawat column ay galing sa InputUnit ng catalog row
+            ' sa Payroll Settings, at ito rin ang lumalabas sa caption, hal. "Overtime Regular (hrs)".
+
             ' Dynamic: one column per active Overtime/Holiday row. IsEssential now
             ' comes straight from the catalog row — set it via the "show by default
             ' in Payroll Input Entry" checkbox in Payroll Settings, not hardcoded here.
             Dim overtimeRows = Await _rateEntryRepo.GetAllAsync("tblOvertime")
             For Each r In overtimeRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
-                    .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Overtime,
-                    .ValueMode = PayrollTxnValueMode.Quantity, .IsEssential = r.IsEssential
+                    .ColumnName = r.Code, .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit), .Category = PayrollInputCategory.Overtime,
+                    .InputUnit = r.InputUnit, .ValueMode = ModeOf(r.InputUnit), .IsEssential = r.IsEssential
                 })
             Next
 
             Dim holidayRows = Await _rateEntryRepo.GetAllAsync("tblHoliday")
             For Each r In holidayRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
-                    .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Holiday,
-                    .ValueMode = PayrollTxnValueMode.Quantity, .IsEssential = r.IsEssential
+                    .ColumnName = r.Code, .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit), .Category = PayrollInputCategory.Holiday,
+                    .InputUnit = r.InputUnit, .ValueMode = ModeOf(r.InputUnit), .IsEssential = r.IsEssential
                 })
             Next
 
@@ -66,8 +77,8 @@ Namespace PayrollProcessing.Data
             Dim compensationRows = Await _compensationRepo.GetAllAsync()
             For Each r In compensationRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
-                    .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Compensation,
-                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = r.IsEssential
+                    .ColumnName = r.Code, .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit), .Category = PayrollInputCategory.Compensation,
+                    .InputUnit = r.InputUnit, .ValueMode = ModeOf(r.InputUnit), .IsEssential = r.IsEssential
                 })
             Next
 
@@ -75,8 +86,8 @@ Namespace PayrollProcessing.Data
             Dim bonusRows = Await _flaggedEntryRepo.GetAllAsync("tblBonus")
             For Each r In bonusRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
-                    .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Bonus,
-                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = r.IsEssential
+                    .ColumnName = r.Code, .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit), .Category = PayrollInputCategory.Bonus,
+                    .InputUnit = r.InputUnit, .ValueMode = ModeOf(r.InputUnit), .IsEssential = r.IsEssential
                 })
             Next
 
@@ -87,8 +98,8 @@ Namespace PayrollProcessing.Data
             Dim deductionRows = Await _flaggedEntryRepo.GetAllAsync("tblDeduction")
             For Each r In deductionRows.Where(Function(x) x.IsActive)
                 columns.Add(New PayrollInputColumnModel With {
-                    .ColumnName = r.Code, .Caption = r.Description, .Category = PayrollInputCategory.Deduction,
-                    .ValueMode = PayrollTxnValueMode.Amount, .IsEssential = r.IsEssential
+                    .ColumnName = r.Code, .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit), .Category = PayrollInputCategory.Deduction,
+                    .InputUnit = r.InputUnit, .ValueMode = ModeOf(r.InputUnit), .IsEssential = r.IsEssential
                 })
             Next
 

@@ -1,4 +1,5 @@
-﻿Imports Payroll.GlobalShared.Models
+Imports Payroll.GlobalShared.Helpers
+Imports Payroll.GlobalShared.Models
 Imports Payroll.PayrollSettings.Data
 
 Namespace PayrollSettings.Services
@@ -7,9 +8,11 @@ Namespace PayrollSettings.Services
         Implements ICutoffService
 
         Private ReadOnly _repository As ICutoffRepository
+        Private ReadOnly _payCycleRepository As IPayCycleRepository
 
-        Public Sub New(repository As ICutoffRepository)
+        Public Sub New(repository As ICutoffRepository, payCycleRepository As IPayCycleRepository)
             _repository = repository
+            _payCycleRepository = payCycleRepository
         End Sub
 
         Public Function GetAllAsync() As Task(Of List(Of CutoffModel)) Implements ICutoffService.GetAllAsync
@@ -39,123 +42,110 @@ Namespace PayrollSettings.Services
             Return New PayrollSettingsSaveResult With {.Success = True}
         End Function
 
-        ''' <summary>
-        ''' Derives the recurring pattern from an EXISTING Cutoff of the same
-        ''' CycleType (the most recent one on file) instead of assuming a
-        ''' calendar-standard split — PACSPORTS' actual SemiMonthly cycle is
-        ''' 6th-20th / 21st-5th-of-next-month, not 1-15/16-31, and that pattern
-        ''' isn't knowable without a real example to copy. Manually add ONE
-        ''' Cutoff first (that defines the pattern), then Generate fills in
-        ''' the rest of the year following it — including correctly crossing
-        ''' month/year boundaries (e.g. Dec 21 - Jan 5).
-        ''' </summary>
+        Public Async Function GetActiveCycleTypesAsync() As Task(Of List(Of String)) _
+            Implements ICutoffService.GetActiveCycleTypesAsync
+
+            Dim cycles = Await _payCycleRepository.GetAllAsync()
+            Return cycles.Where(Function(c) c.IsActive).Select(Function(c) c.PayCycleType).ToList()
+        End Function
+
+        Public Async Function GetPatternDescriptionAsync(cycleType As String) As Task(Of String) _
+            Implements ICutoffService.GetPatternDescriptionAsync
+
+            Dim cycle = Await _payCycleRepository.GetByTypeAsync(cycleType)
+            If cycle Is Nothing OrElse cycle.Periods.Count = 0 Then Return ""
+            Return PayCyclePatternHelper.Describe(cycle.Periods)
+        End Function
+
+        Public Async Function PreviewForYearAsync(cycleType As String, year As Integer) As Task(Of List(Of CutoffPreviewRow)) _
+            Implements ICutoffService.PreviewForYearAsync
+
+            Dim periods = Await BuildPeriodsForYearAsync(cycleType, year)
+            Dim rows As New List(Of CutoffPreviewRow)()
+
+            For i = 0 To periods.Count - 1
+                Dim p = periods(i)
+                Dim exists = Await _repository.OverlapExistsAsync(p.CycleType, p.CutoffStart, p.CutoffEnd, 0)
+                rows.Add(New CutoffPreviewRow With {
+                    .PeriodNo = i + 1,
+                    .CutoffStart = p.CutoffStart,
+                    .CutoffEnd = p.CutoffEnd,
+                    .PayDate = p.PayDate,
+                    .AlreadyExists = exists
+                })
+            Next
+
+            Return rows
+        End Function
+
         Public Async Function GenerateForYearAsync(cycleType As String, year As Integer, userName As String) As Task(Of Integer) _
             Implements ICutoffService.GenerateForYearAsync
 
-            If cycleType = "Daily" Then
-                Throw New PayrollCutoffGenerateException(
-                    "Batch generation isn't supported for 'Daily' — add those Cutoffs one at a time instead.")
-            End If
-
-            Dim allCutoffs = Await _repository.GetAllAsync()
-            Dim reference = allCutoffs.
-                Where(Function(c) c.CycleType = cycleType).
-                OrderByDescending(Function(c) c.CutoffStart).
-                FirstOrDefault()
-
-            If reference Is Nothing Then
-                Throw New PayrollCutoffGenerateException(
-                    $"Wala pang existing na {cycleType} Cutoff na pwedeng gawing pattern — mag-add muna ng isa nang manually bago mag-Generate for Year.")
-            End If
-
-            Dim periods = BuildPeriodsForYear(cycleType, year, reference)
+            Dim periods = Await BuildPeriodsForYearAsync(cycleType, year)
             Return Await _repository.BulkInsertAsync(periods, userName)
         End Function
 
-        Private Function BuildPeriodsForYear(cycleType As String, year As Integer, reference As CutoffModel) As List(Of CutoffModel)
+        ' ========================================================
+        ' Ang pattern ng pay cycle (Pay Cycle Settings) ang pinagmumulan ng
+        ' lahat ng petsa: From/To/Pay day ng bawat period, naka-anchor sa
+        ' pay month. Ang CutoffYear ay ayon sa PAY DATE ng period.
+        ' ========================================================
+        Private Async Function BuildPeriodsForYearAsync(cycleType As String, year As Integer) As Task(Of List(Of CutoffModel))
+            If String.IsNullOrWhiteSpace(cycleType) Then
+                Throw New PayrollCutoffGenerateException("Select a pay cycle first.")
+            End If
+
+            Dim cycle = Await _payCycleRepository.GetByTypeAsync(cycleType)
+            If cycle Is Nothing Then
+                Throw New PayrollCutoffGenerateException($"Pay cycle '{cycleType}' is not set up in Pay Cycle Settings.")
+            End If
+
+            If Not cycle.IsActive Then
+                Throw New PayrollCutoffGenerateException($"Pay cycle '{cycleType}' is inactive. Activate it in Pay Cycle Settings first.")
+            End If
+
+            If cycle.Periods.Count > 0 Then
+                Dim problem = PayCyclePatternHelper.Validate(cycle.Periods)
+                If problem IsNot Nothing Then
+                    Throw New PayrollCutoffGenerateException($"The {cycleType} cutoff pattern needs fixing: {problem}")
+                End If
+
+                Return PayCyclePatternHelper.BuildForYear(cycle.Periods, year) _
+                    .Select(Function(p) NewPeriod(cycleType, year, p.CutoffStart, p.CutoffEnd, p.PayDate)) _
+                    .ToList()
+            End If
+
+            ' Weekly: every-7-days (hindi day-of-month), kaya walang pattern - lumang calendar-week generator.
+            If String.Equals(cycleType, PayCycleService.WeeklyCycle, StringComparison.OrdinalIgnoreCase) Then
+                Return BuildWeeklyPeriods(cycleType, year)
+            End If
+
+            Throw New PayrollCutoffGenerateException(
+                $"'{cycleType}' has no cutoff pattern yet. Add its periods in Pay Cycle Settings first.")
+        End Function
+
+        Private Function BuildWeeklyPeriods(cycleType As String, year As Integer) As List(Of CutoffModel)
             Dim periods As New List(Of CutoffModel)
+            Dim cursor = New Date(year, 1, 1)
 
-            Select Case cycleType
-                Case "Monthly"
-                    ' One fixed start-day-of-month, taken from the reference (usually the
-                    ' 1st, but supports fiscal-month patterns like "26th to 25th" too).
-                    Dim startDay = reference.CutoffStart.Day
-                    Dim cursor = SafeDate(year, 1, startDay)
+            While cursor.Year <= year
+                Dim weekEnd = cursor.AddDays(6)
+                If cursor.Year <> year AndAlso weekEnd.Year <> year Then Exit While
+                periods.Add(NewPeriod(cycleType, year, cursor, weekEnd, Nothing))
+                cursor = weekEnd.AddDays(1)
+                If cursor.Year > year Then Exit While
+            End While
 
-                    For i = 1 To 12
-                        Dim periodEnd = cursor.AddMonths(1).AddDays(-1)
-                        periods.Add(NewPeriod(cycleType, year, cursor, periodEnd))
-                        cursor = cursor.AddMonths(1)
-                    Next
-
-                Case "SemiMonthly"
-                    ' Infer BOTH half-start-days from the single reference Cutoff, regardless
-                    ' of which half it happens to be — e.g. reference Oct 6-20 (first half,
-                    ' doesn't cross a month) tells us firstStartDay=6, secondStartDay=20+1=21.
-                    ' A reference like Dec 21 - Jan 5 (crosses into next month) works the same
-                    ' way in reverse: secondStartDay=21, firstStartDay=5+1=6.
-                    Dim firstStartDay As Integer
-                    Dim secondStartDay As Integer
-
-                    If reference.CutoffEnd.Month = reference.CutoffStart.Month Then
-                        firstStartDay = reference.CutoffStart.Day
-                        secondStartDay = reference.CutoffEnd.Day + 1
-                    Else
-                        secondStartDay = reference.CutoffStart.Day
-                        firstStartDay = reference.CutoffEnd.Day + 1
-                    End If
-
-                    Dim cursor = SafeDate(year, 1, firstStartDay)
-                    While cursor.Year <= year
-                        Dim secondStart = SafeDate(cursor.Year, cursor.Month, secondStartDay)
-                        If secondStart <= cursor Then secondStart = secondStart.AddMonths(1)
-                        Dim firstEnd = secondStart.AddDays(-1)
-                        periods.Add(NewPeriod(cycleType, year, cursor, firstEnd))
-
-                        Dim nextFirstStart = cursor.AddMonths(1)
-                        Dim secondEnd = nextFirstStart.AddDays(-1)
-                        periods.Add(NewPeriod(cycleType, year, secondStart, secondEnd))
-
-                        cursor = nextFirstStart
-                        If cursor.Year > year Then Exit While
-                    End While
-
-                Case "Weekly"
-                    ' Same day-of-week as the reference Cutoff's start (e.g. always Mondays).
-                    Dim targetDow = reference.CutoffStart.DayOfWeek
-                    Dim cursor = New Date(year, 1, 1)
-                    While cursor.DayOfWeek <> targetDow
-                        cursor = cursor.AddDays(1)
-                    End While
-
-                    While cursor.Year = year
-                        Dim weekEnd = cursor.AddDays(6)
-                        periods.Add(NewPeriod(cycleType, year, cursor, weekEnd))
-                        cursor = cursor.AddDays(7)
-                    End While
-
-                Case Else
-                    Throw New PayrollCutoffGenerateException(
-                        $"Batch generation isn't supported for '{cycleType}' — add those Cutoffs one at a time instead.")
-            End Select
-
-            ' Safety net: only keep periods that actually belong to the requested year
-            ' (a trailing Dec period legitimately ends in year+1 — that's expected and kept).
-            Return periods.Where(Function(p) p.CutoffStart.Year = year OrElse p.CutoffEnd.Year = year).ToList()
+            Return periods
         End Function
 
-        ''' <summary>Clamps the day to whatever the target month actually has (e.g. day 31 in February) — this is what the old code was missing, causing the date overflow error.</summary>
-        Private Function SafeDate(year As Integer, month As Integer, day As Integer) As Date
-            Dim clampedDay = Math.Min(day, Date.DaysInMonth(year, month))
-            Return New Date(year, month, clampedDay)
-        End Function
-
-        Private Function NewPeriod(cycleType As String, year As Integer, start As Date, [end] As Date) As CutoffModel
+        Private Function NewPeriod(cycleType As String, year As Integer, start As Date, [end] As Date, payDate As Date?) As CutoffModel
             Return New CutoffModel With {
                 .CycleType = cycleType,
                 .CutoffYear = year,
                 .CutoffStart = start,
                 .CutoffEnd = [end],
+                .PayDate = payDate,
                 .CutoffLabel = $"{cycleType} {start:MMM d} - {[end]:MMM d, yyyy}",
                 .Status = CutoffStatus.Draft
             }
