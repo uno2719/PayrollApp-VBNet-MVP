@@ -23,6 +23,7 @@
 
         ' --- Lookups ---
         Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel))
+        Function GetActivePayCyclesAsync() As Task(Of List(Of String))
         Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel))
 
     End Interface

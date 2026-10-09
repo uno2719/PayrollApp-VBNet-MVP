@@ -117,6 +117,21 @@
                 Throw New Exception("Basic Salary must be greater than zero.")
             End If
 
+            ' Iisang spelling ng pay cycle (hal. lumang "Semi-Monthly" -> "SemiMonthly")
+            model.PayCycle = GlobalShared.Models.PayCycleChoices.Normalize(model.PayCycle)
+            model.TaxFlag = GlobalShared.Models.PayCycleChoices.Normalize(model.TaxFlag)
+
+            ' Pay Cycle at Tax Flag: dapat Active sa Payroll Settings > Pay Cycle.
+            ' Pinapayagan ang kasalukuyang naka-save na value ng employee (kahit na-deactivate na
+            ' ang cycle) para hindi ma-block ang pag-edit ng ibang detalye ng earnings niya.
+            Dim activeCycles = Await _repo.GetActivePayCyclesAsync()
+            Dim stored = Await _repo.GetEarningsAsync(model.RecordId)
+
+            ValidateActivePayCycle("Pay Cycle", model.PayCycle,
+                                   If(stored Is Nothing, "", GlobalShared.Models.PayCycleChoices.Normalize(stored.PayCycle)), activeCycles)
+            ValidateActivePayCycle("Tax Flag", model.TaxFlag,
+                                   If(stored Is Nothing, "", GlobalShared.Models.PayCycleChoices.Normalize(stored.TaxFlag)), activeCycles)
+
             ' Set audit fields
             If model.EarningsId = 0 Then
                 model.CreatedBy = AppSession.CurrentUser
@@ -127,6 +142,14 @@
             Return Await _repo.SaveEarningsAsync(model)
 
         End Function
+
+        Private Shared Sub ValidateActivePayCycle(fieldName As String, value As String, storedValue As String, activeCycles As List(Of String))
+            If String.IsNullOrWhiteSpace(value) Then Return
+            If activeCycles.Any(Function(c) String.Equals(c, value, StringComparison.OrdinalIgnoreCase)) Then Return
+            If String.Equals(value, storedValue, StringComparison.OrdinalIgnoreCase) Then Return
+
+            Throw New Exception($"{fieldName} '{value}' is not active. Choose one of the active pay cycles ({String.Join(", ", activeCycles)}), or activate it in Payroll Settings > Pay Cycle.")
+        End Sub
 
         ' =============================================
         ' STATUTORY
@@ -155,6 +178,11 @@
         ' =============================================
         ' LOOKUPS
         ' =============================================
+
+        Public Async Function GetActivePayCyclesAsync() As Task(Of List(Of String)) _
+            Implements IEmployeeService.GetActivePayCyclesAsync
+            Return Await _repo.GetActivePayCyclesAsync()
+        End Function
 
         Public Async Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel)) _
             Implements IEmployeeService.GetLookupsAsync

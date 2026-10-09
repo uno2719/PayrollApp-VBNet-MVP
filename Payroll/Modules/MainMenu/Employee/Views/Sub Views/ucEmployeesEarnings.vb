@@ -247,6 +247,18 @@ Public Class ucEmployeesEarnings
     ' =============================================
     ' LOOKUP LOADER
     ' =============================================
+    ' Active pay cycles lang ang options ng Pay Cycle at Tax Flag. Piniling item lang ang pwede
+    ' (hindi na pwedeng mag-type ng kahit ano); kung ang naka-save na value ng employee ay wala
+    ' na sa listahan (na-deactivate na ang cycle), ipapakita pa rin ito pero hindi na maaaring piliin ulit.
+    Public Sub LoadPayCycles(activeCycles As List(Of String)) _
+    Implements Employee.Views.IEmployeesEarningsView.LoadPayCycles
+
+        For Each combo In {cboPayCycle, cboTaxFlag}
+            combo.Properties.Items.Clear()
+            combo.Properties.Items.AddRange(activeCycles.Cast(Of Object)().ToArray())
+        Next
+    End Sub
+
     Private _banksLoaded As Boolean = False
     Public Sub LoadBanks(data As List(Of GlobalShared.Models.LookupModel)) _
     Implements Employee.Views.IEmployeesEarningsView.LoadBanks

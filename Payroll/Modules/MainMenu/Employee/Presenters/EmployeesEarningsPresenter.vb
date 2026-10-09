@@ -29,6 +29,15 @@ Namespace Employee.Presenters
                 _view.ShowError(ex.Message)
             End Try
         End Sub
+        ' Pay Cycle / Tax Flag options = mga pay cycle na Active sa Payroll Settings.
+        Private Async Function LoadPayCyclesAsync() As Task
+            Try
+                _view.LoadPayCycles(Await _service.GetActivePayCyclesAsync())
+            Catch ex As Exception
+                _view.ShowError(ex.Message)
+            End Try
+        End Function
+
         Public Async Function LoadLookupsAsync() As Task ' ✅ Gawing Async Function
             Try
                 _view.LoadBanks(Await _service.GetLookupsAsync("tblBank"))
@@ -48,6 +57,8 @@ Namespace Employee.Presenters
                 _view.ClearFields()
 
                 LoadLookups()
+                ' ILOAD MUNA ang pay cycles bago ilagay ang value ng employee (kung hindi, mabubura/mapapalitan ang laman ng combo)
+                Await LoadPayCyclesAsync()
                 ' Await LoadLookupsAsync()
 
                 Dim earnings = Await _service.GetEarningsAsync(recordId)
@@ -71,8 +82,9 @@ Namespace Employee.Presenters
                 _view.WorkHourPer = earnings.WorkHourPer
                 _view.PayrollFlag = earnings.PayrollFlag
                 _view.MinimumWage = earnings.MinimumWage
-                _view.PayCycle = If(earnings.PayCycle, String.Empty)
-                _view.TaxFlag = If(earnings.TaxFlag, String.Empty)
+                ' Normalize: ang lumang "Semi-Monthly" ay lalabas na "SemiMonthly" (at ma-sa-save nang ganun)
+                _view.PayCycle = GlobalShared.Models.PayCycleChoices.Normalize(earnings.PayCycle)
+                _view.TaxFlag = GlobalShared.Models.PayCycleChoices.Normalize(earnings.TaxFlag)
                 _view.PayBy = If(earnings.PayBy, String.Empty)
                 _view.BankId = earnings.BankId
                 _view.BankAccount = If(earnings.BankAccount, String.Empty)
@@ -90,6 +102,7 @@ Namespace Employee.Presenters
         Private Sub HandleNew(sender As Object, e As EventArgs)
             _recordId = _view.RecordId
             LoadLookups()
+            Dim loadPayCycles = LoadPayCyclesAsync()   ' fire-and-forget; wala pang value na ilalagay sa bagong employee
             _view.BasicSalary = Nothing
             _view.DailyRate = Nothing
             _view.HourlyRate = Nothing

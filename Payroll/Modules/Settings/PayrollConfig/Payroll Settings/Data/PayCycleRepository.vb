@@ -116,6 +116,22 @@ Namespace PayrollSettings.Data
             End Using
         End Function
 
+        Public Async Function CountEmployeesAsync(payCycleType As String) As Task(Of PayCycleEmployeeUsage) _
+            Implements IPayCycleRepository.CountEmployeesAsync
+
+            ' REPLACE: tugma rin ang lumang "Semi-Monthly" (may gitling) sa "SemiMonthly"
+            Dim sql = "
+                SELECT ISNULL(SUM(CASE WHEN REPLACE(REPLACE(ee.PayCycle, '-', ''), ' ', '') = @payCycleType THEN 1 ELSE 0 END), 0) AS AsPayCycle,
+                       ISNULL(SUM(CASE WHEN REPLACE(REPLACE(ee.TaxFlag,  '-', ''), ' ', '') = @payCycleType THEN 1 ELSE 0 END), 0) AS AsTaxFlag
+                FROM tblEmployeeEarnings ee
+                INNER JOIN tblEmployee e ON e.RecordId = ee.RecordId
+                WHERE e.IsActive = 1 AND e.IsDeleted = 0 AND ee.PayrollFlag = 1"
+
+            Using conn = GetConnection()
+                Return Await conn.QuerySingleAsync(Of PayCycleEmployeeUsage)(sql, New With {payCycleType})
+            End Using
+        End Function
+
         Public Async Function HasProcessedCutoffAsync(payCycleType As String) As Task(Of Boolean) _
             Implements IPayCycleRepository.HasProcessedCutoffAsync
 

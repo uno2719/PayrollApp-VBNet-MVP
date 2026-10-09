@@ -95,6 +95,12 @@ Namespace PayrollSettings.Presenters
 
             Dim result = Await _service.SaveAsync(item, _userName)
 
+            ' May employee pang naka-assign sa pay cycle na idi-deactivate - hihingan ng kumpirmasyon
+            If Not result.Success AndAlso result.NeedsConfirmation Then
+                If Not _view.ConfirmDeactivate(result.ErrorMessage) Then Return   ' nasa edit mode pa rin
+                result = Await _service.SaveAsync(item, _userName, True)
+            End If
+
             If Not result.Success Then
                 _view.ShowError(result.ErrorMessage)
                 Return

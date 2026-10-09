@@ -22,6 +22,9 @@
         ' --- Lookup Loader ---
         Sub LoadBanks(data As List(Of GlobalShared.Models.LookupModel))
 
+        ''' <summary>Mga Active na pay cycle (Payroll Settings > Pay Cycle) - ito ang options ng Pay Cycle at Tax Flag.</summary>
+        Sub LoadPayCycles(activeCycles As List(Of String))
+
         ' --- Clear Fields ---
         Sub ClearFields()
 

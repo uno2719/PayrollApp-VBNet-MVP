@@ -293,6 +293,11 @@ Public Class ucPayCycle
         MyBase.ShowError(message)
     End Sub
 
+    Public Function ConfirmDeactivate(message As String) As Boolean Implements IPayCycleMaintenanceView.ConfirmDeactivate
+        Return XtraMessageBox.Show(Me.FindForm(), message, "Deactivate Pay Cycle",
+                                   MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes
+    End Function
+
 #End Region
 
 End Class

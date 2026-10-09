@@ -37,7 +37,7 @@ Namespace PayrollSettings.Services
             Return Nothing
         End Function
 
-        Public Async Function SaveAsync(item As PayCycleModel, userName As String) As Task(Of PayrollSettingsSaveResult) _
+        Public Async Function SaveAsync(item As PayCycleModel, userName As String, Optional confirmDeactivate As Boolean = False) As Task(Of PayrollSettingsSaveResult) _
             Implements IPayCycleService.SaveAsync
 
             If item Is Nothing OrElse String.IsNullOrWhiteSpace(item.PayCycleType) Then
@@ -60,6 +60,18 @@ Namespace PayrollSettings.Services
                 Dim reason = Await GetRateBasisLockReasonAsync(item.PayCycleType)
                 If reason IsNot Nothing Then
                     Return Fail(reason)
+                End If
+            End If
+
+            ' 2b. Pag-deactivate: may mga employee pa ba na naka-assign dito? (babala lang, hindi block)
+            If existing.IsActive AndAlso Not item.IsActive AndAlso Not confirmDeactivate Then
+                Dim usage = Await _repository.CountEmployeesAsync(item.PayCycleType)
+                If usage.Total > 0 Then
+                    Return New PayrollSettingsSaveResult With {
+                        .Success = False,
+                        .NeedsConfirmation = True,
+                        .ErrorMessage = BuildDeactivateWarning(item.PayCycleType, usage)
+                    }
                 End If
             End If
 
@@ -87,6 +99,18 @@ Namespace PayrollSettings.Services
             End If
 
             Return New PayrollSettingsSaveResult With {.Success = True}
+        End Function
+
+        Private Shared Function BuildDeactivateWarning(payCycleType As String, usage As PayCycleEmployeeUsage) As String
+            Dim parts As New List(Of String)()
+            If usage.AsPayCycle > 0 Then parts.Add($"{usage.AsPayCycle} employee(s) as their Pay Cycle")
+            If usage.AsTaxFlag > 0 Then parts.Add($"{usage.AsTaxFlag} employee(s) as their Tax Flag")
+
+            Return $"The {payCycleType} pay cycle is still used by {String.Join(" and ", parts)}." & vbCrLf & vbCrLf &
+                   "If you deactivate it:" & vbCrLf &
+                   $"  - {payCycleType} will no longer be an option in Employee > Earnings, and no new cutoffs can be generated for it." & vbCrLf &
+                   "  - Those employees keep their current value, but they will not be paid until you move them to an active pay cycle (or activate this one again)." & vbCrLf & vbCrLf &
+                   "Deactivate anyway?"
         End Function
 
         Private Shared Function Fail(message As String) As PayrollSettingsSaveResult

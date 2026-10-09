@@ -358,6 +358,18 @@ Namespace Employee.Data
         ' LOOKUPS
         ' =============================================
 
+        ' Ang Pay Cycle at Tax Flag options ng Earnings tab ay galing dito: ang mga pay cycle na
+        ' Active sa Payroll Settings > Pay Cycle.
+        Public Async Function GetActivePayCyclesAsync() As Task(Of List(Of String)) _
+            Implements IEmployeeRepository.GetActivePayCyclesAsync
+
+            Using conn = GetConnection()
+                Dim result = Await conn.QueryAsync(Of String)(
+                    "SELECT PayCycleType FROM tblPayCycle WHERE IsActive = 1 ORDER BY PayCycleId")
+                Return result.ToList()
+            End Using
+        End Function
+
         Public Async Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel)) _
           Implements IEmployeeRepository.GetLookupsAsync
 

@@ -110,6 +110,23 @@ Namespace GlobalShared.Models
             }
         End Function
 
+        ''' <summary>
+        ''' Iisang spelling ng pay cycle sa buong app: Monthly / SemiMonthly / Weekly / Daily.
+        ''' Ang mga lumang record ay maaaring "Semi-Monthly" (may gitling) - ginagawang "SemiMonthly"
+        ''' para tumugma sa tblPayCycle, tblCutoff.CycleType at sa pangalan ng tax table (tblIncomeTaxSemiMonthly).
+        ''' Ang hindi kilalang pangalan ay ibinabalik nang naka-trim lang.
+        ''' </summary>
+        Public Function Normalize(name As String) As String
+            Dim trimmed = If(name, "").Trim()
+            Dim key = trimmed.Replace("-", "").Replace(" ", "").Replace("_", "")
+
+            For Each known In {"Monthly", "SemiMonthly", "Weekly", "Daily"}
+                If String.Equals(key, known, StringComparison.OrdinalIgnoreCase) Then Return known
+            Next
+
+            Return trimmed
+        End Function
+
         Public Function RateBasisText(basis As PayRateBasis) As String
             Select Case basis
                 Case PayRateBasis.DailyRate

@@ -29,5 +29,8 @@ Namespace PayrollSettings.Views
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
 
+        ''' <summary>Yes/No: i-deactivate ba ang pay cycle na may employee pang naka-assign?</summary>
+        Function ConfirmDeactivate(message As String) As Boolean
+
     End Interface
 End Namespace

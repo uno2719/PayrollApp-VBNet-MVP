@@ -188,7 +188,7 @@ Partial Class ucEmployeesEarnings
         ' 
         cboPayCycle.Location = New Point(658, 104)
         cboPayCycle.Name = "cboPayCycle"
-        cboPayCycle.Properties.Items.AddRange(New Object() {"Daily", "Weekly", "Semi-Monthly", "Monthly"})
+        cboPayCycle.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboPayCycle.Size = New Size(397, 22)
         cboPayCycle.StyleController = lcEarnings
         cboPayCycle.TabIndex = 11
@@ -197,7 +197,7 @@ Partial Class ucEmployeesEarnings
         ' 
         cboTaxFlag.Location = New Point(658, 130)
         cboTaxFlag.Name = "cboTaxFlag"
-        cboTaxFlag.Properties.Items.AddRange(New Object() {"Daily", "Weekly", "Semi-Monthly", "Monthly"})
+        cboTaxFlag.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboTaxFlag.Size = New Size(397, 22)
         cboTaxFlag.StyleController = lcEarnings
         cboTaxFlag.TabIndex = 12

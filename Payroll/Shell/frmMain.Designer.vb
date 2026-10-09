@@ -38,7 +38,6 @@ Partial Class frmMain
         aceSettingsGeneral = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsCompany = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsMasterData = New DevExpress.XtraBars.Navigation.AccordionControlElement()
-        aceSettingsCutOff = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         AccordionControlSeparator6 = New DevExpress.XtraBars.Navigation.AccordionControlSeparator()
         aceSettings_Leave = New DevExpress.XtraBars.Navigation.AccordionControlElement()
         aceSettingsHolidays = New DevExpress.XtraBars.Navigation.AccordionControlElement()
@@ -204,7 +203,7 @@ Partial Class frmMain
         ' 
         aceSettingsPayrollSetup.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsPayrollSetup.Appearance.Default.Options.UseFont = True
-        aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsMasterData, aceSettingsCutOff, AccordionControlSeparator6, aceSettings_Leave, aceSettingsHolidays, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
+        aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsMasterData, AccordionControlSeparator6, aceSettings_Leave, aceSettingsHolidays, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
         aceSettingsPayrollSetup.Expanded = True
         aceSettingsPayrollSetup.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsPayrollSetup.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsPayrollSetup.ImageOptions.SvgImageSize = New Size(21, 21)
@@ -246,17 +245,6 @@ Partial Class frmMain
         aceSettingsMasterData.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
         aceSettingsMasterData.Tag = "settings_MasterData"
         aceSettingsMasterData.Text = "Master Data"
-        ' 
-        ' aceSettingsCutOff
-        ' 
-        aceSettingsCutOff.Appearance.Default.Font = New Font("Segoe UI", 9.75F)
-        aceSettingsCutOff.Appearance.Default.Options.UseFont = True
-        aceSettingsCutOff.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsCutOff.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
-        aceSettingsCutOff.ImageOptions.SvgImageSize = New Size(16, 16)
-        aceSettingsCutOff.Name = "aceSettingsCutOff"
-        aceSettingsCutOff.Style = DevExpress.XtraBars.Navigation.ElementStyle.Item
-        aceSettingsCutOff.Tag = "settings_CutOff"
-        aceSettingsCutOff.Text = "Cut-off"
         ' 
         ' AccordionControlSeparator6
         ' 
@@ -733,7 +721,6 @@ Partial Class frmMain
     Friend WithEvents aceSettingsMasterData As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents lblVersion As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblHost As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents aceSettingsCutOff As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsHolidays As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettings_Leave As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceSettingsPayroll As DevExpress.XtraBars.Navigation.AccordionControlElement
