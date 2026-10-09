@@ -18,6 +18,25 @@
         Public Const NightDifferential As String = "NDIF"       ' Amount mode — see design notes
         Public Const ServiceIncentiveLeave As String = "SIL"
 
+        ''' <summary>
+        ''' Ilang araw pumasok ang employee sa cutoff. Lalabas LANG sa Input Entry kapag ang
+        ''' pay cycle ng napiling cutoff ay naka-DAILY RATE basis (Pay Cycle Settings) -
+        ''' ang sweldo doon ay Daily Rate x Days Worked. Naka-save bilang TxnCategory CORE,
+        ''' Qty = days (pwedeng may decimal, hal. 12.5), Rate = 1.
+        ''' </summary>
+        Public Const DaysWorked As String = "DAYSWORKED"
+
+        Public Shared Function DaysWorkedColumn() As PayrollInputColumnModel
+            Return New PayrollInputColumnModel With {
+                .ColumnName = DaysWorked,
+                .Caption = "Days Worked" & Payroll.GlobalShared.Models.PayrollInputUnits.CaptionSuffix(Payroll.GlobalShared.Models.PayrollInputUnit.Days),
+                .Category = PayrollInputCategory.Core,
+                .ValueMode = PayrollTxnValueMode.Quantity,
+                .InputUnit = Payroll.GlobalShared.Models.PayrollInputUnit.Days,
+                .IsEssential = True
+            }
+        End Function
+
         ''' <summary>Fixed columns, in display order, with caption + value mode.</summary>
         Public Shared ReadOnly Columns As (Code As String, Caption As String, Mode As PayrollTxnValueMode)() = {
             (Basic, "Basic Salary", PayrollTxnValueMode.Quantity),

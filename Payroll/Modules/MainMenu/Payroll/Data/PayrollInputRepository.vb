@@ -43,6 +43,20 @@ Namespace PayrollProcessing.Data
             Return If(unit = PayrollInputUnit.Amount, PayrollTxnValueMode.Amount, PayrollTxnValueMode.Quantity)
         End Function
 
+        Public Async Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean) _
+            Implements IPayrollInputRepository.RequiresDaysWorkedAsync
+
+            Using conn = GetConnection()
+                Dim count = Await conn.ExecuteScalarAsync(Of Integer)(
+                    "SELECT COUNT(1)
+                     FROM tblCutoff c
+                     INNER JOIN tblPayCycle p ON p.PayCycleType = c.CycleType
+                     WHERE c.CutoffID = @cutoffId AND p.RateBasis = @dailyRate",
+                    New With {cutoffId, .dailyRate = CByte(PayRateBasis.DailyRate)})
+                Return count > 0
+            End Using
+        End Function
+
         Public Async Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel)) Implements IPayrollInputRepository.GetColumnsAsync
             Dim columns As New List(Of PayrollInputColumnModel)
 

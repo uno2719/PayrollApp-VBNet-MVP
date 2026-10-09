@@ -24,6 +24,11 @@ Namespace PayrollProcessing.Services
             Return _repository.GetColumnsAsync()
         End Function
 
+        Public Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean) _
+            Implements IPayrollInputService.RequiresDaysWorkedAsync
+            Return _repository.RequiresDaysWorkedAsync(cutoffId)
+        End Function
+
         Public Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable) _
             Implements IPayrollInputService.GetInputDataAsync
             Return _repository.GetInputDataAsync(cutoffId, columns)
@@ -41,10 +46,20 @@ Namespace PayrollProcessing.Services
                 Throw New PayrollInputValidationException("This Cutoff is already Posted and can no longer be edited.")
             End If
 
+            ' Days Worked (Daily Rate cycles) ay hindi pwedeng lumampas sa bilang ng araw ng cutoff
+            Dim hasDaysWorked = columns.Any(Function(c) c.ColumnName = CoreTxnCode.DaysWorked)
+            Dim daysInCutoff = (cutoff.CutoffEnd.Date - cutoff.CutoffStart.Date).Days + 1
+
             For Each row As DataRow In table.Rows
                 For Each col In columns
-                    If Convert.ToDecimal(row(col.ColumnName)) < 0D Then
+                    Dim value = Convert.ToDecimal(row(col.ColumnName))
+
+                    If value < 0D Then
                         Throw New PayrollInputValidationException($"{row("EmployeeNo")} - {row("EmployeeName")}: negative values are not allowed ({col.Caption}).")
+                    End If
+
+                    If hasDaysWorked AndAlso col.ColumnName = CoreTxnCode.DaysWorked AndAlso value > daysInCutoff Then
+                        Throw New PayrollInputValidationException($"{row("EmployeeNo")} - {row("EmployeeName")}: Days Worked ({value:0.##}) cannot be more than the {daysInCutoff} days in this cutoff.")
                     End If
                 Next
             Next

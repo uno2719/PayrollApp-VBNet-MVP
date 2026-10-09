@@ -7,6 +7,10 @@ Namespace PayrollProcessing.Services
     Public Interface IPayrollInputService
         Function GetCutoffsAsync() As Task(Of List(Of CutoffModel))
         Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
+
+        ''' <summary>True kung Daily Rate ang basis ng pay cycle ng Cutoff - kailangan ng Days Worked column.</summary>
+        Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean)
+
         Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable)
 
         ''' <summary>Validates, then saves. Throws PayrollInputValidationException on failure.</summary>

@@ -9,7 +9,13 @@ Namespace PayrollProcessing.Data
         ''' <summary>Reads the Cutoff list — creating/editing Cutoffs now happens in Payroll Settings' Cutoff tab.</summary>
         Function GetCutoffsAsync() As Task(Of List(Of CutoffModel))
 
-        ''' <summary>Core fixed columns + one column per active Overtime/Holiday/Compensation/Bonus/Deduction catalog row.</summary>
+        ''' <summary>
+        ''' True kung ang pay cycle ng Cutoff ay naka-Daily Rate basis (Pay Cycle Settings) -
+        ''' ibig sabihin, kailangan ng "Days Worked" input para sa mga employee nito.
+        ''' </summary>
+        Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean)
+
+        ''' <summary>One column per active Overtime/Holiday/Compensation/Bonus/Deduction catalog row (the unit of each comes from its catalog row).</summary>
         Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
 
         ''' <summary>

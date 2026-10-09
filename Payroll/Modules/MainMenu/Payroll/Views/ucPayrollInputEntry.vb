@@ -84,6 +84,11 @@ Public Class ucPayrollInputEntry
     End Sub
 
     Public Sub DisplayColumns(columns As List(Of PayrollInputColumnModel)) Implements IPayrollInputEntryView.DisplayColumns
+        ' Tinatawag ulit ito kapag nagbago ang set ng columns (hal. may Days Worked na) - alisin muna ang
+        ' lumang data para hindi mag-auto-create ng columns ang grid; susunod ang DisplayData().
+        gridControl.DataSource = Nothing
+        _table = Nothing
+
         gridView.Columns.Clear()
 
         AddReferenceColumn("EmployeeNo", "Employee No", 0)
