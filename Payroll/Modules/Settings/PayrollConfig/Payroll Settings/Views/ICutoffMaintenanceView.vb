@@ -27,5 +27,8 @@ Namespace PayrollSettings.Views
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
 
+        ''' <summary>Yes/No bago gawing Closed ang mga lumang Draft na cutoff.</summary>
+        Function ConfirmCloseOlder(message As String) As Boolean
+
     End Interface
 End Namespace

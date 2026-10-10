@@ -23,6 +23,12 @@ Namespace PayrollSettings.Services
         ''' PayDate). Ang overlap sa existing Cutoff ng parehong CycleType ay nilalaktawan, hindi dinodoble.
         ''' Nagbabalik ng bilang ng nagawa.
         ''' </summary>
+        ''' <summary>Ilang Draft na cutoff (lahat ng pay cycle) ang nagtatapos bago ang petsa.</summary>
+        Function CountClosableAsync(beforeDate As Date) As Task(Of Integer)
+
+        ''' <summary>Ginagawang Closed ang mga Draft na cutoff na nagtatapos bago ang petsa (hindi na ipo-process sa app na ito).</summary>
+        Function CloseOlderAsync(beforeDate As Date, userName As String) As Task(Of Integer)
+
         Function GenerateForYearAsync(cycleType As String, year As Integer, userName As String) As Task(Of Integer)
     End Interface
 End Namespace

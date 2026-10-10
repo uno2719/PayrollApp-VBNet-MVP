@@ -7,6 +7,7 @@ Namespace GlobalShared.Models
     ''' </summary>
     Public Class CutoffPreviewRow
         Public Property PeriodNo As Integer
+        Public Property Label As String
         Public Property CutoffStart As Date
         Public Property CutoffEnd As Date
         Public Property PayDate As Date?

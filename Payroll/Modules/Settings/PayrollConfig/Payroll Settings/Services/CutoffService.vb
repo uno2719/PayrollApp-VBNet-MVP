@@ -33,6 +33,17 @@ Namespace PayrollSettings.Services
                 Return New PayrollSettingsSaveResult With {.Success = False, .ErrorMessage = $"This date range overlaps an existing {item.CycleType} Cutoff."}
             End If
 
+            ' Manual na pagpalit ng status: Draft <-> Closed lang. Ang Processed/Posted ay itinatakda ng payroll processing.
+            If item.CutoffID <> 0 Then
+                Dim existing = (Await _repository.GetAllAsync()).FirstOrDefault(Function(x) x.CutoffID = item.CutoffID)
+                If existing IsNot Nothing AndAlso existing.Status <> item.Status Then
+                    Dim manual = {CutoffStatus.Draft, CutoffStatus.Closed}
+                    If Not (manual.Contains(existing.Status) AndAlso manual.Contains(item.Status)) Then
+                        Return New PayrollSettingsSaveResult With {.Success = False, .ErrorMessage = "Status can only be switched manually between Draft and Closed. Processed and Posted are set by payroll processing."}
+                    End If
+                End If
+            End If
+
             If item.CutoffID = 0 Then
                 Await _repository.InsertAsync(item, userName)
             Else
@@ -68,6 +79,7 @@ Namespace PayrollSettings.Services
                 Dim exists = Await _repository.OverlapExistsAsync(p.CycleType, p.CutoffStart, p.CutoffEnd, 0)
                 rows.Add(New CutoffPreviewRow With {
                     .PeriodNo = i + 1,
+                    .Label = p.CutoffLabel,
                     .CutoffStart = p.CutoffStart,
                     .CutoffEnd = p.CutoffEnd,
                     .PayDate = p.PayDate,
@@ -76,6 +88,16 @@ Namespace PayrollSettings.Services
             Next
 
             Return rows
+        End Function
+
+        Public Function CountClosableAsync(beforeDate As Date) As Task(Of Integer) _
+            Implements ICutoffService.CountClosableAsync
+            Return _repository.CountDraftEndingBeforeAsync(beforeDate)
+        End Function
+
+        Public Function CloseOlderAsync(beforeDate As Date, userName As String) As Task(Of Integer) _
+            Implements ICutoffService.CloseOlderAsync
+            Return _repository.CloseDraftEndingBeforeAsync(beforeDate, userName)
         End Function
 
         Public Async Function GenerateForYearAsync(cycleType As String, year As Integer, userName As String) As Task(Of Integer) _
@@ -111,7 +133,7 @@ Namespace PayrollSettings.Services
                 End If
 
                 Return PayCyclePatternHelper.BuildForYear(cycle.Periods, year) _
-                    .Select(Function(p) NewPeriod(cycleType, year, p.CutoffStart, p.CutoffEnd, p.PayDate)) _
+                    .Select(Function(p) NewPeriod(cycleType, year, p.CutoffStart, p.CutoffEnd, p.PayDate, p.PatternRowNo)) _
                     .ToList()
             End If
 
@@ -127,11 +149,14 @@ Namespace PayrollSettings.Services
         Private Function BuildWeeklyPeriods(cycleType As String, year As Integer) As List(Of CutoffModel)
             Dim periods As New List(Of CutoffModel)
             Dim cursor = New Date(year, 1, 1)
+            Dim weekOfMonth As New Dictionary(Of Integer, Integer)()   ' buwan -> ilang linggo na (W1, W2, ...)
 
             While cursor.Year <= year
                 Dim weekEnd = cursor.AddDays(6)
                 If cursor.Year <> year AndAlso weekEnd.Year <> year Then Exit While
-                periods.Add(NewPeriod(cycleType, year, cursor, weekEnd, Nothing))
+
+                weekOfMonth(cursor.Month) = If(weekOfMonth.ContainsKey(cursor.Month), weekOfMonth(cursor.Month), 0) + 1
+                periods.Add(NewPeriod(cycleType, year, cursor, weekEnd, Nothing, weekOfMonth(cursor.Month)))
                 cursor = weekEnd.AddDays(1)
                 If cursor.Year > year Then Exit While
             End While
@@ -139,14 +164,14 @@ Namespace PayrollSettings.Services
             Return periods
         End Function
 
-        Private Function NewPeriod(cycleType As String, year As Integer, start As Date, [end] As Date, payDate As Date?) As CutoffModel
+        Private Function NewPeriod(cycleType As String, year As Integer, start As Date, [end] As Date, payDate As Date?, periodInMonth As Integer) As CutoffModel
             Return New CutoffModel With {
                 .CycleType = cycleType,
                 .CutoffYear = year,
                 .CutoffStart = start,
                 .CutoffEnd = [end],
                 .PayDate = payDate,
-                .CutoffLabel = $"{cycleType} {start:MMM d} - {[end]:MMM d, yyyy}",
+                .CutoffLabel = PayCyclePatternHelper.CutoffLabel(cycleType, periodInMonth, If(payDate, start)),
                 .Status = CutoffStatus.Draft
             }
         End Function

@@ -1,6 +1,7 @@
 ﻿Imports System.Data
 Imports Dapper
 Imports Payroll.GlobalShared.Base
+Imports Payroll.GlobalShared.Helpers
 Imports Payroll.GlobalShared.Models
 Imports Payroll.PayrollProcessing.Models
 Imports Payroll.PayrollSettings.Data
@@ -31,8 +32,16 @@ Namespace PayrollProcessing.Data
             _flaggedEntryRepo = flaggedEntryRepo
         End Sub
 
-        Public Function GetCutoffsAsync() As Task(Of List(Of CutoffModel)) Implements IPayrollInputRepository.GetCutoffsAsync
-            Return _cutoffRepo.GetAllAsync()
+        ''' <summary>
+        ''' Mga "bukas" na cutoff lang (CutoffRules.IsOpenForInput): Draft o Processed na nagsimula na.
+        ''' Hindi lumalabas ang Closed (hal. mga bago nagsimulang gamitin ang app), Posted, at mga susunod pang buwan.
+        ''' </summary>
+        Public Async Function GetCutoffsAsync() As Task(Of List(Of CutoffModel)) Implements IPayrollInputRepository.GetCutoffsAsync
+            Dim all = Await _cutoffRepo.GetAllAsync()
+            Return all.
+                Where(Function(c) CutoffRules.IsOpenForInput(c, Date.Today)).
+                OrderBy(Function(c) c.CycleType).ThenBy(Function(c) c.CutoffStart).
+                ToList()
         End Function
 
         ''' <summary>

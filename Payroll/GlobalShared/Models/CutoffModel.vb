@@ -1,9 +1,18 @@
-﻿Namespace GlobalShared.Models
+﻿Imports Payroll.GlobalShared.Constants
+
+Namespace GlobalShared.Models
 
     Public Enum CutoffStatus As Byte
         Draft = 0
         Processed = 1
         Posted = 2     ' locked — future feature, not enforced yet
+
+        ''' <summary>
+        ''' Hindi ipo-process sa app na ito, hal. ang mga cutoff bago nagsimulang gamitin ang Payroll App.
+        ''' Hindi na lumalabas sa Payroll Input Entry. Hindi ito binibilang na "processed" (hindi nila nila-lock
+        ''' ang Rate Basis ng pay cycle o ang Input Unit ng mga code). Pwedeng ibalik sa Draft.
+        ''' </summary>
+        Closed = 3
     End Enum
 
     ''' <summary>
@@ -29,9 +38,13 @@
 
         Public ReadOnly Property DisplayLabel As String
             Get
+                ' Maikli na ang CutoffLabel (hal. "S1 Feb 2026"), kaya sa mga dropdown ay isinasama ang saklaw ng petsa.
+                Dim fmt = AppConstants.DisplayDateFormat
+                Dim range = $"{CutoffStart.ToString(fmt)} - {CutoffEnd.ToString(fmt)}"
+
                 Return If(String.IsNullOrWhiteSpace(CutoffLabel),
-                           $"{CycleType} {CutoffStart:MMM d} - {CutoffEnd:MMM d, yyyy}",
-                           CutoffLabel)
+                           $"{CycleType} {range}",
+                           $"{CutoffLabel}  ({range})")
             End Get
         End Property
     End Class

@@ -19,10 +19,11 @@ Public Class ucCutoff
 
     ' Same indexing scheme as ucPayrollRateEntry's BTN_NEW/BTN_EDIT/BTN_REFRESH —
     ' matches wbpMainCommands.Buttons.AddRange order in the Designer:
-    ' [0]=sep, [1]=New/Update, [2]=Edit/Cancel, [3]=sep, [4]=Refresh, [5]=sep
+    ' [0]=sep, [1]=New/Update, [2]=Edit/Cancel, [3]=sep, [4]=Close Older, [5]=sep, [6]=Refresh, [7]=sep
     Private Const BTN_NEW As Integer = 1
     Private Const BTN_EDIT As Integer = 2
-    Private Const BTN_REFRESH As Integer = 4
+    Private Const BTN_CLOSE_OLDER As Integer = 4
+    Private Const BTN_REFRESH As Integer = 6
 
     Public Sub New()
         InitializeComponent()
@@ -91,12 +92,41 @@ Public Class ucCutoff
                     _presenter.StartEdit()
                 End If
 
+            Case "CloseOlder"
+                If Not _isEditing Then
+                    Dim beforeDate = PromptCloseBeforeDate()
+                    If beforeDate.HasValue Then Await _presenter.CloseOlderAsync(beforeDate.Value)
+                End If
+
             Case "Refresh"
                 If Not _isEditing Then
                     Await _presenter.LoadAsync()
                 End If
         End Select
     End Sub
+
+    ''' <summary>Tinatanong ang petsa: ang lahat ng Draft na cutoff na NAGTATAPOS bago nito ay isasara.</summary>
+    Private Function PromptCloseBeforeDate() As Date?
+        Dim editor As New DateEdit()
+        editor.ApplyDisplayDateFormat()
+        editor.DateTime = _presenter.SuggestedCloseBeforeDate()
+
+        Dim args As New XtraInputBoxArgs() With {
+            .Caption = "Close Older Cutoffs",
+            .Prompt = "Close all Draft cutoffs that END BEFORE this date:",
+            .Editor = editor,
+            .DefaultResponse = editor.DateTime
+        }
+
+        Dim result = XtraInputBox.Show(args)
+        If result Is Nothing Then Return Nothing
+        Return CDate(result)
+    End Function
+
+    Public Function ConfirmCloseOlder(message As String) As Boolean Implements ICutoffMaintenanceView.ConfirmCloseOlder
+        Return XtraMessageBox.Show(Me.FindForm(), message, "Close Older Cutoffs",
+                                   MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes
+    End Function
 
     Private Async Function OpenGenerateDialogAsync() As Task
         If _generateDialogFactory Is Nothing Then Return
@@ -183,10 +213,10 @@ Public Class ucCutoff
 
     Public Property Status As CutoffStatus Implements ICutoffMaintenanceView.Status
         Get
-            Return [Enum].Parse(GetType(CutoffStatus), lblStatusValue.Text)
+            Return [Enum].Parse(GetType(CutoffStatus), cboStatus.Text)
         End Get
         Set(value As CutoffStatus)
-            lblStatusValue.Text = value.ToString()
+            cboStatus.Text = value.ToString()
         End Set
     End Property
 
@@ -245,6 +275,10 @@ Public Class ucCutoff
 
         grpDetails.Enabled = isEditable
         grpFilters.Enabled = Not isEditable
+
+        ' Draft <-> Closed lang ang mano-manong mapapalitan; ang Processed/Posted ay read-only
+        Dim manualStatus = cboStatus.Text = CutoffStatus.Draft.ToString() OrElse cboStatus.Text = CutoffStatus.Closed.ToString()
+        cboStatus.Enabled = isEditable AndAlso manualStatus
         gridControl.Enabled = Not isEditable
 
         If isEditable Then
@@ -265,6 +299,7 @@ Public Class ucCutoff
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
         End If
 
+        wbpMainCommands.Buttons.Item(BTN_CLOSE_OLDER).Properties.Enabled = Not isEditable
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.Enabled = Not isEditable
     End Sub
 
@@ -275,7 +310,7 @@ Public Class ucCutoff
         dateCutoffEnd.EditValue = Nothing
         datePayDate.EditValue = Nothing
         txtCutoffLabel.Text = ""
-        lblStatusValue.Text = CutoffStatus.Draft.ToString()
+        cboStatus.Text = CutoffStatus.Draft.ToString()
     End Sub
 
     Public Sub ShowMessage(message As String) Implements ICutoffMaintenanceView.ShowMessage

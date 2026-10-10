@@ -20,6 +20,7 @@ Partial Class ucCutoff
         Dim WindowsuiButtonImageOptions1 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim WindowsuiButtonImageOptions2 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
@@ -29,7 +30,7 @@ Partial Class ucCutoff
         lblFilterYear = New DevExpress.XtraEditors.LabelControl()
         cboFilterYear = New DevExpress.XtraEditors.ComboBoxEdit()
         grpDetails = New DevExpress.XtraEditors.GroupControl()
-        lblStatusValue = New DevExpress.XtraEditors.LabelControl()
+        cboStatus = New DevExpress.XtraEditors.ComboBoxEdit()
         lblStatus = New DevExpress.XtraEditors.LabelControl()
         txtCutoffLabel = New DevExpress.XtraEditors.TextEdit()
         lblLabel = New DevExpress.XtraEditors.LabelControl()
@@ -59,6 +60,7 @@ Partial Class ucCutoff
         CType(cboFilterCycle.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(cboFilterYear.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(grpDetails, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboStatus.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         grpDetails.SuspendLayout()
         CType(txtCutoffLabel.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(datePayDate.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -100,14 +102,15 @@ Partial Class ucCutoff
         lblTabPageTitle.Text = "CUTOFF"
         '
         ' wbpMainCommands — [0]=sep, [1]=New (opens Generate dialog)/Update,
-        ' [2]=Edit/Cancel, [3]=sep, [4]=Refresh, [5]=sep. Same index scheme as
+        ' [2]=Edit/Cancel, [3]=sep, [4]=Close Older, [5]=sep, [6]=Refresh, [7]=sep. Same index scheme as
         ' RateEntry's BTN_NEW/BTN_EDIT/BTN_REFRESH constants.
         '
         wbpMainCommands.ButtonInterval = 15
         WindowsuiButtonImageOptions1.Image = My.Resources.Resources.icon_add_property_24_png
         WindowsuiButtonImageOptions2.Image = My.Resources.Resources.icon_edit_property_24
         WindowsuiButtonImageOptions3.Image = My.Resources.Resources.icon_refresh_24
-        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Generate Cutoffs for a Pay Cycle and Year", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
+        WindowsuiButtonImageOptions4.Image = My.Resources.Resources.icon_cancel_24
+        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Generate Cutoffs for a Pay Cycle and Year", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Close Older...", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Close all Draft cutoffs that ended before a date (hal. mga bago nagsimulang gamitin ang app)", -1, True, Nothing, True, False, True, "CloseOlder", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
         wbpMainCommands.ContentAlignment = System.Drawing.ContentAlignment.MiddleRight
         wbpMainCommands.Dock = System.Windows.Forms.DockStyle.Right
         wbpMainCommands.Font = New System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CByte(0))
@@ -124,7 +127,7 @@ Partial Class ucCutoff
         grpDetails.AppearanceCaption.Font = New System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CByte(0))
         grpDetails.AppearanceCaption.FontStyleDelta = System.Drawing.FontStyle.Bold
         grpDetails.AppearanceCaption.Options.UseFont = True
-        grpDetails.Controls.Add(lblStatusValue)
+        grpDetails.Controls.Add(cboStatus)
         grpDetails.Controls.Add(lblStatus)
         grpDetails.Controls.Add(txtCutoffLabel)
         grpDetails.Controls.Add(lblLabel)
@@ -259,13 +262,14 @@ Partial Class ucCutoff
         '
         ' lblStatusValue
         '
-        lblStatusValue.Appearance.Font = New System.Drawing.Font("Segoe UI", 9.0F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CByte(0))
-        lblStatusValue.Appearance.Options.UseFont = True
-        lblStatusValue.Location = New System.Drawing.Point(64, 85)
-        lblStatusValue.Name = "lblStatusValue"
-        lblStatusValue.Size = New System.Drawing.Size(34, 13)
-        lblStatusValue.TabIndex = 13
-        lblStatusValue.Text = "Draft"
+        cboStatus.Location = New System.Drawing.Point(64, 82)
+        cboStatus.Name = "cboStatus"
+        cboStatus.Properties.Items.AddRange(New Object() {"Draft", "Processed", "Posted", "Closed"})
+        cboStatus.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboStatus.Size = New System.Drawing.Size(120, 20)
+        cboStatus.TabIndex = 13
+        cboStatus.Text = "Draft"
+        cboStatus.ToolTip = "Draft / Closed lang ang pwedeng palitan dito. Ang Processed at Posted ay itinatakda ng payroll processing."
         '
         ' grpFilters — Pay Cycle + Year lang ang ipapakita sa grid (hindi lahat ng generated)
         '
@@ -414,6 +418,7 @@ Partial Class ucCutoff
         CType(cboFilterCycle.Properties, System.ComponentModel.ISupportInitialize).EndInit()
         CType(cboFilterYear.Properties, System.ComponentModel.ISupportInitialize).EndInit()
         CType(grpDetails, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(cboStatus.Properties, System.ComponentModel.ISupportInitialize).EndInit()
         grpDetails.ResumeLayout(False)
         grpDetails.PerformLayout()
         CType(txtCutoffLabel.Properties, System.ComponentModel.ISupportInitialize).EndInit()
@@ -453,7 +458,7 @@ Partial Class ucCutoff
     Friend WithEvents lblLabel As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtCutoffLabel As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblStatus As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents lblStatusValue As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboStatus As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents gridControl As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridView As DevExpress.XtraGrid.Views.Grid.GridView
     Friend WithEvents colCycleType As DevExpress.XtraGrid.Columns.GridColumn

@@ -127,6 +127,35 @@ Namespace PayrollSettings.Presenters
             Await LoadAsync()
         End Function
 
+        ''' <summary>Default na petsa ng "Close Older": unang araw ng kasalukuyang buwan.</summary>
+        Public Function SuggestedCloseBeforeDate() As Date
+            Return New Date(Date.Today.Year, Date.Today.Month, 1)
+        End Function
+
+        ''' <summary>
+        ''' Ginagawang Closed ang mga Draft na cutoff na NAGTATAPOS bago ang petsa (lahat ng pay cycle) - hal. kapag
+        ''' nagsimula lang gamitin ang app ng Nobyembre, ang mga cutoff bago mag-Nov 1. Hindi na sila lalabas sa Payroll Input Entry.
+        ''' </summary>
+        Public Async Function CloseOlderAsync(beforeDate As Date) As Task
+            Dim fmt = Payroll.GlobalShared.Constants.AppConstants.DisplayDateFormat
+            Dim count = Await _service.CountClosableAsync(beforeDate)
+
+            If count = 0 Then
+                _view.ShowMessage($"There are no Draft cutoffs ending before {beforeDate.ToString(fmt)}.")
+                Return
+            End If
+
+            Dim message = $"{count} Draft cutoff(s) (all pay cycles) that end before {beforeDate.ToString(fmt)} will be set to Closed." & vbCrLf & vbCrLf &
+                          "Closed cutoffs no longer appear in Payroll Input Entry. You can set a cutoff back to Draft anytime (select it, Edit, change Status)." & vbCrLf & vbCrLf &
+                          "Continue?"
+
+            If Not _view.ConfirmCloseOlder(message) Then Return
+
+            Dim closed = Await _service.CloseOlderAsync(beforeDate, _userName)
+            _view.ShowMessage($"{closed} cutoff(s) closed.")
+            Await LoadAsync()
+        End Function
+
         Public Sub CancelEdit()
             If _selectedId > 0 Then
                 SelectItem(_selectedId)

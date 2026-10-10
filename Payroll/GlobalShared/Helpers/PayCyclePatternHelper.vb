@@ -5,6 +5,7 @@
 ' source of truth: ginagamit ng Cutoff generation, ng preview sa
 ' Pay Cycle Settings, at ng validation bago i-save ang pattern.
 ' ============================================================
+Imports System.Globalization
 Imports Payroll.GlobalShared.Models
 
 Namespace GlobalShared.Helpers
@@ -115,6 +116,27 @@ Namespace GlobalShared.Helpers
             Next
 
             Return Nothing
+        End Function
+
+        ''' <summary>M = Monthly, S = SemiMonthly, W = Weekly, D = Daily.</summary>
+        Public Function LabelPrefix(cycleType As String) As String
+            Select Case PayCycleChoices.Normalize(cycleType)
+                Case "Monthly" : Return "M"
+                Case "SemiMonthly" : Return "S"
+                Case "Weekly" : Return "W"
+                Case "Daily" : Return "D"
+                Case Else
+                    Dim t = If(cycleType, "").Trim()
+                    Return If(t.Length > 0, t.Substring(0, 1).ToUpperInvariant(), "C")
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' Maikling label ng cutoff: [S/M/W/D][pang-ilan sa buwan ng PAYDAY] [Mmm yyyy], hal. "S1 Feb 2026",
+        ''' "S2 Feb 2026", "D1 Feb 2026" (ang 21-5 na binabayaran ng Feb 15). Ang buwan ay buwan ng pay date.
+        ''' </summary>
+        Public Function CutoffLabel(cycleType As String, periodInMonth As Integer, payMonth As Date) As String
+            Return $"{LabelPrefix(cycleType)}{periodInMonth} {payMonth.ToString("MMM yyyy", CultureInfo.InvariantCulture)}"
         End Function
 
         ''' <summary>Maikling paglalarawan, hal. "21 (prev month)-5, paid 15 | 6-20, paid EOM".</summary>

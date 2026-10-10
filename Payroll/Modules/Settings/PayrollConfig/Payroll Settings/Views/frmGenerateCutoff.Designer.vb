@@ -25,6 +25,7 @@ Partial Class frmGenerateCutoff
         gridControlPreview = New DevExpress.XtraGrid.GridControl()
         gridViewPreview = New DevExpress.XtraGrid.Views.Grid.GridView()
         colPeriod = New DevExpress.XtraGrid.Columns.GridColumn()
+        colLabel = New DevExpress.XtraGrid.Columns.GridColumn()
         colStart = New DevExpress.XtraGrid.Columns.GridColumn()
         colEnd = New DevExpress.XtraGrid.Columns.GridColumn()
         colPayDate = New DevExpress.XtraGrid.Columns.GridColumn()
@@ -95,7 +96,7 @@ Partial Class frmGenerateCutoff
         '
         ' gridViewPreview
         '
-        gridViewPreview.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colPeriod, colStart, colEnd, colPayDate, colStatus})
+        gridViewPreview.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colPeriod, colLabel, colStart, colEnd, colPayDate, colStatus})
         gridViewPreview.GridControl = gridControlPreview
         gridViewPreview.Name = "gridViewPreview"
         gridViewPreview.OptionsBehavior.Editable = False
@@ -109,7 +110,16 @@ Partial Class frmGenerateCutoff
         colPeriod.Name = "colPeriod"
         colPeriod.Visible = True
         colPeriod.VisibleIndex = 0
-        colPeriod.Width = 55
+        colPeriod.Width = 50
+        '
+        ' colLabel - maikling label ng cutoff, hal. S1 Feb 2026
+        '
+        colLabel.Caption = "Label"
+        colLabel.FieldName = "Label"
+        colLabel.Name = "colLabel"
+        colLabel.Visible = True
+        colLabel.VisibleIndex = 1
+        colLabel.Width = 90
         '
         ' colStart
         '
@@ -117,8 +127,8 @@ Partial Class frmGenerateCutoff
         colStart.FieldName = "CutoffStart"
         colStart.Name = "colStart"
         colStart.Visible = True
-        colStart.VisibleIndex = 1
-        colStart.Width = 100
+        colStart.VisibleIndex = 2
+        colStart.Width = 90
         '
         ' colEnd
         '
@@ -126,8 +136,8 @@ Partial Class frmGenerateCutoff
         colEnd.FieldName = "CutoffEnd"
         colEnd.Name = "colEnd"
         colEnd.Visible = True
-        colEnd.VisibleIndex = 2
-        colEnd.Width = 100
+        colEnd.VisibleIndex = 3
+        colEnd.Width = 90
         '
         ' colPayDate
         '
@@ -135,8 +145,8 @@ Partial Class frmGenerateCutoff
         colPayDate.FieldName = "PayDate"
         colPayDate.Name = "colPayDate"
         colPayDate.Visible = True
-        colPayDate.VisibleIndex = 3
-        colPayDate.Width = 100
+        colPayDate.VisibleIndex = 4
+        colPayDate.Width = 90
         '
         ' colStatus
         '
@@ -144,7 +154,7 @@ Partial Class frmGenerateCutoff
         colStatus.FieldName = "StatusText"
         colStatus.Name = "colStatus"
         colStatus.Visible = True
-        colStatus.VisibleIndex = 4
+        colStatus.VisibleIndex = 5
         colStatus.Width = 120
         '
         ' lblSummary
@@ -214,6 +224,7 @@ Partial Class frmGenerateCutoff
     Friend WithEvents gridControlPreview As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridViewPreview As DevExpress.XtraGrid.Views.Grid.GridView
     Friend WithEvents colPeriod As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents colLabel As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colStart As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colEnd As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colPayDate As DevExpress.XtraGrid.Columns.GridColumn

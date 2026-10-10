@@ -138,11 +138,11 @@ Namespace PayrollSettings.Data
             Dim sql = "
                 SELECT COUNT(1) FROM tblCutoff
                 WHERE CycleType = @payCycleType
-                  AND Status >= @processed"
+                  AND Status IN (@processed, @posted)"
 
             Using conn = GetConnection()
                 Dim count = Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
-                    payCycleType, .processed = CByte(CutoffStatus.Processed)
+                    payCycleType, .processed = CByte(CutoffStatus.Processed), .posted = CByte(CutoffStatus.Posted)
                 })
                 Return count > 0
             End Using

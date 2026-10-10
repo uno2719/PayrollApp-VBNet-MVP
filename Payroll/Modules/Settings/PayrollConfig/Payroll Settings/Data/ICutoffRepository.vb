@@ -9,5 +9,11 @@ Namespace PayrollSettings.Data
 
         ''' <summary>Bulk insert for "Generate for Year" — skips any period that would overlap an existing Cutoff of the same CycleType.</summary>
         Function BulkInsertAsync(items As List(Of CutoffModel), userName As String) As Task(Of Integer)
+
+        ''' <summary>Ilang Draft na cutoff (lahat ng pay cycle) ang nagtatapos bago ang petsa.</summary>
+        Function CountDraftEndingBeforeAsync(beforeDate As Date) As Task(Of Integer)
+
+        ''' <summary>Ginagawang Closed ang lahat ng Draft na cutoff na nagtatapos bago ang petsa. Nagbabalik ng bilang.</summary>
+        Function CloseDraftEndingBeforeAsync(beforeDate As Date, userName As String) As Task(Of Integer)
     End Interface
 End Namespace

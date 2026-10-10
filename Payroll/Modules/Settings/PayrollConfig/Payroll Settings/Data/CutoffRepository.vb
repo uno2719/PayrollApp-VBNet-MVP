@@ -64,6 +64,31 @@ Namespace PayrollSettings.Data
             Return rows > 0
         End Function
 
+        Public Async Function CountDraftEndingBeforeAsync(beforeDate As Date) As Task(Of Integer) _
+            Implements ICutoffRepository.CountDraftEndingBeforeAsync
+
+            Using conn = GetConnection()
+                Return Await conn.ExecuteScalarAsync(Of Integer)(
+                    "SELECT COUNT(1) FROM tblCutoff WHERE Status = @draft AND CutoffEnd < @beforeDate",
+                    New With {.draft = CByte(CutoffStatus.Draft), beforeDate})
+            End Using
+        End Function
+
+        Public Async Function CloseDraftEndingBeforeAsync(beforeDate As Date, userName As String) As Task(Of Integer) _
+            Implements ICutoffRepository.CloseDraftEndingBeforeAsync
+
+            Dim sql = "
+                UPDATE tblCutoff
+                SET Status = @closed,
+                    ModifiedBy = @UserName,
+                    ModifiedDate = SYSDATETIME()
+                WHERE Status = @draft AND CutoffEnd < @beforeDate"
+
+            Return Await MyBase.ExecuteAsync(sql, New With {
+                .closed = CByte(CutoffStatus.Closed), .draft = CByte(CutoffStatus.Draft), beforeDate, userName
+            })
+        End Function
+
         Public Async Function BulkInsertAsync(items As List(Of CutoffModel), userName As String) As Task(Of Integer) Implements ICutoffRepository.BulkInsertAsync
             Dim inserted = 0
             For Each item In items

@@ -42,6 +42,10 @@ Namespace PayrollProcessing.Services
             If cutoff Is Nothing Then
                 Throw New PayrollInputValidationException("Selected Cutoff no longer exists.")
             End If
+            If cutoff.Status = CutoffStatus.Closed Then
+                Throw New PayrollInputValidationException("This Cutoff is Closed. Set it back to Draft in Payroll Settings > Cut-Off before entering inputs.")
+            End If
+
             If cutoff.Status = CutoffStatus.Posted Then
                 Throw New PayrollInputValidationException("This Cutoff is already Posted and can no longer be edited.")
             End If
