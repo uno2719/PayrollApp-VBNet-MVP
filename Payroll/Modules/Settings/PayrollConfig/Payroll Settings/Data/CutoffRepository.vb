@@ -31,14 +31,14 @@ Namespace PayrollSettings.Data
 
         Public Async Function InsertAsync(item As CutoffModel, userName As String) As Task(Of Integer) Implements ICutoffRepository.InsertAsync
             Dim sql = "
-                INSERT INTO tblCutoff (CycleType, CutoffYear, CutoffStart, CutoffEnd, PayDate, CutoffLabel, Status, CreatedBy)
+                INSERT INTO tblCutoff (CycleType, CutoffYear, CutoffStart, CutoffEnd, PayDate, CutoffLabel, PeriodInMonth, Status, CreatedBy)
                 OUTPUT INSERTED.CutoffID
-                VALUES (@CycleType, @CutoffYear, @CutoffStart, @CutoffEnd, @PayDate, @CutoffLabel, @Status, @UserName)"
+                VALUES (@CycleType, @CutoffYear, @CutoffStart, @CutoffEnd, @PayDate, @CutoffLabel, @PeriodInMonth, @Status, @UserName)"
 
             Using conn = GetConnection()
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
                     item.CycleType, item.CutoffYear, item.CutoffStart, item.CutoffEnd,
-                    item.PayDate, item.CutoffLabel, .Status = CByte(item.Status), userName
+                    item.PayDate, item.CutoffLabel, item.PeriodInMonth, .Status = CByte(item.Status), userName
                 })
             End Using
         End Function
@@ -52,6 +52,7 @@ Namespace PayrollSettings.Data
                     CutoffEnd = @CutoffEnd,
                     PayDate = @PayDate,
                     CutoffLabel = @CutoffLabel,
+                    PeriodInMonth = COALESCE(@PeriodInMonth, PeriodInMonth),
                     Status = @Status,
                     ModifiedBy = @UserName,
                     ModifiedDate = SYSDATETIME()
@@ -59,7 +60,7 @@ Namespace PayrollSettings.Data
 
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
                 item.CutoffID, item.CycleType, item.CutoffYear, item.CutoffStart, item.CutoffEnd,
-                item.PayDate, item.CutoffLabel, .Status = CByte(item.Status), userName
+                item.PayDate, item.CutoffLabel, item.PeriodInMonth, .Status = CByte(item.Status), userName
             })
             Return rows > 0
         End Function

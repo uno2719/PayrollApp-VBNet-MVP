@@ -263,8 +263,17 @@ Public Class AppComposition
         philHealthView.SetPresenter(philHealthPresenter, "PhilHealth")
         pagIbigView.SetPresenter(pagIbigPresenter, "Pag-IBIG")
 
-        ' 6. Gawin ang Main View
-        Return New ucStatutorySettingsShell(sssView, philHealthView, pagIbigView)
+        ' 6. Deduction Schedule tab - hindi bracket table, kaya sariling Repository/Service/Presenter
+        '    (hindi shared sa 3 tabs sa itaas). Kailangan ng PayCycleRepository para sa mga active na
+        '    pay cycle at sa cutoff pattern (bilang ng period at payday ng bawat isa).
+        Dim scheduleRepo As New StatutoryScheduleRepository()
+        Dim scheduleService As New StatutoryScheduleService(scheduleRepo, New PayCycleRepository())
+        Dim scheduleView As New ucStatutorySchedule()
+        Dim schedulePresenter As New StatutorySchedulePresenter(scheduleView, scheduleService, currentUser)
+        scheduleView.SetPresenter(schedulePresenter)
+
+        ' 7. Gawin ang Main View
+        Return New ucStatutorySettingsShell(sssView, philHealthView, pagIbigView, scheduleView)
 
     End Function
 

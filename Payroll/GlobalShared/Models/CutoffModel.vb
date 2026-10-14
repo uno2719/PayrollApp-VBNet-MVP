@@ -30,6 +30,13 @@ Namespace GlobalShared.Models
         Public Property CutoffEnd As Date
         Public Property PayDate As Date?
         Public Property CutoffLabel As String
+
+        ''' <summary>
+        ''' Pang-ilang cutoff ito sa PAY MONTH (kapareho ng numero sa label: S2 Oct 2026 = 2). Ito ang susi sa
+        ''' Statutory Deduction Schedule (aling share ang kakaltasin sa cutoff na ito). Nothing = lumang cutoff
+        ''' na hindi pa na-backfill.
+        ''' </summary>
+        Public Property PeriodInMonth As Integer?
         Public Property Status As CutoffStatus
         Public Property CreatedBy As String
         Public Property CreatedDate As DateTime

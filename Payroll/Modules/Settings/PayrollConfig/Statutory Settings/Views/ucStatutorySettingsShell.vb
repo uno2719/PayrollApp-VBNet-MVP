@@ -13,16 +13,21 @@ Public Class ucStatutorySettingsShell
     Private ReadOnly _ucPhilHealth As ucStatutorySettings
     Private ReadOnly _ucPagIbig As ucStatutorySettings
 
+    ' Ika-4 tab: ibang klase ng view (hindi bracket table), sariling Presenter/Service.
+    Private ReadOnly _ucSchedule As ucStatutorySchedule
+
     Public Sub New(
         sssView As ucStatutorySettings,
         philHealthView As ucStatutorySettings,
-        pagIbigView As ucStatutorySettings)
+        pagIbigView As ucStatutorySettings,
+        scheduleView As ucStatutorySchedule)
 
         InitializeComponent()
 
         _ucSSS = sssView
         _ucPhilHealth = philHealthView
         _ucPagIbig = pagIbigView
+        _ucSchedule = scheduleView
 
         DockAllViews()
     End Sub
@@ -36,6 +41,9 @@ Public Class ucStatutorySettingsShell
 
         _ucPagIbig.Dock = DockStyle.Fill
         tabpagePagIbig.Controls.Add(_ucPagIbig)
+
+        _ucSchedule.Dock = DockStyle.Fill
+        tabpageSchedule.Controls.Add(_ucSchedule)
     End Sub
 
     ' =============================================
@@ -55,7 +63,7 @@ Public Class ucStatutorySettingsShell
 
     ' =============================================
     ' LOAD - isang tab lang (SSS, unang bukas) ang agad
-    ' nilo-load dito. Ang ibang 2 ay lazy - tingnan
+    ' nilo-load dito. Ang ibang 3 (PhilHealth, Pag-IBIG, Deduction Schedule) ay lazy - tingnan
     ' tabconStatutory_SelectedPageChanged sa ibaba.
     ' =============================================
     Public Overrides Async Function LoadFormAsync() As Task _
@@ -65,8 +73,9 @@ Public Class ucStatutorySettingsShell
     End Function
 
     ' =============================================
-    ' TAB CHANGED - generic para sa lahat ng 3 (iisang class lang
-    ' silang lahat), kaya walang kailangang 3-way Select Case.
+    ' TAB CHANGED - generic para sa lahat ng tab: kahit anong ucBase na
+    ' nasa napiling tab (bracket table man o Deduction Schedule) ay lazy-loaded,
+    ' kaya walang kailangang Select Case.
     ' =============================================
     Private Async Sub tabconStatutory_SelectedPageChanged(
         sender As Object, e As DevExpress.XtraTab.TabPageChangedEventArgs) _

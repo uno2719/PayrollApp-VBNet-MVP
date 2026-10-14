@@ -18,6 +18,7 @@ Partial Class ucStatutorySettingsShell
         tabpageSSS = New DevExpress.XtraTab.XtraTabPage()
         tabpagePhilHealth = New DevExpress.XtraTab.XtraTabPage()
         tabpagePagIbig = New DevExpress.XtraTab.XtraTabPage()
+        tabpageSchedule = New DevExpress.XtraTab.XtraTabPage()
         CType(tabconStatutory, ComponentModel.ISupportInitialize).BeginInit()
         tabconStatutory.SuspendLayout()
         SuspendLayout()
@@ -40,7 +41,7 @@ Partial Class ucStatutorySettingsShell
         tabconStatutory.SelectedTabPage = tabpageSSS
         tabconStatutory.Size = New Size(900, 480)
         tabconStatutory.TabIndex = 0
-        tabconStatutory.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageSSS, tabpagePhilHealth, tabpagePagIbig})
+        tabconStatutory.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageSSS, tabpagePhilHealth, tabpagePagIbig, tabpageSchedule})
         '
         ' tabpageSSS
         '
@@ -63,6 +64,13 @@ Partial Class ucStatutorySettingsShell
         tabpagePagIbig.Size = New Size(898, 451)
         tabpagePagIbig.Text = "Pag-IBIG"
         '
+        ' tabpageSchedule
+        '
+        tabpageSchedule.Margin = New Padding(3, 2, 3, 2)
+        tabpageSchedule.Name = "tabpageSchedule"
+        tabpageSchedule.Size = New Size(898, 451)
+        tabpageSchedule.Text = "Deduction Schedule"
+        '
         ' ucStatutorySettingsShell
         '
         AutoScaleDimensions = New SizeF(6.0F, 13.0F)
@@ -80,5 +88,6 @@ Partial Class ucStatutorySettingsShell
     Friend WithEvents tabpageSSS As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpagePhilHealth As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpagePagIbig As DevExpress.XtraTab.XtraTabPage
+    Friend WithEvents tabpageSchedule As DevExpress.XtraTab.XtraTabPage
 
 End Class

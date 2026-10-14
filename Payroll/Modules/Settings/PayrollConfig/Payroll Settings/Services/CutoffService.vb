@@ -44,6 +44,11 @@ Namespace PayrollSettings.Services
                 End If
             End If
 
+            ' Bagong cutoff na walang PeriodInMonth (hal. manual na dagdag): hanapin ayon sa pagkakasunod sa pay month.
+            If item.CutoffID = 0 AndAlso Not item.PeriodInMonth.HasValue Then
+                item.PeriodInMonth = Await DerivePeriodInMonthAsync(item)
+            End If
+
             If item.CutoffID = 0 Then
                 Await _repository.InsertAsync(item, userName)
             Else
@@ -164,6 +169,22 @@ Namespace PayrollSettings.Services
             Return periods
         End Function
 
+        ''' <summary>
+        ''' Kapareho ng backfill sa SQL: 1 + bilang ng cutoff ng parehong pay cycle at pay month na nauuna ang simula.
+        ''' Ang pay month ay buwan ng PayDate (kung wala, buwan ng CutoffStart).
+        ''' </summary>
+        Private Async Function DerivePeriodInMonthAsync(item As CutoffModel) As Task(Of Integer)
+            Dim anchor = If(item.PayDate, item.CutoffStart)
+            Dim all = Await _repository.GetAllAsync()
+
+            Dim earlier = all.Where(Function(c) c.CutoffID <> item.CutoffID AndAlso
+                                                String.Equals(c.CycleType, item.CycleType, StringComparison.OrdinalIgnoreCase) AndAlso
+                                                If(c.PayDate, c.CutoffStart).Year = anchor.Year AndAlso
+                                                If(c.PayDate, c.CutoffStart).Month = anchor.Month AndAlso
+                                                c.CutoffStart < item.CutoffStart).Count()
+            Return earlier + 1
+        End Function
+
         Private Function NewPeriod(cycleType As String, year As Integer, start As Date, [end] As Date, payDate As Date?, periodInMonth As Integer) As CutoffModel
             Return New CutoffModel With {
                 .CycleType = cycleType,
@@ -172,6 +193,7 @@ Namespace PayrollSettings.Services
                 .CutoffEnd = [end],
                 .PayDate = payDate,
                 .CutoffLabel = PayCyclePatternHelper.CutoffLabel(cycleType, periodInMonth, If(payDate, start)),
+                .PeriodInMonth = periodInMonth,
                 .Status = CutoffStatus.Draft
             }
         End Function
