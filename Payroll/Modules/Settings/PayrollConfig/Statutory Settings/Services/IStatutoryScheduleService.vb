@@ -52,7 +52,7 @@ Namespace StatutorySettings.Services
         Public Property Rows As Dictionary(Of String, List(Of StatutoryScheduleRow)) =
             New Dictionary(Of String, List(Of StatutoryScheduleRow))(StringComparer.OrdinalIgnoreCase)
 
-        Public Property VoluntaryMode As PagIbigVoluntaryMode = PagIbigVoluntaryMode.HigherOfTableOrVoluntary
+        Public Property VoluntaryMode As PagIbigVoluntaryMode = PagIbigVoluntaryMode.ReplaceTable
     End Class
 
     Public Class StatutoryScheduleSaveResult

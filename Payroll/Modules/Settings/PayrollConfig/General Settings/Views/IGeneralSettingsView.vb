@@ -10,6 +10,7 @@ Namespace GeneralSettings.Views
         Property WorkHourPerDay As Decimal
         Property AmountPrecision As Integer
         Property PercentPrecision As Integer
+        Property DailyRateMonthlyFactor As Decimal
 
         ' --- Code Mapping ---
         Property BasicSalaryCodePlusId As Integer?

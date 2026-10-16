@@ -280,7 +280,6 @@ Namespace Employee.Data
                         PayrollFlag     = @PayrollFlag,
                         MinimumWage     = @MinimumWage,
                         PayCycle        = @PayCycle,
-                        TaxFlag         = @TaxFlag,
                         PayBy           = @PayBy,
                         BankId          = @BankId,
                         BankAccount     = @BankAccount,
@@ -291,12 +290,12 @@ Namespace Employee.Data
                     INSERT INTO tblEmployeeEarnings (
                         RecordId, BasicSalary, DailyRate, HourlyRate,
                         DaysInYear, WorkHourPer, PayrollFlag, MinimumWage,
-                        PayCycle, TaxFlag, PayBy, BankId, BankAccount,
+                        PayCycle, PayBy, BankId, BankAccount,
                         CreatedAt, CreatedBy
                     ) VALUES (
                         @RecordId, @BasicSalary, @DailyRate, @HourlyRate,
                         @DaysInYear, @WorkHourPer, @PayrollFlag, @MinimumWage,
-                        @PayCycle, @TaxFlag, @PayBy, @BankId, @BankAccount,
+                        @PayCycle, @PayBy, @BankId, @BankAccount,
                         GETDATE(), @CreatedBy
                     )"
 
@@ -358,7 +357,7 @@ Namespace Employee.Data
         ' LOOKUPS
         ' =============================================
 
-        ' Ang Pay Cycle at Tax Flag options ng Earnings tab ay galing dito: ang mga pay cycle na
+        ' Ang Pay Cycle options ng Earnings tab ay galing dito: ang mga pay cycle na
         ' Active sa Payroll Settings > Pay Cycle.
         Public Async Function GetActivePayCyclesAsync() As Task(Of List(Of String)) _
             Implements IEmployeeRepository.GetActivePayCyclesAsync
@@ -367,6 +366,28 @@ Namespace Employee.Data
                 Dim result = Await conn.QueryAsync(Of String)(
                     "SELECT PayCycleType FROM tblPayCycle WHERE IsActive = 1 ORDER BY PayCycleId")
                 Return result.ToList()
+            End Using
+        End Function
+
+        ' Lahat ng pay cycle (pati hindi na Active) para malaman pa rin ang Rate Basis ng employee
+        ' na ang naka-save na cycle ay na-deactivate na.
+        Public Async Function GetPayCycleInfoAsync() As Task(Of List(Of Models.PayCycleInfoModel)) _
+            Implements IEmployeeRepository.GetPayCycleInfoAsync
+
+            Using conn = GetConnection()
+                Dim result = Await conn.QueryAsync(Of Models.PayCycleInfoModel)(
+                    "SELECT PayCycleType, RateBasis, IsActive FROM tblPayCycle ORDER BY PayCycleId")
+                Return result.ToList()
+            End Using
+        End Function
+
+        Public Async Function GetDailyRateMonthlyFactorAsync() As Task(Of Decimal) _
+            Implements IEmployeeRepository.GetDailyRateMonthlyFactorAsync
+
+            Using conn = GetConnection()
+                Dim value = Await conn.ExecuteScalarAsync(Of Decimal?)(
+                    "SELECT TOP 1 DailyRateMonthlyFactor FROM tblGeneralSettings ORDER BY GeneralSettingsId")
+                Return If(value.HasValue AndAlso value.Value > 0D, value.Value, 30D)
             End Using
         End Function
 

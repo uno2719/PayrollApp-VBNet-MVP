@@ -4,10 +4,9 @@ Namespace PayrollSettings.Data
 
     Public Class PayCycleEmployeeUsage
         Public Property AsPayCycle As Integer
-        Public Property AsTaxFlag As Integer
         Public ReadOnly Property Total As Integer
             Get
-                Return AsPayCycle + AsTaxFlag
+                Return AsPayCycle
             End Get
         End Property
     End Class

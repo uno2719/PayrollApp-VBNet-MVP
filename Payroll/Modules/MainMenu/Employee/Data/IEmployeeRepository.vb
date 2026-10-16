@@ -27,6 +27,12 @@
 
         ''' <summary>Mga pay cycle na Active sa Payroll Settings > Pay Cycle (tblPayCycle).</summary>
         Function GetActivePayCyclesAsync() As Task(Of List(Of String))
+
+        ''' <summary>Lahat ng pay cycle (Active man o hindi) kasama ang Rate Basis: Basic Salary o Daily Rate ang input sa Earnings tab.</summary>
+        Function GetPayCycleInfoAsync() As Task(Of List(Of Models.PayCycleInfoModel))
+
+        ''' <summary>General Settings > Daily Rate Monthly Factor (default 30): Daily Rate x factor = buwanang katumbas.</summary>
+        Function GetDailyRateMonthlyFactorAsync() As Task(Of Decimal)
         Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel))
         Function GetEmployeeContactLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeContactLookupModel))
 

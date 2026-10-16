@@ -121,8 +121,7 @@ Namespace PayrollSettings.Data
 
             ' REPLACE: tugma rin ang lumang "Semi-Monthly" (may gitling) sa "SemiMonthly"
             Dim sql = "
-                SELECT ISNULL(SUM(CASE WHEN REPLACE(REPLACE(ee.PayCycle, '-', ''), ' ', '') = @payCycleType THEN 1 ELSE 0 END), 0) AS AsPayCycle,
-                       ISNULL(SUM(CASE WHEN REPLACE(REPLACE(ee.TaxFlag,  '-', ''), ' ', '') = @payCycleType THEN 1 ELSE 0 END), 0) AS AsTaxFlag
+                SELECT ISNULL(SUM(CASE WHEN REPLACE(REPLACE(ee.PayCycle, '-', ''), ' ', '') = @payCycleType THEN 1 ELSE 0 END), 0) AS AsPayCycle
                 FROM tblEmployeeEarnings ee
                 INNER JOIN tblEmployee e ON e.RecordId = ee.RecordId
                 WHERE e.IsActive = 1 AND e.IsDeleted = 0 AND ee.PayrollFlag = 1"

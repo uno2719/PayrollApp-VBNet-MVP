@@ -52,6 +52,7 @@ Namespace GeneralSettings.Presenters
             _view.WorkHourPerDay = _current.WorkHourPerDay
             _view.AmountPrecision = _current.AmountPrecision
             _view.PercentPrecision = _current.PercentPrecision
+            _view.DailyRateMonthlyFactor = _current.DailyRateMonthlyFactor
 
             _view.BasicSalaryCodePlusId = _current.BasicSalaryCodePlusId
             _view.BasicSalaryCodeMinusId = _current.BasicSalaryCodeMinusId
@@ -69,6 +70,7 @@ Namespace GeneralSettings.Presenters
             _current.WorkHourPerDay = _view.WorkHourPerDay
             _current.AmountPrecision = _view.AmountPrecision
             _current.PercentPrecision = _view.PercentPrecision
+            _current.DailyRateMonthlyFactor = _view.DailyRateMonthlyFactor
 
             _current.BasicSalaryCodePlusId = _view.BasicSalaryCodePlusId
             _current.BasicSalaryCodeMinusId = _view.BasicSalaryCodeMinusId

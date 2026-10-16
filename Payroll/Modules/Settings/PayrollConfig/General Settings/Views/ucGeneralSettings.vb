@@ -129,6 +129,15 @@ Public Class ucGeneralSettings
         End Set
     End Property
 
+    Public Property DailyRateMonthlyFactor As Decimal Implements IGeneralSettingsView.DailyRateMonthlyFactor
+        Get
+            Return ToDecimal(txtDailyRateMonthlyFactor.Text)
+        End Get
+        Set(value As Decimal)
+            txtDailyRateMonthlyFactor.Text = value.ToString("0.00")
+        End Set
+    End Property
+
     ' === IGeneralSettingsView : Code Mapping ===
 
     Public Property BasicSalaryCodePlusId As Integer? Implements IGeneralSettingsView.BasicSalaryCodePlusId

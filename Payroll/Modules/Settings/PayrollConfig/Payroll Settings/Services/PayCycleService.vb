@@ -104,7 +104,6 @@ Namespace PayrollSettings.Services
         Private Shared Function BuildDeactivateWarning(payCycleType As String, usage As PayCycleEmployeeUsage) As String
             Dim parts As New List(Of String)()
             If usage.AsPayCycle > 0 Then parts.Add($"{usage.AsPayCycle} employee(s) as their Pay Cycle")
-            If usage.AsTaxFlag > 0 Then parts.Add($"{usage.AsTaxFlag} employee(s) as their Tax Flag")
 
             Return $"The {payCycleType} pay cycle is still used by {String.Join(" and ", parts)}." & vbCrLf & vbCrLf &
                    "If you deactivate it:" & vbCrLf &

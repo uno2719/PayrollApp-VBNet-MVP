@@ -440,7 +440,7 @@ Partial Class ucEmployeesEmployment
         lciDateJoined.Location = New Point(533, 43)
         lciDateJoined.Name = "lciDateJoined"
         lciDateJoined.Size = New Size(514, 28)
-        lciDateJoined.Text = "Date Joined"
+        lciDateJoined.Text = "Date Joined *"
         lciDateJoined.TextSize = New Size(128, 17)
         ' 
         ' lciDateRegularization

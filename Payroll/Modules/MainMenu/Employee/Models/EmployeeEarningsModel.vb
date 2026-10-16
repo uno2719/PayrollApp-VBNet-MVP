@@ -10,7 +10,6 @@
         Public Property PayrollFlag As Boolean
         Public Property MinimumWage As Boolean
         Public Property PayCycle As String
-        Public Property TaxFlag As String
         Public Property PayBy As String
         Public Property BankId As Integer?
         Public Property BankName As String

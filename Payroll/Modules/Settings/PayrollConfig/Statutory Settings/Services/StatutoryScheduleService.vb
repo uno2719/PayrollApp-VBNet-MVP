@@ -59,7 +59,7 @@ Namespace StatutorySettings.Services
                     Return CType(r.VoluntaryMode.Value, PagIbigVoluntaryMode)
                 End If
             Next
-            Return PagIbigVoluntaryMode.HigherOfTableOrVoluntary
+            Return PagIbigVoluntaryMode.ReplaceTable
         End Function
 
         ' =============================================

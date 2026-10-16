@@ -45,6 +45,12 @@ Namespace GeneralSettings.Services
                 Return Fail("Work Hour Per Day must be greater than 0 and not more than 24.")
             End If
 
+            ' 30 ang default (katumbas ng isang buwan); may kompanyang 26 (6-day week) o 21.75, kaya
+            ' maluwag ang range, basta hindi zero o lampas sa isang buwan.
+            If item.DailyRateMonthlyFactor <= 0D OrElse item.DailyRateMonthlyFactor > 31D Then
+                Return Fail("Daily Rate Monthly Factor must be greater than 0 and not more than 31.")
+            End If
+
             If item.AmountPrecision < 0 OrElse item.AmountPrecision > 6 Then
                 Return Fail("Amount Precision must be between 0 and 6.")
             End If

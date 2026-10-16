@@ -89,6 +89,23 @@
         Public Async Function SaveEmploymentAsync(model As Models.EmployeeEmploymentModel) As Task(Of Boolean) _
             Implements IEmployeeService.SaveEmploymentAsync
 
+            ' Date Joined: kailangan ng payroll para malaman kung kailan magsisimula ang sahod ng empleyado.
+            If Not model.DateJoined.HasValue Then
+                Throw New Exception("Date Joined is required.")
+            End If
+
+            ' Hindi pwedeng mas maaga sa Date Joined ang pag-alis ng empleyado.
+            Dim joined = model.DateJoined.Value.Date
+            If model.DateResigned.HasValue AndAlso model.DateResigned.Value.Date < joined Then
+                Throw New Exception("Date Resigned can't be earlier than Date Joined.")
+            End If
+            If model.DateRetired.HasValue AndAlso model.DateRetired.Value.Date < joined Then
+                Throw New Exception("Date Retired can't be earlier than Date Joined.")
+            End If
+            If model.DateTerminated.HasValue AndAlso model.DateTerminated.Value.Date < joined Then
+                Throw New Exception("Date Terminated can't be earlier than Date Joined.")
+            End If
+
             ' Set audit fields
             If model.EmploymentId = 0 Then
                 model.CreatedBy = AppSession.CurrentUser
@@ -112,16 +129,26 @@
         Public Async Function SaveEarningsAsync(model As Models.EmployeeEarningsModel) As Task(Of Boolean) _
             Implements IEmployeeService.SaveEarningsAsync
 
-            ' Validation
-            If model.BasicSalary <= 0 Then
+            ' Iisang spelling ng pay cycle (hal. lumang "Semi-Monthly" -> "SemiMonthly")
+            model.PayCycle = GlobalShared.Models.PayCycleChoices.Normalize(model.PayCycle)
+
+            ' Ang required na input ay ayon sa Rate Basis ng Pay Cycle: Basic Salary para sa Basic Salary
+            ' cycle, Daily Rate para sa Daily Rate cycle. (Kapag wala pang Pay Cycle, Basic Salary ang batayan.)
+            Dim bases = Await GetPayCycleRateBasesAsync()
+            Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
+            If Not String.IsNullOrWhiteSpace(model.PayCycle) Then
+                bases.TryGetValue(model.PayCycle, basis)
+            End If
+
+            If basis = GlobalShared.Models.PayRateBasis.DailyRate Then
+                If Not model.DailyRate.HasValue OrElse model.DailyRate.Value <= 0D Then
+                    Throw New Exception($"Daily Rate must be greater than zero for the {model.PayCycle} pay cycle.")
+                End If
+            ElseIf Not model.BasicSalary.HasValue OrElse model.BasicSalary.Value <= 0D Then
                 Throw New Exception("Basic Salary must be greater than zero.")
             End If
 
-            ' Iisang spelling ng pay cycle (hal. lumang "Semi-Monthly" -> "SemiMonthly")
-            model.PayCycle = GlobalShared.Models.PayCycleChoices.Normalize(model.PayCycle)
-            model.TaxFlag = GlobalShared.Models.PayCycleChoices.Normalize(model.TaxFlag)
-
-            ' Pay Cycle at Tax Flag: dapat Active sa Payroll Settings > Pay Cycle.
+            ' Ang Pay Cycle: dapat Active sa Payroll Settings > Pay Cycle.
             ' Pinapayagan ang kasalukuyang naka-save na value ng employee (kahit na-deactivate na
             ' ang cycle) para hindi ma-block ang pag-edit ng ibang detalye ng earnings niya.
             Dim activeCycles = Await _repo.GetActivePayCyclesAsync()
@@ -129,8 +156,6 @@
 
             ValidateActivePayCycle("Pay Cycle", model.PayCycle,
                                    If(stored Is Nothing, "", GlobalShared.Models.PayCycleChoices.Normalize(stored.PayCycle)), activeCycles)
-            ValidateActivePayCycle("Tax Flag", model.TaxFlag,
-                                   If(stored Is Nothing, "", GlobalShared.Models.PayCycleChoices.Normalize(stored.TaxFlag)), activeCycles)
 
             ' Set audit fields
             If model.EarningsId = 0 Then
@@ -182,6 +207,23 @@
         Public Async Function GetActivePayCyclesAsync() As Task(Of List(Of String)) _
             Implements IEmployeeService.GetActivePayCyclesAsync
             Return Await _repo.GetActivePayCyclesAsync()
+        End Function
+
+        Public Async Function GetPayCycleRateBasesAsync() As Task(Of Dictionary(Of String, GlobalShared.Models.PayRateBasis)) _
+            Implements IEmployeeService.GetPayCycleRateBasesAsync
+
+            Dim infos = Await _repo.GetPayCycleInfoAsync()
+            Dim result As New Dictionary(Of String, GlobalShared.Models.PayRateBasis)(StringComparer.OrdinalIgnoreCase)
+            For Each info In infos
+                result(GlobalShared.Models.PayCycleChoices.Normalize(info.PayCycleType)) =
+                    CType(info.RateBasis, GlobalShared.Models.PayRateBasis)
+            Next
+            Return result
+        End Function
+
+        Public Async Function GetDailyRateMonthlyFactorAsync() As Task(Of Decimal) _
+            Implements IEmployeeService.GetDailyRateMonthlyFactorAsync
+            Return Await _repo.GetDailyRateMonthlyFactorAsync()
         End Function
 
         Public Async Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel)) _

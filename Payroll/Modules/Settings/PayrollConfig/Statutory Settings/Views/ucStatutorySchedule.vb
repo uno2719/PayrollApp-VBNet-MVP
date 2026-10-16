@@ -35,6 +35,9 @@ Public Class ucStatutorySchedule
     Private _periodCount As Integer = 0
     Private ReadOnly _repoShare As New RepositoryItemSpinEdit()
 
+    ' Ang pagkakasunod ng dropdown ang batayan ng index -> mode (hindi ang numero ng enum).
+    Private ReadOnly _voluntaryModes As List(Of PagIbigVoluntaryMode) = PagIbigVoluntaryModes.All()
+
     Public Sub New()
         InitializeComponent()
         ConfigureEditors()
@@ -82,7 +85,7 @@ Public Class ucStatutorySchedule
         gridSchedule.RepositoryItems.Add(_repoShare)
 
         cboVoluntaryMode.Properties.Items.Clear()
-        For Each mode In PagIbigVoluntaryModes.All()
+        For Each mode In _voluntaryModes
             cboVoluntaryMode.Properties.Items.Add(PagIbigVoluntaryModes.Text(mode))
         Next
         cboVoluntaryMode.SelectedIndex = 0
@@ -154,8 +157,14 @@ Public Class ucStatutorySchedule
         ShowVoluntaryNote()
     End Sub
 
+    Private Function SelectedVoluntaryMode() As PagIbigVoluntaryMode
+        Dim index = cboVoluntaryMode.SelectedIndex
+        If index < 0 OrElse index >= _voluntaryModes.Count Then Return _voluntaryModes(0)
+        Return _voluntaryModes(index)
+    End Function
+
     Private Sub ShowVoluntaryNote()
-        lblVoluntaryNote.Text = PagIbigVoluntaryModes.Describe(CType(Math.Max(cboVoluntaryMode.SelectedIndex, 0), PagIbigVoluntaryMode))
+        lblVoluntaryNote.Text = PagIbigVoluntaryModes.Describe(SelectedVoluntaryMode())
     End Sub
 
     ' =============================================
@@ -330,10 +339,11 @@ Public Class ucStatutorySchedule
 
     Public Property VoluntaryMode As PagIbigVoluntaryMode Implements IStatutoryScheduleView.VoluntaryMode
         Get
-            Return CType(Math.Max(cboVoluntaryMode.SelectedIndex, 0), PagIbigVoluntaryMode)
+            Return SelectedVoluntaryMode()
         End Get
         Set(value As PagIbigVoluntaryMode)
-            cboVoluntaryMode.SelectedIndex = CInt(value)
+            Dim index = _voluntaryModes.IndexOf(value)
+            cboVoluntaryMode.SelectedIndex = If(index < 0, 0, index)
         End Set
     End Property
 

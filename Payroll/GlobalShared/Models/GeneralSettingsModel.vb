@@ -21,6 +21,12 @@ Namespace GlobalShared.Models
         Public Property AmountPrecision As Integer = 2
         Public Property PercentPrecision As Integer = 2
 
+        ''' <summary>
+        ''' Ilang araw ang katumbas ng isang buwan para sa Daily-rate employee: Daily Rate x factor = buwanang
+        ''' katumbas (30 ang default). Ito ang "Fixed Basic" ng Daily-rate employee sa PhilHealth.
+        ''' </summary>
+        Public Property DailyRateMonthlyFactor As Decimal = 30D
+
         ' --- Code Mapping (FK papunta sa tblCompensation / tblDeduction) ---
         ' Nullable dahil pwedeng hindi pa naka-set sa bagong install, o
         ' hindi talaga ginagamit ng company (hal. walang Early Out policy).

@@ -18,12 +18,12 @@ Partial Class ucEmployeesEarnings
         txtBasicSalary = New DevExpress.XtraEditors.TextEdit()
         txtDailyRate = New DevExpress.XtraEditors.TextEdit()
         txtHourlyRate = New DevExpress.XtraEditors.TextEdit()
+        txtMonthlyEquivalent = New DevExpress.XtraEditors.TextEdit()
         txtDaysInYear = New DevExpress.XtraEditors.TextEdit()
         txtWorkHourPer = New DevExpress.XtraEditors.TextEdit()
         chkPayrollFlag = New DevExpress.XtraEditors.CheckEdit()
         chkMinimumWage = New DevExpress.XtraEditors.CheckEdit()
         cboPayCycle = New DevExpress.XtraEditors.ComboBoxEdit()
-        cboTaxFlag = New DevExpress.XtraEditors.ComboBoxEdit()
         cboPayBy = New DevExpress.XtraEditors.ComboBoxEdit()
         sleBank = New DevExpress.XtraEditors.SearchLookUpEdit()
         sleBankView = New DevExpress.XtraGrid.Views.Grid.GridView()
@@ -35,29 +35,30 @@ Partial Class ucEmployeesEarnings
         lciBasicSalary = New DevExpress.XtraLayout.LayoutControlItem()
         lciDailyRate = New DevExpress.XtraLayout.LayoutControlItem()
         lciHourlyRate = New DevExpress.XtraLayout.LayoutControlItem()
+        lciMonthlyEquivalent = New DevExpress.XtraLayout.LayoutControlItem()
         lciDaysInYear = New DevExpress.XtraLayout.LayoutControlItem()
         lciWorkHourPer = New DevExpress.XtraLayout.LayoutControlItem()
         lciPayrollFlag = New DevExpress.XtraLayout.LayoutControlItem()
         lciMinimumWage = New DevExpress.XtraLayout.LayoutControlItem()
         lciSeparatorPayment = New DevExpress.XtraLayout.LayoutControlItem()
         lciPayCycle = New DevExpress.XtraLayout.LayoutControlItem()
-        lciTaxFlag = New DevExpress.XtraLayout.LayoutControlItem()
         lciPayBy = New DevExpress.XtraLayout.LayoutControlItem()
         lciBank = New DevExpress.XtraLayout.LayoutControlItem()
         lciBankAccount = New DevExpress.XtraLayout.LayoutControlItem()
         emptyGap = New DevExpress.XtraLayout.EmptySpaceItem()
         emptyBottom = New DevExpress.XtraLayout.EmptySpaceItem()
+        emptyRight = New DevExpress.XtraLayout.EmptySpaceItem()
         CType(lcEarnings, ComponentModel.ISupportInitialize).BeginInit()
         lcEarnings.SuspendLayout()
         CType(txtBasicSalary.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtDailyRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtHourlyRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(txtMonthlyEquivalent.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtDaysInYear.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtWorkHourPer.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPayrollFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkMinimumWage.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboPayCycle.Properties, ComponentModel.ISupportInitialize).BeginInit()
-        CType(cboTaxFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboPayBy.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleBank.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleBankView, ComponentModel.ISupportInitialize).BeginInit()
@@ -69,18 +70,19 @@ Partial Class ucEmployeesEarnings
         CType(lciBasicSalary, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciDailyRate, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciHourlyRate, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lciMonthlyEquivalent, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciDaysInYear, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciWorkHourPer, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciPayrollFlag, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciMinimumWage, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciSeparatorPayment, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciPayCycle, ComponentModel.ISupportInitialize).BeginInit()
-        CType(lciTaxFlag, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciPayBy, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciBank, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciBankAccount, ComponentModel.ISupportInitialize).BeginInit()
         CType(emptyGap, ComponentModel.ISupportInitialize).BeginInit()
         CType(emptyBottom, ComponentModel.ISupportInitialize).BeginInit()
+        CType(emptyRight, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' lcEarnings
@@ -91,12 +93,12 @@ Partial Class ucEmployeesEarnings
         lcEarnings.Controls.Add(txtBasicSalary)
         lcEarnings.Controls.Add(txtDailyRate)
         lcEarnings.Controls.Add(txtHourlyRate)
+        lcEarnings.Controls.Add(txtMonthlyEquivalent)
         lcEarnings.Controls.Add(txtDaysInYear)
         lcEarnings.Controls.Add(txtWorkHourPer)
         lcEarnings.Controls.Add(chkPayrollFlag)
         lcEarnings.Controls.Add(chkMinimumWage)
         lcEarnings.Controls.Add(cboPayCycle)
-        lcEarnings.Controls.Add(cboTaxFlag)
         lcEarnings.Controls.Add(cboPayBy)
         lcEarnings.Controls.Add(sleBank)
         lcEarnings.Controls.Add(txtBankAccount)
@@ -134,10 +136,23 @@ Partial Class ucEmployeesEarnings
         txtHourlyRate.StyleController = lcEarnings
         txtHourlyRate.TabIndex = 6
         ' 
+        ' txtMonthlyEquivalent
+        ' 
+        txtMonthlyEquivalent.Location = New Point(125, 134)
+        txtMonthlyEquivalent.Name = "txtMonthlyEquivalent"
+        txtMonthlyEquivalent.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
+        txtMonthlyEquivalent.Properties.Appearance.Options.UseFont = True
+        txtMonthlyEquivalent.Properties.ReadOnly = True
+        txtMonthlyEquivalent.Properties.TextPadding = New Padding(5, 0, 5, 0)
+        txtMonthlyEquivalent.Size = New Size(404, 22)
+        txtMonthlyEquivalent.StyleController = lcEarnings
+        txtMonthlyEquivalent.TabIndex = 13
+        txtMonthlyEquivalent.TabStop = False
+        ' 
         ' txtDaysInYear
         ' 
         txtDaysInYear.EnterMoveNextControl = True
-        txtDaysInYear.Location = New Point(125, 134)
+        txtDaysInYear.Location = New Point(125, 160)
         txtDaysInYear.Name = "txtDaysInYear"
         txtDaysInYear.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtDaysInYear.Properties.Appearance.Options.UseFont = True
@@ -151,7 +166,7 @@ Partial Class ucEmployeesEarnings
         ' txtWorkHourPer
         ' 
         txtWorkHourPer.EnterMoveNextControl = True
-        txtWorkHourPer.Location = New Point(125, 160)
+        txtWorkHourPer.Location = New Point(125, 186)
         txtWorkHourPer.Name = "txtWorkHourPer"
         txtWorkHourPer.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtWorkHourPer.Properties.Appearance.Options.UseFont = True
@@ -164,22 +179,22 @@ Partial Class ucEmployeesEarnings
         ' 
         ' chkPayrollFlag
         ' 
-        chkPayrollFlag.Location = New Point(12, 186)
+        chkPayrollFlag.Location = New Point(12, 212)
         chkPayrollFlag.Name = "chkPayrollFlag"
         chkPayrollFlag.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         chkPayrollFlag.Properties.Appearance.Options.UseFont = True
-        chkPayrollFlag.Properties.Caption = "Payroll Flag"
+        chkPayrollFlag.Properties.Caption = "Include in Payroll"
         chkPayrollFlag.Size = New Size(517, 20)
         chkPayrollFlag.StyleController = lcEarnings
         chkPayrollFlag.TabIndex = 9
         ' 
         ' chkMinimumWage
         ' 
-        chkMinimumWage.Location = New Point(12, 210)
+        chkMinimumWage.Location = New Point(12, 236)
         chkMinimumWage.Name = "chkMinimumWage"
         chkMinimumWage.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         chkMinimumWage.Properties.Appearance.Options.UseFont = True
-        chkMinimumWage.Properties.Caption = "Minimum Wage"
+        chkMinimumWage.Properties.Caption = "Minimum Wage Earner (Tax-exempt)"
         chkMinimumWage.Size = New Size(517, 20)
         chkMinimumWage.StyleController = lcEarnings
         chkMinimumWage.TabIndex = 10
@@ -193,18 +208,9 @@ Partial Class ucEmployeesEarnings
         cboPayCycle.StyleController = lcEarnings
         cboPayCycle.TabIndex = 11
         ' 
-        ' cboTaxFlag
-        ' 
-        cboTaxFlag.Location = New Point(658, 130)
-        cboTaxFlag.Name = "cboTaxFlag"
-        cboTaxFlag.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
-        cboTaxFlag.Size = New Size(397, 22)
-        cboTaxFlag.StyleController = lcEarnings
-        cboTaxFlag.TabIndex = 12
-        ' 
         ' cboPayBy
         ' 
-        cboPayBy.Location = New Point(658, 156)
+        cboPayBy.Location = New Point(658, 130)
         cboPayBy.Name = "cboPayBy"
         cboPayBy.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Down)})
         cboPayBy.Properties.Items.AddRange(New Object() {"Bank", "Cash", "Cheque"})
@@ -215,7 +221,7 @@ Partial Class ucEmployeesEarnings
         ' sleBank
         ' 
         sleBank.EnterMoveNextControl = True
-        sleBank.Location = New Point(658, 182)
+        sleBank.Location = New Point(658, 156)
         sleBank.Name = "sleBank"
         sleBank.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         sleBank.Properties.Appearance.Options.UseFont = True
@@ -238,7 +244,7 @@ Partial Class ucEmployeesEarnings
         ' txtBankAccount
         ' 
         txtBankAccount.EnterMoveNextControl = True
-        txtBankAccount.Location = New Point(658, 208)
+        txtBankAccount.Location = New Point(658, 182)
         txtBankAccount.Name = "txtBankAccount"
         txtBankAccount.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtBankAccount.Properties.Appearance.Options.UseFont = True
@@ -267,7 +273,7 @@ Partial Class ucEmployeesEarnings
         Root_Earnings.AppearanceItemCaption.Options.UseFont = True
         Root_Earnings.EnableIndentsWithoutBorders = DevExpress.Utils.DefaultBoolean.True
         Root_Earnings.GroupBordersVisible = False
-        Root_Earnings.Items.AddRange(New DevExpress.XtraLayout.BaseLayoutItem() {lciHeader, lciBasicSalary, lciDailyRate, lciHourlyRate, lciDaysInYear, lciWorkHourPer, lciPayrollFlag, lciMinimumWage, lciSeparatorPayment, lciPayCycle, lciTaxFlag, lciPayBy, lciBank, lciBankAccount, emptyGap, emptyBottom})
+        Root_Earnings.Items.AddRange(New DevExpress.XtraLayout.BaseLayoutItem() {lciHeader, lciBasicSalary, lciDailyRate, lciHourlyRate, lciMonthlyEquivalent, lciDaysInYear, lciWorkHourPer, lciPayrollFlag, lciMinimumWage, lciSeparatorPayment, lciPayCycle, lciPayBy, lciBank, lciBankAccount, emptyGap, emptyBottom, emptyRight})
         Root_Earnings.Name = "Root_Earnings"
         Root_Earnings.Size = New Size(1067, 713)
         Root_Earnings.TextVisible = False
@@ -311,10 +317,20 @@ Partial Class ucEmployeesEarnings
         lciHourlyRate.Text = "Hourly Rate"
         lciHourlyRate.TextSize = New Size(101, 15)
         ' 
+        ' lciMonthlyEquivalent
+        ' 
+        lciMonthlyEquivalent.Control = txtMonthlyEquivalent
+        lciMonthlyEquivalent.Location = New Point(0, 122)
+        lciMonthlyEquivalent.Name = "lciMonthlyEquivalent"
+        lciMonthlyEquivalent.Size = New Size(521, 26)
+        lciMonthlyEquivalent.Text = "Monthly Equiv."
+        lciMonthlyEquivalent.TextSize = New Size(101, 15)
+        lciMonthlyEquivalent.Visibility = DevExpress.XtraLayout.Utils.LayoutVisibility.Never
+        ' 
         ' lciDaysInYear
         ' 
         lciDaysInYear.Control = txtDaysInYear
-        lciDaysInYear.Location = New Point(0, 122)
+        lciDaysInYear.Location = New Point(0, 148)
         lciDaysInYear.Name = "lciDaysInYear"
         lciDaysInYear.Size = New Size(521, 26)
         lciDaysInYear.Text = "Days in Year"
@@ -323,7 +339,7 @@ Partial Class ucEmployeesEarnings
         ' lciWorkHourPer
         ' 
         lciWorkHourPer.Control = txtWorkHourPer
-        lciWorkHourPer.Location = New Point(0, 148)
+        lciWorkHourPer.Location = New Point(0, 174)
         lciWorkHourPer.Name = "lciWorkHourPer"
         lciWorkHourPer.Size = New Size(521, 26)
         lciWorkHourPer.Text = "Work Hour Per"
@@ -332,7 +348,7 @@ Partial Class ucEmployeesEarnings
         ' lciPayrollFlag
         ' 
         lciPayrollFlag.Control = chkPayrollFlag
-        lciPayrollFlag.Location = New Point(0, 174)
+        lciPayrollFlag.Location = New Point(0, 200)
         lciPayrollFlag.Name = "lciPayrollFlag"
         lciPayrollFlag.Size = New Size(521, 24)
         lciPayrollFlag.TextVisible = False
@@ -340,7 +356,7 @@ Partial Class ucEmployeesEarnings
         ' lciMinimumWage
         ' 
         lciMinimumWage.Control = chkMinimumWage
-        lciMinimumWage.Location = New Point(0, 198)
+        lciMinimumWage.Location = New Point(0, 224)
         lciMinimumWage.Name = "lciMinimumWage"
         lciMinimumWage.Size = New Size(521, 24)
         lciMinimumWage.TextVisible = False
@@ -366,19 +382,10 @@ Partial Class ucEmployeesEarnings
         lciPayCycle.Text = "Pay Cycle"
         lciPayCycle.TextSize = New Size(101, 15)
         ' 
-        ' lciTaxFlag
-        ' 
-        lciTaxFlag.Control = cboTaxFlag
-        lciTaxFlag.Location = New Point(533, 118)
-        lciTaxFlag.Name = "lciTaxFlag"
-        lciTaxFlag.Size = New Size(514, 26)
-        lciTaxFlag.Text = "Tax Flag"
-        lciTaxFlag.TextSize = New Size(101, 15)
-        ' 
         ' lciPayBy
         ' 
         lciPayBy.Control = cboPayBy
-        lciPayBy.Location = New Point(533, 144)
+        lciPayBy.Location = New Point(533, 118)
         lciPayBy.Name = "lciPayBy"
         lciPayBy.Size = New Size(514, 26)
         lciPayBy.Text = "Pay By"
@@ -387,7 +394,7 @@ Partial Class ucEmployeesEarnings
         ' lciBank
         ' 
         lciBank.Control = sleBank
-        lciBank.Location = New Point(533, 170)
+        lciBank.Location = New Point(533, 144)
         lciBank.Name = "lciBank"
         lciBank.Size = New Size(514, 26)
         lciBank.Text = "Bank Name"
@@ -396,7 +403,7 @@ Partial Class ucEmployeesEarnings
         ' lciBankAccount
         ' 
         lciBankAccount.Control = txtBankAccount
-        lciBankAccount.Location = New Point(533, 196)
+        lciBankAccount.Location = New Point(533, 170)
         lciBankAccount.Name = "lciBankAccount"
         lciBankAccount.Size = New Size(514, 26)
         lciBankAccount.Text = "Bank Account"
@@ -406,13 +413,19 @@ Partial Class ucEmployeesEarnings
         ' 
         emptyGap.Location = New Point(521, 44)
         emptyGap.Name = "emptyGap"
-        emptyGap.Size = New Size(12, 178)
+        emptyGap.Size = New Size(12, 204)
         ' 
         ' emptyBottom
         ' 
-        emptyBottom.Location = New Point(0, 222)
+        emptyBottom.Location = New Point(0, 248)
         emptyBottom.Name = "emptyBottom"
-        emptyBottom.Size = New Size(1047, 471)
+        emptyBottom.Size = New Size(1047, 445)
+        ' 
+        ' emptyRight
+        ' 
+        emptyRight.Location = New Point(533, 196)
+        emptyRight.Name = "emptyRight"
+        emptyRight.Size = New Size(514, 52)
         ' 
         ' ucEmployeesEarnings
         ' 
@@ -426,12 +439,12 @@ Partial Class ucEmployeesEarnings
         CType(txtBasicSalary.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtDailyRate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtHourlyRate.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(txtMonthlyEquivalent.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtDaysInYear.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtWorkHourPer.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPayrollFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkMinimumWage.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboPayCycle.Properties, ComponentModel.ISupportInitialize).EndInit()
-        CType(cboTaxFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboPayBy.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(sleBank.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(sleBankView, ComponentModel.ISupportInitialize).EndInit()
@@ -443,18 +456,19 @@ Partial Class ucEmployeesEarnings
         CType(lciBasicSalary, ComponentModel.ISupportInitialize).EndInit()
         CType(lciDailyRate, ComponentModel.ISupportInitialize).EndInit()
         CType(lciHourlyRate, ComponentModel.ISupportInitialize).EndInit()
+        CType(lciMonthlyEquivalent, ComponentModel.ISupportInitialize).EndInit()
         CType(lciDaysInYear, ComponentModel.ISupportInitialize).EndInit()
         CType(lciWorkHourPer, ComponentModel.ISupportInitialize).EndInit()
         CType(lciPayrollFlag, ComponentModel.ISupportInitialize).EndInit()
         CType(lciMinimumWage, ComponentModel.ISupportInitialize).EndInit()
         CType(lciSeparatorPayment, ComponentModel.ISupportInitialize).EndInit()
         CType(lciPayCycle, ComponentModel.ISupportInitialize).EndInit()
-        CType(lciTaxFlag, ComponentModel.ISupportInitialize).EndInit()
         CType(lciPayBy, ComponentModel.ISupportInitialize).EndInit()
         CType(lciBank, ComponentModel.ISupportInitialize).EndInit()
         CType(lciBankAccount, ComponentModel.ISupportInitialize).EndInit()
         CType(emptyGap, ComponentModel.ISupportInitialize).EndInit()
         CType(emptyBottom, ComponentModel.ISupportInitialize).EndInit()
+        CType(emptyRight, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
 
     End Sub
@@ -504,12 +518,12 @@ Partial Class ucEmployeesEarnings
     Friend WithEvents txtBasicSalary As DevExpress.XtraEditors.TextEdit
     Friend WithEvents txtDailyRate As DevExpress.XtraEditors.TextEdit
     Friend WithEvents txtHourlyRate As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents txtMonthlyEquivalent As DevExpress.XtraEditors.TextEdit
     Friend WithEvents txtDaysInYear As DevExpress.XtraEditors.TextEdit
     Friend WithEvents txtWorkHourPer As DevExpress.XtraEditors.TextEdit
     Friend WithEvents chkPayrollFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkMinimumWage As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents cboPayCycle As DevExpress.XtraEditors.ComboBoxEdit
-    Friend WithEvents cboTaxFlag As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents cboPayBy As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents sleBank As DevExpress.XtraEditors.SearchLookUpEdit
     Friend WithEvents sleBankView As DevExpress.XtraGrid.Views.Grid.GridView
@@ -518,17 +532,18 @@ Partial Class ucEmployeesEarnings
     Friend WithEvents lciBasicSalary As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciDailyRate As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciHourlyRate As DevExpress.XtraLayout.LayoutControlItem
+    Friend WithEvents lciMonthlyEquivalent As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciDaysInYear As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciWorkHourPer As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciPayrollFlag As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciMinimumWage As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciSeparatorPayment As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciPayCycle As DevExpress.XtraLayout.LayoutControlItem
-    Friend WithEvents lciTaxFlag As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciPayBy As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciBank As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciBankAccount As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents emptyGap As DevExpress.XtraLayout.EmptySpaceItem
     Friend WithEvents emptyBottom As DevExpress.XtraLayout.EmptySpaceItem
+    Friend WithEvents emptyRight As DevExpress.XtraLayout.EmptySpaceItem
 
 End Class

@@ -7,6 +7,10 @@ Public Class ucEmployeesEarnings
     Private _presenter As Employee.Presenters.EmployeesEarningsPresenter
     Private _selectedRecordId As Integer = 0
 
+    ' Rate Basis ng bawat pay cycle (galing sa Payroll Settings > Pay Cycle) at ang Daily Rate Monthly Factor.
+    Private _bases As New Dictionary(Of String, GlobalShared.Models.PayRateBasis)(StringComparer.OrdinalIgnoreCase)
+    Private _monthlyFactor As Decimal = 30D
+
     Public Sub New()
         InitializeComponent()
         'Dim service = New Employee.Services.EmployeeService()
@@ -44,7 +48,6 @@ Public Class ucEmployeesEarnings
         chkPayrollFlag.Properties.ReadOnly = Not enabled
         chkMinimumWage.Properties.ReadOnly = Not enabled
         cboPayCycle.Properties.ReadOnly = Not enabled
-        cboTaxFlag.Properties.ReadOnly = Not enabled
         cboPayBy.Properties.ReadOnly = Not enabled
         sleBank.Properties.ReadOnly = Not enabled
         txtBankAccount.Properties.ReadOnly = Not enabled
@@ -59,7 +62,7 @@ Public Class ucEmployeesEarnings
         chkPayrollFlag.Checked = False
         chkMinimumWage.Checked = False
         cboPayCycle.Text = String.Empty
-        cboTaxFlag.Text = String.Empty
+        txtMonthlyEquivalent.Text = String.Empty
         cboPayBy.Text = String.Empty
         sleBank.EditValue = Nothing
         txtBankAccount.Text = String.Empty
@@ -74,6 +77,12 @@ Public Class ucEmployeesEarnings
     ' AUTO-COMPUTE
     ' =============================================
     Private Sub ComputeRates()
+        ' Daily Rate cycle: ang Daily Rate ang input - Hourly Rate at Monthly Equivalent na lang ang kinukuwenta.
+        If CurrentBasis() = GlobalShared.Models.PayRateBasis.DailyRate Then
+            ComputeFromDailyRate()
+            Return
+        End If
+
         Dim basicSalary As Decimal
         Dim daysInYear As Integer
         Dim workHourPer As Decimal
@@ -87,6 +96,55 @@ Public Class ucEmployeesEarnings
 
         txtDailyRate.Text = dailyRate.ToString("n2")
         txtHourlyRate.Text = hourlyRate.ToString("n2")
+    End Sub
+
+    ' Rate Basis ng napiling pay cycle. Kapag walang pay cycle (o hindi kilala), Basic Salary ang batayan.
+    Private Function CurrentBasis() As GlobalShared.Models.PayRateBasis
+        Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
+        Dim cycle = GlobalShared.Models.PayCycleChoices.Normalize(cboPayCycle.Text)
+        If Not String.IsNullOrWhiteSpace(cycle) Then _bases.TryGetValue(cycle, basis)
+        Return basis
+    End Function
+
+    ' Basic Salary cycle: Basic Salary ang input, Daily/Hourly ay kinukuwenta.
+    ' Daily Rate cycle:   Daily Rate ang input; Basic Salary at Days in Year ay hindi ginagamit.
+    Private Sub ApplyRateBasis()
+        Dim dailyBasis = (CurrentBasis() = GlobalShared.Models.PayRateBasis.DailyRate)
+
+        txtBasicSalary.Enabled = Not dailyBasis
+        txtDaysInYear.Enabled = Not dailyBasis
+        lciBasicSalary.Text = If(dailyBasis, "Basic Salary", "Basic Salary *")
+        lciDailyRate.Text = If(dailyBasis, "Daily Rate *", "Daily Rate")
+        lciMonthlyEquivalent.Visibility = If(dailyBasis,
+            DevExpress.XtraLayout.Utils.LayoutVisibility.Always,
+            DevExpress.XtraLayout.Utils.LayoutVisibility.Never)
+    End Sub
+
+    Private Sub ComputeFromDailyRate()
+        Dim dailyRate As Decimal
+        Dim workHourPer As Decimal
+
+        If Not Decimal.TryParse(txtDailyRate.Text, dailyRate) Then
+            txtMonthlyEquivalent.Text = String.Empty
+            Return
+        End If
+
+        txtMonthlyEquivalent.Text = Math.Round(dailyRate * _monthlyFactor, 2).ToString("n2")
+
+        If Decimal.TryParse(txtWorkHourPer.Text, workHourPer) AndAlso workHourPer > 0D Then
+            txtHourlyRate.Text = Math.Round(dailyRate / workHourPer, 2).ToString("n2")
+        End If
+    End Sub
+
+    Private Sub cboPayCycle_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles cboPayCycle.EditValueChanged
+        ApplyRateBasis()
+        ComputeRates()
+    End Sub
+
+    Private Sub txtDailyRate_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles txtDailyRate.EditValueChanged
+        If CurrentBasis() = GlobalShared.Models.PayRateBasis.DailyRate Then ComputeFromDailyRate()
     End Sub
 
     Private Sub txtBasicSalary_EditValueChanged(sender As Object, e As EventArgs) _
@@ -201,16 +259,6 @@ Public Class ucEmployeesEarnings
         End Set
     End Property
 
-    Public Property TaxFlag As String _
-        Implements Employee.Views.IEmployeesEarningsView.TaxFlag
-        Get
-            Return cboTaxFlag.Text
-        End Get
-        Set(value As String)
-            cboTaxFlag.Text = value
-        End Set
-    End Property
-
     Public Property PayBy As String _
         Implements Employee.Views.IEmployeesEarningsView.PayBy
         Get
@@ -247,16 +295,25 @@ Public Class ucEmployeesEarnings
     ' =============================================
     ' LOOKUP LOADER
     ' =============================================
-    ' Active pay cycles lang ang options ng Pay Cycle at Tax Flag. Piniling item lang ang pwede
+    ' Active pay cycles lang ang options ng Pay Cycle. Piniling item lang ang pwede
     ' (hindi na pwedeng mag-type ng kahit ano); kung ang naka-save na value ng employee ay wala
     ' na sa listahan (na-deactivate na ang cycle), ipapakita pa rin ito pero hindi na maaaring piliin ulit.
     Public Sub LoadPayCycles(activeCycles As List(Of String)) _
     Implements Employee.Views.IEmployeesEarningsView.LoadPayCycles
 
-        For Each combo In {cboPayCycle, cboTaxFlag}
-            combo.Properties.Items.Clear()
-            combo.Properties.Items.AddRange(activeCycles.Cast(Of Object)().ToArray())
-        Next
+        cboPayCycle.Properties.Items.Clear()
+        cboPayCycle.Properties.Items.AddRange(activeCycles.Cast(Of Object)().ToArray())
+    End Sub
+
+    Public Sub ConfigureRateInputs(bases As Dictionary(Of String, GlobalShared.Models.PayRateBasis), dailyRateMonthlyFactor As Decimal) _
+        Implements Employee.Views.IEmployeesEarningsView.ConfigureRateInputs
+
+        _bases = New Dictionary(Of String, GlobalShared.Models.PayRateBasis)(bases, StringComparer.OrdinalIgnoreCase)
+        _monthlyFactor = If(dailyRateMonthlyFactor > 0D, dailyRateMonthlyFactor, 30D)
+        txtMonthlyEquivalent.ToolTip = $"Daily Rate x {_monthlyFactor:0.##} (General Settings). This is the monthly base used for PhilHealth."
+
+        ApplyRateBasis()
+        ComputeRates()
     End Sub
 
     Private _banksLoaded As Boolean = False

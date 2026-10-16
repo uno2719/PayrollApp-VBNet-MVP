@@ -29,10 +29,12 @@ Namespace Employee.Presenters
                 _view.ShowError(ex.Message)
             End Try
         End Sub
-        ' Pay Cycle / Tax Flag options = mga pay cycle na Active sa Payroll Settings.
+        ' Pay Cycle options = mga pay cycle na Active sa Payroll Settings. Kasama ang Rate Basis ng bawat
+        ' cycle at ang Daily Rate Monthly Factor, para alam ng view kung alin ang input (Basic Salary o Daily Rate).
         Private Async Function LoadPayCyclesAsync() As Task
             Try
                 _view.LoadPayCycles(Await _service.GetActivePayCyclesAsync())
+                _view.ConfigureRateInputs(Await _service.GetPayCycleRateBasesAsync(), Await _service.GetDailyRateMonthlyFactorAsync())
             Catch ex As Exception
                 _view.ShowError(ex.Message)
             End Try
@@ -75,6 +77,10 @@ Namespace Employee.Presenters
                 End If
 
                 '_view.RecordId = earnings.EarningsId
+                ' PAY CYCLE MUNA bago ang mga rate: ito ang nagsasabi sa view kung Basic Salary o Daily Rate ang
+                ' input, kaya hindi mapapalitan ng auto-compute ang naka-save na Daily Rate ng Daily-rate employee.
+                ' Normalize: ang lumang "Semi-Monthly" ay lalabas na "SemiMonthly" (at ma-sa-save nang ganun)
+                _view.PayCycle = GlobalShared.Models.PayCycleChoices.Normalize(earnings.PayCycle)
                 _view.BasicSalary = earnings.BasicSalary
                 _view.DailyRate = earnings.DailyRate
                 _view.HourlyRate = earnings.HourlyRate
@@ -82,9 +88,6 @@ Namespace Employee.Presenters
                 _view.WorkHourPer = earnings.WorkHourPer
                 _view.PayrollFlag = earnings.PayrollFlag
                 _view.MinimumWage = earnings.MinimumWage
-                ' Normalize: ang lumang "Semi-Monthly" ay lalabas na "SemiMonthly" (at ma-sa-save nang ganun)
-                _view.PayCycle = GlobalShared.Models.PayCycleChoices.Normalize(earnings.PayCycle)
-                _view.TaxFlag = GlobalShared.Models.PayCycleChoices.Normalize(earnings.TaxFlag)
                 _view.PayBy = If(earnings.PayBy, String.Empty)
                 _view.BankId = earnings.BankId
                 _view.BankAccount = If(earnings.BankAccount, String.Empty)
@@ -111,7 +114,6 @@ Namespace Employee.Presenters
             _view.PayrollFlag = True
             _view.MinimumWage = False
             _view.PayCycle = String.Empty
-            _view.TaxFlag = String.Empty
             _view.PayBy = String.Empty
             _view.BankId = Nothing
             _view.BankAccount = String.Empty
@@ -134,7 +136,6 @@ Namespace Employee.Presenters
                     .PayrollFlag = _view.PayrollFlag,
                     .MinimumWage = _view.MinimumWage,
                     .PayCycle = _view.PayCycle,
-                    .TaxFlag = _view.TaxFlag,
                     .PayBy = _view.PayBy,
                     .BankId = _view.BankId,
                     .BankAccount = _view.BankAccount

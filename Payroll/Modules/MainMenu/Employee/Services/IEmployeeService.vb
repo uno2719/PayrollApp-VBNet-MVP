@@ -24,6 +24,12 @@
         ' --- Lookups ---
         Function GetLookupsAsync(tableName As String) As Task(Of List(Of GlobalShared.Models.LookupModel))
         Function GetActivePayCyclesAsync() As Task(Of List(Of String))
+
+        ''' <summary>Pay cycle (pangalan, walang gitling) -> Rate Basis nito. Kasama ang hindi na Active.</summary>
+        Function GetPayCycleRateBasesAsync() As Task(Of Dictionary(Of String, GlobalShared.Models.PayRateBasis))
+
+        ''' <summary>General Settings > Daily Rate Monthly Factor (default 30).</summary>
+        Function GetDailyRateMonthlyFactorAsync() As Task(Of Decimal)
         Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel))
 
     End Interface

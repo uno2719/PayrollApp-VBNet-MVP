@@ -20,7 +20,8 @@ Namespace GlobalShared.Models
 
     ''' <summary>
     ''' Ano ang gagawin kapag may Pag-IBIG voluntary amount ang employee (Employee > Statutory).
-    ''' Isang setting para sa lahat ng pay cycle.
+    ''' Isang setting para sa lahat ng pay cycle. Ang DEFAULT ay ReplaceTable: ang voluntary amount ang
+    ''' kinakaltas imbes na ang table amount (ang employer share ay sumusunod pa rin sa table).
     ''' </summary>
     Public Enum PagIbigVoluntaryMode As Byte
         HigherOfTableOrVoluntary = 0
@@ -31,9 +32,11 @@ Namespace GlobalShared.Models
     Public Module PagIbigVoluntaryModes
 
         Public Function All() As List(Of PagIbigVoluntaryMode)
+            ' Ang default (Replace) ang nasa itaas ng dropdown. Ang pagkakasunod dito ay pang-display lang;
+            ' ang numero ng enum ang naka-save sa database.
             Return New List(Of PagIbigVoluntaryMode) From {
-                PagIbigVoluntaryMode.HigherOfTableOrVoluntary,
                 PagIbigVoluntaryMode.ReplaceTable,
+                PagIbigVoluntaryMode.HigherOfTableOrVoluntary,
                 PagIbigVoluntaryMode.AddOnTop
             }
         End Function

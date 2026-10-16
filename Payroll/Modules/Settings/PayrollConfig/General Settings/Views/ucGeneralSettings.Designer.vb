@@ -24,6 +24,8 @@ Partial Class ucGeneralSettings
         txtAmountPrecision = New DevExpress.XtraEditors.TextEdit()
         lblAmountPrecision = New DevExpress.XtraEditors.LabelControl()
         txtWorkHourPerDay = New DevExpress.XtraEditors.TextEdit()
+        txtDailyRateMonthlyFactor = New DevExpress.XtraEditors.TextEdit()
+        lblDailyRateMonthlyFactor = New DevExpress.XtraEditors.LabelControl()
         lblWorkHourPerDay = New DevExpress.XtraEditors.LabelControl()
         txtTotalDaysPerYear = New DevExpress.XtraEditors.TextEdit()
         lblTotalDaysPerYear = New DevExpress.XtraEditors.LabelControl()
@@ -52,6 +54,7 @@ Partial Class ucGeneralSettings
         CType(txtPercentPrecision.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtAmountPrecision.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtWorkHourPerDay.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(txtDailyRateMonthlyFactor.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtTotalDaysPerYear.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtBonusCeiling.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(grpCodeMapping, ComponentModel.ISupportInitialize).BeginInit()
@@ -110,6 +113,8 @@ Partial Class ucGeneralSettings
         grpPayrollParameters.Controls.Add(lblPercentPrecision)
         grpPayrollParameters.Controls.Add(txtAmountPrecision)
         grpPayrollParameters.Controls.Add(lblAmountPrecision)
+        grpPayrollParameters.Controls.Add(txtDailyRateMonthlyFactor)
+        grpPayrollParameters.Controls.Add(lblDailyRateMonthlyFactor)
         grpPayrollParameters.Controls.Add(txtWorkHourPerDay)
         grpPayrollParameters.Controls.Add(lblWorkHourPerDay)
         grpPayrollParameters.Controls.Add(txtTotalDaysPerYear)
@@ -160,6 +165,25 @@ Partial Class ucGeneralSettings
         lblAmountPrecision.Size = New Size(82, 13)
         lblAmountPrecision.TabIndex = 6
         lblAmountPrecision.Text = "Amount Precision"
+        ' 
+        ' txtDailyRateMonthlyFactor
+        ' 
+        txtDailyRateMonthlyFactor.Location = New Point(536, 102)
+        txtDailyRateMonthlyFactor.Margin = New Padding(3, 2, 3, 2)
+        txtDailyRateMonthlyFactor.Name = "txtDailyRateMonthlyFactor"
+        txtDailyRateMonthlyFactor.Properties.Mask.EditMask = "n2"
+        txtDailyRateMonthlyFactor.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.Numeric
+        txtDailyRateMonthlyFactor.Properties.Mask.UseMaskAsDisplayFormat = True
+        txtDailyRateMonthlyFactor.Size = New Size(230, 20)
+        txtDailyRateMonthlyFactor.TabIndex = 11
+        ' 
+        ' lblDailyRateMonthlyFactor
+        ' 
+        lblDailyRateMonthlyFactor.Location = New Point(536, 84)
+        lblDailyRateMonthlyFactor.Name = "lblDailyRateMonthlyFactor"
+        lblDailyRateMonthlyFactor.Size = New Size(180, 13)
+        lblDailyRateMonthlyFactor.TabIndex = 10
+        lblDailyRateMonthlyFactor.Text = "Daily Rate Monthly Factor (days)"
         ' 
         ' txtWorkHourPerDay
         ' 
@@ -400,6 +424,7 @@ Partial Class ucGeneralSettings
         CType(txtPercentPrecision.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtAmountPrecision.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtWorkHourPerDay.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(txtDailyRateMonthlyFactor.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtTotalDaysPerYear.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtBonusCeiling.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(grpCodeMapping, ComponentModel.ISupportInitialize).EndInit()
@@ -429,6 +454,8 @@ Partial Class ucGeneralSettings
     Friend WithEvents txtTotalDaysPerYear As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblWorkHourPerDay As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtWorkHourPerDay As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lblDailyRateMonthlyFactor As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents txtDailyRateMonthlyFactor As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblAmountPrecision As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtAmountPrecision As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblPercentPrecision As DevExpress.XtraEditors.LabelControl
