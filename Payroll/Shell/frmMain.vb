@@ -364,6 +364,7 @@ Public Class frmMain
         ' hatinggabi at nakabukas pa ang app) at pagkatapos ng bawat pagpalit ng module.
         AddHandler _indicatorTimer.Tick, Async Sub() Await RefreshCutoffIndicatorAsync()
         AddHandler Me.FormClosed, Sub() _indicatorTimer.Stop()
+        AddHandler pnlCutoffIndicator.Click, AddressOf OpenPayrollFromIndicator
         _indicatorTimer.Start()
         Dim firstRefresh = RefreshCutoffIndicatorAsync()
 
@@ -378,6 +379,9 @@ Public Class frmMain
     Private ReadOnly _indicatorTimer As New System.Windows.Forms.Timer With {.Interval = 600000}
     Private _indicatorBusy As Boolean = False
 
+    Private Const IndicatorLineHeight As Integer = 18
+    Private Const MaxIndicatorLines As Integer = 3     ' hanggang 3 linya lang ang kasya sa header
+
     Private Async Function RefreshCutoffIndicatorAsync() As Task
         If _indicatorBusy Then Return
         _indicatorBusy = True
@@ -385,47 +389,88 @@ Public Class frmMain
         Try
             ' Walang saysay ang indicator sa user na hindi makakapasok sa Payroll.
             If Not PermissionService.CanView("main_Payroll") Then
-                lblCutoffIndicator.Visible = False
+                pnlCutoffIndicator.Visible = False
                 Return
             End If
 
             Dim cutoffs = Await AppComposition.GetCutoffsForIndicatorAsync()
             Dim items = CutoffRules.BuildIndicator(cutoffs, Date.Today)
 
+            Dim lines As New List(Of Tuple(Of String, System.Drawing.Color))()
             If items.Count = 0 Then
-                lblCutoffIndicator.Text = "<color=#555555>No cutoff waiting to be processed</color>"
+                lines.Add(Tuple.Create("No cutoff waiting to be processed", System.Drawing.Color.DimGray))
             Else
-                lblCutoffIndicator.Text = String.Join("<br>", items.Select(Function(i) IndicatorLine(i)))
+                For Each item In items.Take(MaxIndicatorLines)
+                    lines.Add(Tuple.Create(IndicatorText(item), IndicatorColor(item.State)))
+                Next
             End If
 
-            lblCutoffIndicator.Visible = True
+            ShowIndicatorLines(lines)
+            pnlCutoffIndicator.Visible = True
 
         Catch
             ' Pang-ayos lang ang indicator; hindi dapat makasagabal sa paggamit ng app kung may problema sa database.
-            lblCutoffIndicator.Visible = False
+            pnlCutoffIndicator.Visible = False
         Finally
             _indicatorBusy = False
         End Try
     End Function
 
-    Private Shared Function IndicatorLine(item As CutoffIndicatorItem) As String
-        Dim color As String
-        Select Case item.State
-            Case CutoffDeadlineState.Overdue, CutoffDeadlineState.DueToday
-                color = "#B71C1C"
-            Case CutoffDeadlineState.Soon
-                color = "#E65100"
-            Case CutoffDeadlineState.OnTrack
-                color = "#1B5E20"
-            Case Else
-                color = "#555555"
-        End Select
-
-        Return $"<color={color}>&#9679;</color> <b>{System.Net.WebUtility.HtmlEncode(item.CycleType)}</b>  " &
-               $"{System.Net.WebUtility.HtmlEncode(item.Label)}  -  {item.Text}"
+    ' Plain text lang (walang HTML): hal. "(bilog) SemiMonthly  S2 Oct 2026  -  pay Oct 31 (in 14 days)".
+    ' Ang ChrW(&H25CF) ang bilog; ginamit ang ChrW para hindi madepende sa encoding ng source file.
+    Private Shared Function IndicatorText(item As CutoffIndicatorItem) As String
+        Return $"{ChrW(&H25CF)} {item.CycleType}  {item.Label}  -  {item.Text}"
     End Function
 
-    Private Sub lblCutoffIndicator_Click(sender As Object, e As EventArgs) Handles lblCutoffIndicator.Click
+    Private Shared Function IndicatorColor(state As CutoffDeadlineState) As System.Drawing.Color
+        Select Case state
+            Case CutoffDeadlineState.Overdue, CutoffDeadlineState.DueToday
+                Return System.Drawing.Color.FromArgb(183, 28, 28)
+            Case CutoffDeadlineState.Soon
+                Return System.Drawing.Color.FromArgb(230, 81, 0)
+            Case CutoffDeadlineState.OnTrack
+                Return System.Drawing.Color.FromArgb(27, 94, 32)
+            Case Else
+                Return System.Drawing.Color.DimGray
+        End Select
+    End Function
+
+    ' Isang label bawat linya, na may sariling kulay. (Hindi gumana nang maayos ang HTML sa iisang label.)
+    Private Sub ShowIndicatorLines(lines As List(Of Tuple(Of String, System.Drawing.Color)))
+        pnlCutoffIndicator.SuspendLayout()
+
+        For Each old In pnlCutoffIndicator.Controls.Cast(Of Control)().ToList()
+            pnlCutoffIndicator.Controls.Remove(old)
+            old.Dispose()
+        Next
+
+        ' Para nasa gitna (patayo) ng header ang mga linya.
+        Dim topPad = Math.Max(0, (pnlHeaderMain.Height - lines.Count * IndicatorLineHeight) \ 2)
+        pnlCutoffIndicator.Padding = New Padding(0, topPad, 0, 0)
+
+        ' Dock = Top: ang huling idinagdag ang nasa pinakataas, kaya baligtad ang pagdagdag.
+        For i = lines.Count - 1 To 0 Step -1
+            Dim line As New DevExpress.XtraEditors.LabelControl() With {
+                .AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None,
+                .Dock = DockStyle.Top,
+                .Height = IndicatorLineHeight,
+                .Cursor = Cursors.Hand,
+                .UseMnemonic = False,
+                .Text = lines(i).Item1
+            }
+            line.Appearance.Font = New System.Drawing.Font("Segoe UI", 9.0F)
+            line.Appearance.ForeColor = lines(i).Item2
+            line.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Far
+            line.Appearance.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center
+            line.ToolTip = "Next cutoff to process. Click to open Payroll."
+            AddHandler line.Click, AddressOf OpenPayrollFromIndicator
+            pnlCutoffIndicator.Controls.Add(line)
+        Next
+
+        pnlCutoffIndicator.ResumeLayout()
+    End Sub
+
+    Private Sub OpenPayrollFromIndicator(sender As Object, e As EventArgs)
         If Not PermissionService.CanView("main_Payroll") Then Return
 
         _nav.NavigateTo(Of ucPayroll)(Function() AppComposition.BuildPayrollView())
