@@ -600,6 +600,14 @@ Public Class AppComposition
 
     End Function
 
+    ''' <summary>
+    ''' Lahat ng cutoff, para sa "next cutoff to process" indicator sa header ng frmMain.
+    ''' Ang pagpili kung alin ang ipapakita ay nasa CutoffRules.BuildIndicator.
+    ''' </summary>
+    Public Shared Function GetCutoffsForIndicatorAsync() As Task(Of List(Of GlobalShared.Models.CutoffModel))
+        Return New CutoffRepository().GetAllAsync()
+    End Function
+
     Public Shared Function BuildPayrollView() As ucPayroll
 
         ' CutoffRepository now lives under Payroll Settings (it also backs the new

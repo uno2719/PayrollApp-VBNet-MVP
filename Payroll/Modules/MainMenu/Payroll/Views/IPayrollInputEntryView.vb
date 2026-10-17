@@ -13,6 +13,9 @@ Namespace PayrollProcessing.Views
 
         Sub DisplayData(table As DataTable)
 
+        ''' <summary>Mga empleyadong hindi naisama sa grid dahil kulang ang setup (walang laman = walang babala).</summary>
+        Sub DisplayEligibilityWarnings(warnings As List(Of GlobalShared.Models.PayrollEligibilityWarning))
+
         ''' <summary>Reads whatever the user has typed/edited back out of the grid.</summary>
         Function GetEditedData() As DataTable
 

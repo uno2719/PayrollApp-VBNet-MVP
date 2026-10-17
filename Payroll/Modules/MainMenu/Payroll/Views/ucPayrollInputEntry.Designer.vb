@@ -25,11 +25,15 @@ Partial Class ucPayrollInputEntry
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         gridControl = New DevExpress.XtraGrid.GridControl()
         gridView = New DevExpress.XtraGrid.Views.Grid.GridView()
+        pnlWarnings = New DevExpress.XtraEditors.PanelControl()
+        lnkWarnings = New DevExpress.XtraEditors.HyperlinkLabelControl()
         CType(PanelControl1, System.ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(cboCutoff.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(gridControl, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(gridView, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(pnlWarnings, System.ComponentModel.ISupportInitialize).BeginInit()
+        pnlWarnings.SuspendLayout()
         Me.SuspendLayout()
         '
         ' PanelControl1 — same title-bar convention as ucLookupMaintenance (Settings module):
@@ -114,11 +118,37 @@ Partial Class ucPayrollInputEntry
         gridView.OptionsCustomization.AllowQuickHideColumns = True
         gridView.OptionsView.ShowGroupPanel = False
         '
+        ' pnlWarnings - banner ng mga empleyadong hindi naisama dahil kulang ang setup (nakatago kung wala)
+        '
+        pnlWarnings.Controls.Add(lnkWarnings)
+        pnlWarnings.Dock = System.Windows.Forms.DockStyle.Top
+        pnlWarnings.Location = New System.Drawing.Point(4, 74)
+        pnlWarnings.Name = "pnlWarnings"
+        pnlWarnings.Size = New System.Drawing.Size(1092, 30)
+        pnlWarnings.TabIndex = 1
+        pnlWarnings.Visible = False
+        '
+        ' lnkWarnings
+        '
+        lnkWarnings.Appearance.ForeColor = System.Drawing.Color.Firebrick
+        lnkWarnings.Appearance.Options.UseForeColor = True
+        lnkWarnings.Appearance.Options.UseTextOptions = True
+        lnkWarnings.Appearance.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center
+        lnkWarnings.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
+        lnkWarnings.Cursor = System.Windows.Forms.Cursors.Hand
+        lnkWarnings.Dock = System.Windows.Forms.DockStyle.Fill
+        lnkWarnings.Location = New System.Drawing.Point(2, 2)
+        lnkWarnings.Name = "lnkWarnings"
+        lnkWarnings.Padding = New System.Windows.Forms.Padding(8, 0, 0, 0)
+        lnkWarnings.Size = New System.Drawing.Size(1088, 26)
+        lnkWarnings.TabIndex = 0
+        '
         ' ucPayrollInputEntry
         '
         AutoScaleDimensions = New System.Drawing.SizeF(6.0F, 13.0F)
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(gridControl)
+        Me.Controls.Add(pnlWarnings)
         Me.Controls.Add(PanelControl1)
         Me.Name = "ucPayrollInputEntry"
         Me.Padding = New System.Windows.Forms.Padding(4)
@@ -129,6 +159,8 @@ Partial Class ucPayrollInputEntry
         CType(cboCutoff.Properties, System.ComponentModel.ISupportInitialize).EndInit()
         CType(gridControl, System.ComponentModel.ISupportInitialize).EndInit()
         CType(gridView, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(pnlWarnings, System.ComponentModel.ISupportInitialize).EndInit()
+        pnlWarnings.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -141,5 +173,7 @@ Partial Class ucPayrollInputEntry
     Friend WithEvents btnColumns As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents gridControl As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridView As DevExpress.XtraGrid.Views.Grid.GridView
+    Friend WithEvents pnlWarnings As DevExpress.XtraEditors.PanelControl
+    Friend WithEvents lnkWarnings As DevExpress.XtraEditors.HyperlinkLabelControl
 
 End Class

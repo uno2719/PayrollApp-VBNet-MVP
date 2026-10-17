@@ -29,7 +29,7 @@ Namespace PayrollProcessing.Services
             Return _repository.RequiresDaysWorkedAsync(cutoffId)
         End Function
 
-        Public Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable) _
+        Public Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of PayrollInputSheet) _
             Implements IPayrollInputService.GetInputDataAsync
             Return _repository.GetInputDataAsync(cutoffId, columns)
         End Function

@@ -19,11 +19,11 @@ Namespace PayrollProcessing.Data
         Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
 
         ''' <summary>
-        ''' A row per employee eligible for this Cutoff's CycleType, with one
-        ''' Decimal column per entry in <paramref name="columns"/>, pre-filled
-        ''' from any previously saved Payroll Input Entry values.
+        ''' Isang row bawat empleyadong KASAMA sa cutoff na ito (PayrollEligibilityRules: Include in payroll, pay cycle,
+        ''' Date Joined, petsa ng pag-alis, at may rate), na may isang Decimal column bawat entry sa <paramref name="columns"/>,
+        ''' pre-filled mula sa naka-save na Input Entry. Kasama rin ang mga empleyadong hindi naisama dahil kulang ang setup.
         ''' </summary>
-        Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable)
+        Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of PayrollInputSheet)
 
         ''' <summary>
         ''' Replaces all Payroll-Input-Entry-sourced transactions for this Cutoff

@@ -129,7 +129,24 @@ Namespace PayrollProcessing.Data
             Return columns
         End Function
 
-        Public Async Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable) _
+        ' Lahat ng hindi-deleted na empleyado kasama ang Earnings at Employment (LEFT JOIN, para makita rin ang
+        ' mga kulang ang setup). Ang pagpapasya kung sino ang kasama ay nasa PayrollEligibilityRules (pure logic).
+        Private Const EligibilitySql As String =
+            "SELECT e.RecordId, e.EmployeeNo,
+                    (e.LastName + ', ' + e.FirstName) AS EmployeeName,
+                    CAST(ISNULL(e.IsActive, 0) AS BIT) AS IsActive,
+                    CAST(CASE WHEN ee.RecordId IS NULL THEN 0 ELSE 1 END AS BIT) AS HasEarnings,
+                    ee.PayCycle,
+                    CAST(ISNULL(ee.PayrollFlag, 0) AS BIT) AS PayrollFlag,
+                    ee.BasicSalary, ee.DailyRate,
+                    em.DateJoined, em.DateResigned, em.DateRetired, em.DateTerminated
+             FROM tblEmployee e
+                  LEFT JOIN tblEmployeeEarnings ee ON ee.RecordId = e.RecordId
+                  LEFT JOIN tblEmployeeEmployment em ON em.RecordId = e.RecordId
+             WHERE e.IsDeleted = 0
+             ORDER BY e.LastName, e.FirstName"
+
+        Public Async Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of PayrollInputSheet) _
             Implements IPayrollInputRepository.GetInputDataAsync
 
             Dim table As New DataTable()
@@ -140,16 +157,21 @@ Namespace PayrollProcessing.Data
                 table.Columns.Add(col.ColumnName, GetType(Decimal))
             Next
 
+            Dim sheet As New PayrollInputSheet With {.Table = table}
+
+            Dim allCutoffs = Await _cutoffRepo.GetAllAsync()
+            Dim cutoff = allCutoffs.FirstOrDefault(Function(c) c.CutoffID = cutoffId)
+            If cutoff Is Nothing Then Return sheet
+
             Using conn = GetConnection()
-                ' Employees eligible for this Cutoff = PayCycle matches the Cutoff's CycleType.
-                Dim employees = Await conn.QueryAsync(Of (RecordId As Integer, EmployeeNo As String, EmployeeName As String))(
-                    "SELECT e.RecordId, e.EmployeeNo, (e.LastName + ', ' + e.FirstName) AS EmployeeName
-                     FROM tblEmployee e
-                     INNER JOIN tblEmployeeEarnings ee ON ee.RecordId = e.RecordId
-                     INNER JOIN tblCutoff c ON c.CycleType = ee.PayCycle
-                     WHERE c.CutoffID = @CutoffID AND e.IsActive = 1 AND e.IsDeleted = 0
-                     ORDER BY e.LastName, e.FirstName",
-                    New With {cutoffId})
+                ' Rate Basis ng pay cycle ng cutoff: dito nakabatay kung Basic Salary o Daily Rate ang kailangang may laman.
+                Dim rateBasis = Await conn.ExecuteScalarAsync(Of Byte?)(
+                    "SELECT RateBasis FROM tblPayCycle WHERE PayCycleType = @CycleType", New With {cutoff.CycleType})
+                Dim basis = If(rateBasis.HasValue, CType(rateBasis.Value, PayRateBasis), PayRateBasis.BasicSalary)
+
+                Dim candidates = (Await conn.QueryAsync(Of EligibilityCandidate)(EligibilitySql)).ToList()
+                Dim eligibility = PayrollEligibilityRules.Build(candidates, cutoff.CycleType, cutoff.CutoffStart, cutoff.CutoffEnd, basis)
+                sheet.Warnings = eligibility.Warnings
 
                 Dim txnRows = (Await conn.QueryAsync(Of (RecordId As Integer, TxnCode As String, Qty As Decimal, Rate As Decimal))(
                     "SELECT RecordId, TxnCode, Qty, Rate
@@ -159,7 +181,7 @@ Namespace PayrollProcessing.Data
 
                 Dim modeByCode = columns.ToDictionary(Function(c) c.ColumnName, Function(c) c.ValueMode)
 
-                For Each emp In employees
+                For Each emp In eligibility.Eligible
                     Dim row = table.NewRow()
                     row("RecordId") = emp.RecordId
                     row("EmployeeNo") = emp.EmployeeNo
@@ -176,7 +198,7 @@ Namespace PayrollProcessing.Data
                 Next
             End Using
 
-            Return table
+            Return sheet
         End Function
 
         Public Async Function SaveInputDataAsync(cutoffId As Integer, table As DataTable, columns As List(Of PayrollInputColumnModel), modifiedBy As String) As Task _

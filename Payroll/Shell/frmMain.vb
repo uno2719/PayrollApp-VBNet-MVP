@@ -4,6 +4,8 @@ Imports DevExpress.XtraBars.Navigation
 Imports DevExpress.XtraEditors
 Imports Payroll.GlobalShared.Base
 Imports Payroll.GlobalShared.Database
+Imports Payroll.GlobalShared.Helpers
+Imports Payroll.GlobalShared.Models
 Imports Payroll.GlobalShared.Security
 
 Public Class frmMain
@@ -219,6 +221,9 @@ Public Class frmMain
 
         btnBack.Enabled = _nav.IsNavigationChanged
         btnForward.Enabled = False
+
+        ' Baka nagbago ang status ng mga cutoff sa Payroll Settings / Payroll sa nakaraang module.
+        Await RefreshCutoffIndicatorAsync()
     End Sub
 
     ' =============================================
@@ -355,6 +360,77 @@ Public Class frmMain
         ' =============================================
         aceHeaderAdministration.Visible = AppSession.IsAdmin
 
+        ' "Next cutoff to process": unang kuha ngayon, at ulit kada 10 minuto (para mag-update kapag lumipas ang
+        ' hatinggabi at nakabukas pa ang app) at pagkatapos ng bawat pagpalit ng module.
+        AddHandler _indicatorTimer.Tick, Async Sub() Await RefreshCutoffIndicatorAsync()
+        AddHandler Me.FormClosed, Sub() _indicatorTimer.Stop()
+        _indicatorTimer.Start()
+        Dim firstRefresh = RefreshCutoffIndicatorAsync()
+
+    End Sub
+
+    ' ========================================================
+    ' NEXT CUTOFF TO PROCESS - indicator sa header
+    ' ========================================================
+    ' Isang linya bawat pay cycle: ang pinakamaagang Draft na cutoff na nagsimula na (CutoffRules.NextToProcess),
+    ' at kung gaano kalapit ang pay date nito. Berde = malayo pa, kahel = 3 araw o mas kaunti, pula = ngayon o lampas na.
+    ' ========================================================
+    Private ReadOnly _indicatorTimer As New System.Windows.Forms.Timer With {.Interval = 600000}
+    Private _indicatorBusy As Boolean = False
+
+    Private Async Function RefreshCutoffIndicatorAsync() As Task
+        If _indicatorBusy Then Return
+        _indicatorBusy = True
+
+        Try
+            ' Walang saysay ang indicator sa user na hindi makakapasok sa Payroll.
+            If Not PermissionService.CanView("main_Payroll") Then
+                lblCutoffIndicator.Visible = False
+                Return
+            End If
+
+            Dim cutoffs = Await AppComposition.GetCutoffsForIndicatorAsync()
+            Dim items = CutoffRules.BuildIndicator(cutoffs, Date.Today)
+
+            If items.Count = 0 Then
+                lblCutoffIndicator.Text = "<color=#555555>No cutoff waiting to be processed</color>"
+            Else
+                lblCutoffIndicator.Text = String.Join("<br>", items.Select(Function(i) IndicatorLine(i)))
+            End If
+
+            lblCutoffIndicator.Visible = True
+
+        Catch
+            ' Pang-ayos lang ang indicator; hindi dapat makasagabal sa paggamit ng app kung may problema sa database.
+            lblCutoffIndicator.Visible = False
+        Finally
+            _indicatorBusy = False
+        End Try
+    End Function
+
+    Private Shared Function IndicatorLine(item As CutoffIndicatorItem) As String
+        Dim color As String
+        Select Case item.State
+            Case CutoffDeadlineState.Overdue, CutoffDeadlineState.DueToday
+                color = "#B71C1C"
+            Case CutoffDeadlineState.Soon
+                color = "#E65100"
+            Case CutoffDeadlineState.OnTrack
+                color = "#1B5E20"
+            Case Else
+                color = "#555555"
+        End Select
+
+        Return $"<color={color}>&#9679;</color> <b>{System.Net.WebUtility.HtmlEncode(item.CycleType)}</b>  " &
+               $"{System.Net.WebUtility.HtmlEncode(item.Label)}  -  {item.Text}"
+    End Function
+
+    Private Sub lblCutoffIndicator_Click(sender As Object, e As EventArgs) Handles lblCutoffIndicator.Click
+        If Not PermissionService.CanView("main_Payroll") Then Return
+
+        _nav.NavigateTo(Of ucPayroll)(Function() AppComposition.BuildPayrollView())
+        btnBack.Enabled = _nav.IsNavigationChanged
+        btnForward.Enabled = False
     End Sub
 
     ' Kinukuha sa assembly info ng project ang bersyon - hindi na kailangang

@@ -11,7 +11,7 @@ Namespace PayrollProcessing.Services
         ''' <summary>True kung Daily Rate ang basis ng pay cycle ng Cutoff - kailangan ng Days Worked column.</summary>
         Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean)
 
-        Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of DataTable)
+        Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of PayrollInputSheet)
 
         ''' <summary>Validates, then saves. Throws PayrollInputValidationException on failure.</summary>
         Function SaveInputDataAsync(cutoffId As Integer, table As DataTable, columns As List(Of PayrollInputColumnModel), modifiedBy As String) As Task

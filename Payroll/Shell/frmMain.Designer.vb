@@ -69,6 +69,7 @@ Partial Class frmMain
         pnlHeaderMain = New DevExpress.XtraEditors.PanelControl()
         btnForward = New DevExpress.XtraEditors.SimpleButton()
         btnBack = New DevExpress.XtraEditors.SimpleButton()
+        lblCutoffIndicator = New DevExpress.XtraEditors.LabelControl()
         lblCurrentUserDisplayedName = New DevExpress.XtraEditors.LabelControl()
         PictureEdit1 = New DevExpress.XtraEditors.PictureEdit()
         lblPageTitle = New DevExpress.XtraEditors.LabelControl()
@@ -499,6 +500,7 @@ Partial Class frmMain
         pnlHeaderMain.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
         pnlHeaderMain.Controls.Add(btnForward)
         pnlHeaderMain.Controls.Add(btnBack)
+        pnlHeaderMain.Controls.Add(lblCutoffIndicator)
         pnlHeaderMain.Controls.Add(lblCurrentUserDisplayedName)
         pnlHeaderMain.Controls.Add(PictureEdit1)
         pnlHeaderMain.Controls.Add(lblPageTitle)
@@ -553,6 +555,25 @@ Partial Class frmMain
         btnBack.Size = New Size(40, 47)
         btnBack.TabIndex = 4
         btnBack.TabStop = False
+        ' 
+        ' lblCutoffIndicator - "next cutoff to process" (isang linya bawat pay cycle); click = buksan ang Payroll
+        ' 
+        lblCutoffIndicator.AllowHtmlString = True
+        lblCutoffIndicator.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        lblCutoffIndicator.Appearance.Options.UseFont = True
+        lblCutoffIndicator.Appearance.Options.UseTextOptions = True
+        lblCutoffIndicator.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Far
+        lblCutoffIndicator.Appearance.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center
+        lblCutoffIndicator.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
+        lblCutoffIndicator.Cursor = Cursors.Hand
+        lblCutoffIndicator.Dock = DockStyle.Right
+        lblCutoffIndicator.Location = New Point(300, 6)
+        lblCutoffIndicator.Name = "lblCutoffIndicator"
+        lblCutoffIndicator.Padding = New Padding(5)
+        lblCutoffIndicator.Size = New Size(420, 47)
+        lblCutoffIndicator.TabIndex = 6
+        lblCutoffIndicator.ToolTip = "Next cutoff to process. Click to open Payroll."
+        lblCutoffIndicator.Visible = False
         ' 
         ' lblCurrentUserDisplayedName
         ' 
@@ -715,6 +736,7 @@ Partial Class frmMain
     Friend WithEvents lblPageTitle As DevExpress.XtraEditors.LabelControl
     Friend WithEvents PictureEdit1 As DevExpress.XtraEditors.PictureEdit
     Friend WithEvents lblCurrentUserDisplayedName As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblCutoffIndicator As DevExpress.XtraEditors.LabelControl
     Friend WithEvents tmMain As DevExpress.Utils.Animation.TransitionManager
     Friend WithEvents btnBack As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnForward As DevExpress.XtraEditors.SimpleButton

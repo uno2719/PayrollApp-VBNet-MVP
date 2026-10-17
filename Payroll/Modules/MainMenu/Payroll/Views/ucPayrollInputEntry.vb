@@ -13,6 +13,7 @@ Public Class ucPayrollInputEntry
     ' same wiring pattern as ucLookupMaintenance/LookupPresenter.
     Private _presenter As PayrollInputEntryPresenter
     Private _table As DataTable
+    Private _warnings As New List(Of GlobalShared.Models.PayrollEligibilityWarning)()
 
     Public Sub New()
         InitializeComponent()
@@ -127,6 +128,29 @@ Public Class ucPayrollInputEntry
     Public Sub DisplayData(table As DataTable) Implements IPayrollInputEntryView.DisplayData
         _table = table
         gridControl.DataSource = _table
+    End Sub
+
+    Public Sub DisplayEligibilityWarnings(warnings As List(Of GlobalShared.Models.PayrollEligibilityWarning)) _
+        Implements IPayrollInputEntryView.DisplayEligibilityWarnings
+
+        _warnings = If(warnings, New List(Of GlobalShared.Models.PayrollEligibilityWarning)())
+        pnlWarnings.Visible = _warnings.Count > 0
+        If _warnings.Count > 0 Then
+            lnkWarnings.Text = $"{_warnings.Count} employee(s) can't be included because their setup is incomplete. Click to see who."
+        End If
+    End Sub
+
+    Private Sub lnkWarnings_Click(sender As Object, e As EventArgs) Handles lnkWarnings.Click
+        If _warnings.Count = 0 Then Return
+
+        Const MaxLines As Integer = 15
+        Dim lines = _warnings.Take(MaxLines).Select(Function(w) $"{w.EmployeeNo}  {w.EmployeeName}: {w.Reason}").ToList()
+        If _warnings.Count > MaxLines Then lines.Add($"...and {_warnings.Count - MaxLines} more.")
+
+        DevExpress.XtraEditors.XtraMessageBox.Show(
+            "These employees are not in the list below until their setup is completed:" & Environment.NewLine & Environment.NewLine &
+            String.Join(Environment.NewLine, lines),
+            "Incomplete employee setup", MessageBoxButtons.OK, MessageBoxIcon.Warning)
     End Sub
 
     Public Function GetEditedData() As DataTable Implements IPayrollInputEntryView.GetEditedData

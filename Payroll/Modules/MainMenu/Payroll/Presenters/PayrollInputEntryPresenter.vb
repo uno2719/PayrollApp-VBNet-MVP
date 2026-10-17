@@ -47,8 +47,9 @@ Namespace PayrollProcessing.Presenters
                 _view.DisplayColumns(_columns)
             End If
 
-            Dim table = Await _service.GetInputDataAsync(cutoffId, _columns)
-            _view.DisplayData(table)
+            Dim sheet = Await _service.GetInputDataAsync(cutoffId, _columns)
+            _view.DisplayData(sheet.Table)
+            _view.DisplayEligibilityWarnings(sheet.Warnings)
         End Function
 
         Public Async Function SaveAsync() As Task
