@@ -100,7 +100,7 @@ Partial Class frmMain
         ' 
         ' AccordionControl1
         ' 
-        AccordionControl1.Appearance.AccordionControl.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0)
+        AccordionControl1.Appearance.AccordionControl.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         AccordionControl1.Appearance.AccordionControl.Options.UseFont = True
         AccordionControl1.Appearance.Group.Default.Font = New Font("Segoe UI", 11.25F, FontStyle.Bold)
         AccordionControl1.Appearance.Group.Default.Options.UseFont = True
@@ -122,7 +122,7 @@ Partial Class frmMain
         ' 
         ' aceHeaderHome
         ' 
-        aceHeaderHome.Appearance.Default.Font = New Font("Segoe UI", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        aceHeaderHome.Appearance.Default.Font = New Font("Segoe UI", 11.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceHeaderHome.Appearance.Default.Options.UseFont = True
         aceHeaderHome.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceDashboard, aceEmployees, acePayroll, aceLoan, AccordionControlSeparator1, aceLeave})
         aceHeaderHome.Expanded = True
@@ -203,7 +203,7 @@ Partial Class frmMain
         ' 
         ' aceSettingsPayrollSetup
         ' 
-        aceSettingsPayrollSetup.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        aceSettingsPayrollSetup.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsPayrollSetup.Appearance.Default.Options.UseFont = True
         aceSettingsPayrollSetup.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceSettingsGeneral, aceSettingsCompany, aceSettingsMasterData, AccordionControlSeparator6, aceSettings_Leave, aceSettingsHolidays, AccordionControlSeparator7, aceSettingsTaxTable, aceSettingsStatutory, aceSettingsPayroll})
         aceSettingsPayrollSetup.Expanded = True
@@ -214,7 +214,7 @@ Partial Class frmMain
         ' 
         ' aceSettingsGeneral
         ' 
-        aceSettingsGeneral.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0)
+        aceSettingsGeneral.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsGeneral.Appearance.Default.Options.UseFont = True
         aceSettingsGeneral.ImageOptions.SvgImage = CType(resources.GetObject("aceSettingsGeneral.ImageOptions.SvgImage"), DevExpress.Utils.Svg.SvgImage)
         aceSettingsGeneral.ImageOptions.SvgImageSize = New Size(17, 17)
@@ -225,7 +225,7 @@ Partial Class frmMain
         ' 
         ' aceSettingsCompany
         ' 
-        aceSettingsCompany.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0)
+        aceSettingsCompany.Appearance.Default.Font = New Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         aceSettingsCompany.Appearance.Default.Options.UseFont = True
         aceSettingsCompany.Expanded = True
         aceSettingsCompany.HeaderTemplate.AddRange(New DevExpress.XtraBars.Navigation.HeaderElementInfo() {New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Image), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.Text), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.ContextButtons), New DevExpress.XtraBars.Navigation.HeaderElementInfo(DevExpress.XtraBars.Navigation.HeaderElementType.HeaderControl)})
@@ -317,7 +317,7 @@ Partial Class frmMain
         ' 
         ' aceSettingsAppConfig
         ' 
-        aceSettingsAppConfig.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        aceSettingsAppConfig.Appearance.Default.Font = New Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         aceSettingsAppConfig.Appearance.Default.Options.UseFont = True
         aceSettingsAppConfig.Elements.AddRange(New DevExpress.XtraBars.Navigation.AccordionControlElement() {aceAppConfigDBSettings, aceAppConfigEmailSettings, aceAppConfigThemes})
         aceSettingsAppConfig.Hint = "App Config"
@@ -489,7 +489,7 @@ Partial Class frmMain
         ' 
         ' FluentFormDefaultManager1
         ' 
-        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, 0)
+        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         FluentFormDefaultManager1.Form = Me
         FluentFormDefaultManager1.Items.AddRange(New DevExpress.XtraBars.BarItem() {SkinDropDownButtonItem1, SkinPaletteDropDownButtonItem1})
         FluentFormDefaultManager1.MaxItemId = 2
@@ -559,7 +559,7 @@ Partial Class frmMain
         ' 
         ' pnlCutoffIndicator
         ' 
-        pnlCutoffIndicator.Appearance.BackColor = Color.LightGray
+        pnlCutoffIndicator.Appearance.BackColor = Color.Transparent
         pnlCutoffIndicator.Appearance.Options.UseBackColor = True
         pnlCutoffIndicator.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
         pnlCutoffIndicator.Cursor = Cursors.Hand
@@ -572,7 +572,7 @@ Partial Class frmMain
         ' 
         ' lblCurrentUserDisplayedName
         ' 
-        lblCurrentUserDisplayedName.Appearance.Font = New Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        lblCurrentUserDisplayedName.Appearance.Font = New Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         lblCurrentUserDisplayedName.Appearance.ForeColor = Color.Black
         lblCurrentUserDisplayedName.Appearance.Options.UseFont = True
         lblCurrentUserDisplayedName.Appearance.Options.UseForeColor = True
@@ -584,8 +584,8 @@ Partial Class frmMain
         lblCurrentUserDisplayedName.Location = New Point(898, 6)
         lblCurrentUserDisplayedName.Margin = New Padding(10)
         lblCurrentUserDisplayedName.Name = "lblCurrentUserDisplayedName"
-        lblCurrentUserDisplayedName.Padding = New Padding(15, 5, 5, 5)
-        lblCurrentUserDisplayedName.Size = New Size(196, 35)
+        lblCurrentUserDisplayedName.Padding = New Padding(15, 10, 5, 5)
+        lblCurrentUserDisplayedName.Size = New Size(196, 40)
         lblCurrentUserDisplayedName.TabIndex = 3
         lblCurrentUserDisplayedName.Text = "Uno Alinea (Admin)"
         ' 
@@ -622,8 +622,8 @@ Partial Class frmMain
         ' lblBreadcrumb
         ' 
         lblBreadcrumb.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
-        lblBreadcrumb.Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0)
-        lblBreadcrumb.Appearance.ForeColor = Color.FromArgb(64, 64, 64)
+        lblBreadcrumb.Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        lblBreadcrumb.Appearance.ForeColor = Color.FromArgb(CByte(64), CByte(64), CByte(64))
         lblBreadcrumb.Appearance.Options.UseFont = True
         lblBreadcrumb.Appearance.Options.UseForeColor = True
         lblBreadcrumb.Location = New Point(94, 5)
@@ -679,7 +679,7 @@ Partial Class frmMain
         Appearance.BackColor = SystemColors.Control
         Appearance.Options.UseBackColor = True
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
+        AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1398, 761)
         ControlContainer = fluentMainContainer
@@ -689,7 +689,7 @@ Partial Class frmMain
         Controls.Add(AccordionControl1)
         Controls.Add(FluentDesignFormControl1)
         FluentDesignFormControl = FluentDesignFormControl1
-        Font = New Font("Tahoma", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0)
+        Font = New Font("Tahoma", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         IconOptions.Icon = CType(resources.GetObject("frmMain.IconOptions.Icon"), Icon)
         Margin = New Padding(2)
         MinimumSize = New Size(1400, 762)
