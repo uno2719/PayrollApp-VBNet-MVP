@@ -42,6 +42,8 @@ Public Class ucPayroll
         RaiseBreadcrumbChanged()
 
         If TabPane1.SelectedPage Is TabNavigationPage2 Then
+            ' Laging i-reload ang Output pagbukas ng tab: baka kaka-Process lang sa Input tab.
+            _outputView.ResetLoadState()
             Await _outputView.EnsureLoadedAsync()
         End If
     End Sub

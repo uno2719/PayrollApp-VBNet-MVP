@@ -58,13 +58,10 @@ Public Class ucPayrollInputEntry
     End Sub
 
     Private Async Sub btnProcess_Click(sender As Object, e As EventArgs) Handles btnProcess.Click
-        ' For now this only commits the encoded transactions to tblPayrollInputTxn.
-        ' TODO (future thread): plug in the full computation engine here — gross pay,
-        ' statutory deductions, income tax, loan amortization, net pay — per Uno's
-        ' confirmed scope, re-processable until a future "Post" action locks the Cutoff.
+        ' Save inputs -> compute (in memory) -> Confirm -> save results (Draft/Processed -> Processed).
         ShowLoading()
         Try
-            Await _presenter.SaveAsync()
+            Await _presenter.ProcessAsync()
         Finally
             HideLoading()
         End Try
@@ -166,6 +163,15 @@ Public Class ucPayrollInputEntry
 
     ' Renamed locally (DisplayInfo/DisplayValidationError) to avoid clashing with
     ' ucBase's own inherited ShowMessage/ShowError — same pattern as ucLookupMaintenance.
+    Public Function ConfirmProcess(summary As String) As Boolean Implements IPayrollInputEntryView.ConfirmProcess
+        ' Naka-hide muna ang loading overlay habang naghihintay ng sagot ng user.
+        HideLoading()
+        Dim answer = DevExpress.XtraEditors.XtraMessageBox.Show(summary, "Process Payroll",
+                                                                MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If answer = DialogResult.Yes Then ShowLoading()
+        Return answer = DialogResult.Yes
+    End Function
+
     Public Sub DisplayInfo(message As String) Implements IPayrollInputEntryView.ShowMessage
         ShowMessage(message)
     End Sub

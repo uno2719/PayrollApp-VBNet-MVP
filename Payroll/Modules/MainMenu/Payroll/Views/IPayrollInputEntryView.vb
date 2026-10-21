@@ -21,6 +21,9 @@ Namespace PayrollProcessing.Views
 
         Function GetSelectedCutoffId() As Integer?
 
+        ''' <summary>Ipinapakita ang buod ng computation; True kung pumayag ang user na i-save.</summary>
+        Function ConfirmProcess(summary As String) As Boolean
+
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
 

@@ -97,8 +97,16 @@ Namespace PayrollProcessing.Data
             Next
 
             ' Dynamic: one column per active Compensation row (recurring allowances, manual override per cutoff).
+            ' Ang code na naka-map bilang "Basic Salary Code (+)" sa General Settings ay AWTOMATIKO na ang basic pay
+            ' (Basic / bilang ng cutoff, o Daily Rate x Days Worked) - hindi ito column dito para walang doble.
+            Dim basicCodeId As Integer? = Nothing
+            Using conn = GetConnection()
+                basicCodeId = Await conn.ExecuteScalarAsync(Of Integer?)(
+                    "SELECT TOP 1 BasicSalaryCodePlusId FROM tblGeneralSettings ORDER BY 1")
+            End Using
+
             Dim compensationRows = Await _compensationRepo.GetAllAsync()
-            For Each r In compensationRows.Where(Function(x) x.IsActive)
+            For Each r In compensationRows.Where(Function(x) x.IsActive AndAlso (Not basicCodeId.HasValue OrElse x.Id <> basicCodeId.Value))
                 columns.Add(New PayrollInputColumnModel With {
                     .ColumnName = r.Code, .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit), .Category = PayrollInputCategory.Compensation,
                     .InputUnit = r.InputUnit, .ValueMode = ModeOf(r.InputUnit), .IsEssential = r.IsEssential
@@ -131,7 +139,7 @@ Namespace PayrollProcessing.Data
 
         ' Lahat ng hindi-deleted na empleyado kasama ang Earnings at Employment (LEFT JOIN, para makita rin ang
         ' mga kulang ang setup). Ang pagpapasya kung sino ang kasama ay nasa PayrollEligibilityRules (pure logic).
-        Private Const EligibilitySql As String =
+        Friend Const EligibilitySql As String =
             "SELECT e.RecordId, e.EmployeeNo,
                     (e.LastName + ', ' + e.FirstName) AS EmployeeName,
                     CAST(ISNULL(e.IsActive, 0) AS BIT) AS IsActive,

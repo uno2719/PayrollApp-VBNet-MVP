@@ -620,16 +620,30 @@ Public Class AppComposition
         Dim inputRepo As New PayrollInputRepository(cutoffRepo, rateEntryRepo, compensationRepo, flaggedEntryRepo)
         Dim inputService As New PayrollInputService(inputRepo)
 
+        ' Process (computation) - babasa sa lahat ng settings; ang engine mismo ay pure logic (PayrollComputationRules)
+        Dim processService As New PayrollProcessService(
+            New PayrollProcessRepository(),
+            cutoffRepo,
+            New PayCycleRepository(),
+            New GeneralSettingsRepository(),
+            compensationRepo,
+            rateEntryRepo,
+            flaggedEntryRepo,
+            New StatutorySettingsRepository(),
+            New IncomeTaxTableRepository(),
+            New StatutoryScheduleRepository())
+
         Dim currentUser = AppSession.CurrentUser
 
         ' Input tab
         Dim inputEntryView As New ucPayrollInputEntry()
-        Dim inputEntryPresenter As New PayrollInputEntryPresenter(inputEntryView, inputService, currentUser)
+        Dim inputEntryPresenter As New PayrollInputEntryPresenter(inputEntryView, inputService, processService, currentUser)
         inputEntryView.SetPresenter(inputEntryPresenter)
 
-        ' Output tab — scaffold only for now; shares the same service for its Cutoff filter.
+        ' Output tab - mga naka-save na results ng Process (isang row kada empleyado + detalye kada linya)
         Dim outputView As New ucPayrollOutput()
-        outputView.SetService(inputService)
+        Dim outputPresenter As New PayrollOutputPresenter(outputView, processService)
+        outputView.SetPresenter(outputPresenter)
 
         Return New ucPayroll(inputEntryView, outputView)
 

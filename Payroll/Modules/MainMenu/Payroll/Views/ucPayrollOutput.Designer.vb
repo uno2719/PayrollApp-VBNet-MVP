@@ -25,15 +25,22 @@ Partial Class ucPayrollOutput
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         gridControl = New DevExpress.XtraGrid.GridControl()
         gridView = New DevExpress.XtraGrid.Views.Grid.GridView()
+        lblSummary = New DevExpress.XtraEditors.LabelControl()
+        splitterLines = New DevExpress.XtraEditors.SplitterControl()
+        gridControlLines = New DevExpress.XtraGrid.GridControl()
+        gridViewLines = New DevExpress.XtraGrid.Views.Grid.GridView()
         CType(PanelControl1, System.ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(cboCutoff.Properties, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(gridControl, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(gridView, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(gridControlLines, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(gridViewLines, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         ' PanelControl1 — same convention as the Input tab / ucLookupMaintenance
         '
+        PanelControl1.Controls.Add(lblSummary)
         PanelControl1.Controls.Add(btnExportDirect)
         PanelControl1.Controls.Add(btnExportConverter)
         PanelControl1.Controls.Add(cboCutoff)
@@ -112,11 +119,48 @@ Partial Class ucPayrollOutput
         gridView.OptionsBehavior.Editable = False
         gridView.OptionsView.ShowGroupPanel = False
         '
+        ' lblSummary - buod ng napiling cutoff (employees, gross, deductions, net)
+        '
+        lblSummary.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
+        lblSummary.Location = New System.Drawing.Point(260, 52)
+        lblSummary.Name = "lblSummary"
+        lblSummary.Size = New System.Drawing.Size(0, 13)
+        lblSummary.TabIndex = 5
+        '
+        ' splitterLines - hati sa pagitan ng listahan ng empleyado at ng detalye ng mga linya
+        '
+        splitterLines.Dock = System.Windows.Forms.DockStyle.Bottom
+        splitterLines.Location = New System.Drawing.Point(4, 324)
+        splitterLines.Name = "splitterLines"
+        splitterLines.Size = New System.Drawing.Size(1092, 6)
+        splitterLines.TabIndex = 2
+        splitterLines.TabStop = False
+        '
+        ' gridControlLines - detalye kada linya (payslip / audit) ng napiling empleyado
+        '
+        gridControlLines.Dock = System.Windows.Forms.DockStyle.Bottom
+        gridControlLines.Location = New System.Drawing.Point(4, 330)
+        gridControlLines.MainView = gridViewLines
+        gridControlLines.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
+        gridControlLines.Name = "gridControlLines"
+        gridControlLines.Size = New System.Drawing.Size(1092, 200)
+        gridControlLines.TabIndex = 3
+        gridControlLines.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridViewLines})
+        '
+        ' gridViewLines
+        '
+        gridViewLines.GridControl = gridControlLines
+        gridViewLines.Name = "gridViewLines"
+        gridViewLines.OptionsBehavior.Editable = False
+        gridViewLines.OptionsView.ShowGroupPanel = False
+        '
         ' ucPayrollOutput
         '
         AutoScaleDimensions = New System.Drawing.SizeF(6.0F, 13.0F)
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(gridControl)
+        Me.Controls.Add(splitterLines)
+        Me.Controls.Add(gridControlLines)
         Me.Controls.Add(PanelControl1)
         Me.Name = "ucPayrollOutput"
         Me.Padding = New System.Windows.Forms.Padding(4)
@@ -127,6 +171,8 @@ Partial Class ucPayrollOutput
         CType(cboCutoff.Properties, System.ComponentModel.ISupportInitialize).EndInit()
         CType(gridControl, System.ComponentModel.ISupportInitialize).EndInit()
         CType(gridView, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(gridControlLines, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(gridViewLines, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -139,5 +185,9 @@ Partial Class ucPayrollOutput
     Friend WithEvents btnExportDirect As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents gridControl As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridView As DevExpress.XtraGrid.Views.Grid.GridView
+    Friend WithEvents lblSummary As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents splitterLines As DevExpress.XtraEditors.SplitterControl
+    Friend WithEvents gridControlLines As DevExpress.XtraGrid.GridControl
+    Friend WithEvents gridViewLines As DevExpress.XtraGrid.Views.Grid.GridView
 
 End Class
