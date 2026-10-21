@@ -11,6 +11,12 @@ Namespace PayrollProcessing.Services
         ''' <summary>True kung Daily Rate ang basis ng pay cycle ng Cutoff - kailangan ng Days Worked column.</summary>
         Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean)
 
+        ''' <summary>
+        ''' Ang BASIC (Basic Salary Code +) bilang Days Worked column ng Daily Rate cutoff.
+        ''' Nothing kung hindi pa naka-set ang Basic Salary Code (+) sa General Settings.
+        ''' </summary>
+        Function GetBasicDaysColumnAsync() As Task(Of PayrollInputColumnModel)
+
         Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of PayrollInputSheet)
 
         ''' <summary>Validates, then saves. Throws PayrollInputValidationException on failure.</summary>

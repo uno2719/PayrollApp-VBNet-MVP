@@ -66,6 +66,35 @@ Namespace PayrollProcessing.Data
             End Using
         End Function
 
+        ''' <summary>
+        ''' Ang Compensation code na naka-map bilang "Basic Salary Code (+)" ay ang Days Worked ng Daily Rate cutoff
+        ''' (Qty = araw, pwedeng may decimal). Laging nakikita (IsEssential) at una sa grid.
+        ''' </summary>
+        Public Async Function GetBasicDaysColumnAsync() As Task(Of PayrollInputColumnModel) _
+            Implements IPayrollInputRepository.GetBasicDaysColumnAsync
+
+            Dim basicCodeId As Integer? = Nothing
+            Using conn = GetConnection()
+                basicCodeId = Await conn.ExecuteScalarAsync(Of Integer?)(
+                    "SELECT TOP 1 BasicSalaryCodePlusId FROM tblGeneralSettings ORDER BY 1")
+            End Using
+            If Not basicCodeId.HasValue Then Return Nothing
+
+            Dim rows = Await _compensationRepo.GetAllAsync()
+            Dim r = rows.FirstOrDefault(Function(x) x.Id = basicCodeId.Value)
+            If r Is Nothing Then Return Nothing
+
+            Return New PayrollInputColumnModel With {
+                .ColumnName = r.Code,
+                .Caption = r.Description & PayrollInputUnits.CaptionSuffix(r.InputUnit),
+                .Category = PayrollInputCategory.Compensation,
+                .InputUnit = r.InputUnit,
+                .ValueMode = ModeOf(r.InputUnit),
+                .IsEssential = True,
+                .IsBasicDays = True
+            }
+        End Function
+
         Public Async Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel)) Implements IPayrollInputRepository.GetColumnsAsync
             Dim columns As New List(Of PayrollInputColumnModel)
 
@@ -98,7 +127,8 @@ Namespace PayrollProcessing.Data
 
             ' Dynamic: one column per active Compensation row (recurring allowances, manual override per cutoff).
             ' Ang code na naka-map bilang "Basic Salary Code (+)" sa General Settings ay AWTOMATIKO na ang basic pay
-            ' (Basic / bilang ng cutoff, o Daily Rate x Days Worked) - hindi ito column dito para walang doble.
+            ' (Basic / bilang ng cutoff). Hindi ito kasama sa listahang ito para walang doble; para sa Daily Rate
+            ' cutoff ay hiwalay itong idinadagdag bilang Days Worked column (GetBasicDaysColumnAsync).
             Dim basicCodeId As Integer? = Nothing
             Using conn = GetConnection()
                 basicCodeId = Await conn.ExecuteScalarAsync(Of Integer?)(

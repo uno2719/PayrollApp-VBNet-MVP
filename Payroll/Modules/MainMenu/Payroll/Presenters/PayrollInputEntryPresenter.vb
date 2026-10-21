@@ -14,9 +14,10 @@ Namespace PayrollProcessing.Presenters
         ' Mga column mula sa catalogs (Overtime/Holiday/Compensation/Bonus/Deduction) - pareho sa lahat ng cutoff
         Private _catalogColumns As List(Of PayrollInputColumnModel)
 
-        ' Ang aktwal na columns ng grid ngayon = catalogs + (Days Worked kung Daily Rate ang cycle ng cutoff)
+        ' Ang aktwal na columns ng grid ngayon = catalogs + (BASIC bilang Days Worked kung Daily Rate ang cycle ng cutoff)
         Private _columns As List(Of PayrollInputColumnModel)
         Private _showingDaysWorked As Boolean = False
+        Private _basicColumnMissing As Boolean = False
 
         Public Sub New(view As IPayrollInputEntryView, service As IPayrollInputService,
                        processService As IPayrollProcessService, userName As String)
@@ -33,18 +34,27 @@ Namespace PayrollProcessing.Presenters
             _catalogColumns = Await _service.GetColumnsAsync()
             _columns = _catalogColumns
             _showingDaysWorked = False
+            _basicColumnMissing = False
             _view.DisplayColumns(_columns)
         End Function
 
         Public Async Function LoadCutoffDataAsync(cutoffId As Integer) As Task
-            ' Daily Rate cycle (hal. Daily) = may Days Worked column. Binubuo lang ulit ang grid columns
-            ' kapag nagbago ang pangangailangan, para hindi mawala ang pinili ng user sa Column Chooser
-            ' kapag nagpapalit-palit lang ng cutoff ng iisang klase ng pay cycle.
+            ' Daily Rate cycle (hal. Daily) = ang BASIC (Basic Salary Code +) ang Days Worked column.
+            ' Binubuo lang ulit ang grid columns kapag nagbago ang pangangailangan, para hindi mawala ang
+            ' pinili ng user sa Column Chooser kapag nagpapalit-palit lang ng cutoff ng iisang klase ng pay cycle.
             Dim needsDaysWorked = Await _service.RequiresDaysWorkedAsync(cutoffId)
 
-            If needsDaysWorked <> _showingDaysWorked Then
-                _columns = If(needsDaysWorked,
-                              New List(Of PayrollInputColumnModel)({CoreTxnCode.DaysWorkedColumn()}.Concat(_catalogColumns)),
+            If needsDaysWorked <> _showingDaysWorked OrElse (needsDaysWorked AndAlso _basicColumnMissing) Then
+                Dim basicColumn As PayrollInputColumnModel = Nothing
+                If needsDaysWorked Then basicColumn = Await _service.GetBasicDaysColumnAsync()
+
+                _basicColumnMissing = needsDaysWorked AndAlso basicColumn Is Nothing
+                If _basicColumnMissing Then
+                    _view.ShowError("This is a Daily Rate pay cycle, but 'Basic Salary Code (+)' is not set in General Settings > Code Mapping, so there is no Days Worked column yet.")
+                End If
+
+                _columns = If(basicColumn IsNot Nothing,
+                              New List(Of PayrollInputColumnModel)({basicColumn}.Concat(_catalogColumns)),
                               _catalogColumns)
                 _showingDaysWorked = needsDaysWorked
                 _view.DisplayColumns(_columns)

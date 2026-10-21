@@ -81,9 +81,6 @@ Namespace PayrollProcessing.Services
             If cutoff.PeriodInMonth.Value > payCycle.PeriodsPerMonth Then
                 Fail($"This Cutoff's period ({cutoff.PeriodInMonth.Value}) is more than the {payCycle.PeriodsPerMonth} period(s) of Pay Cycle '{payCycle.PayCycleType}'.")
             End If
-            If payCycle.RateBasis = PayRateBasis.DailyRate Then
-                Fail("Daily-rate pay cycles (Days Worked) are not computed yet - this will be added in the next delivery. Only Basic Salary pay cycles (e.g. SemiMonthly) can be processed for now.")
-            End If
 
             ' ---------- 3. General Settings at Basic Salary Code (+) ----------
             Dim settings = Await _settingsRepo.GetAsync()
@@ -95,6 +92,9 @@ Namespace PayrollProcessing.Services
             Dim compensation = Await _compensationRepo.GetAllAsync()
             Dim basicCode = compensation.FirstOrDefault(Function(c) c.Id = settings.BasicSalaryCodePlusId.Value)
             If basicCode Is Nothing Then Fail("'Basic Salary Code (+)' in General Settings points to a Compensation code that no longer exists.")
+            If payCycle.RateBasis = PayRateBasis.DailyRate AndAlso basicCode.InputUnit <> PayrollInputUnit.Days Then
+                Fail($"Pay Cycle '{payCycle.PayCycleType}' is Daily Rate: the Basic Salary code ({basicCode.Code}) must have Input unit = Days (Payroll Settings > Compensation), because its entry in Input Entry is the Days Worked.")
+            End If
 
             ' ---------- 4. Statutory schedule at tables ----------
             Dim schedule = Await _scheduleRepo.GetAllAsync()

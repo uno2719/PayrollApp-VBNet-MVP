@@ -19,23 +19,12 @@
         Public Const ServiceIncentiveLeave As String = "SIL"
 
         ''' <summary>
-        ''' Ilang araw pumasok ang employee sa cutoff. Lalabas LANG sa Input Entry kapag ang
-        ''' pay cycle ng napiling cutoff ay naka-DAILY RATE basis (Pay Cycle Settings) -
-        ''' ang sweldo doon ay Daily Rate x Days Worked. Naka-save bilang TxnCategory CORE,
-        ''' Qty = days (pwedeng may decimal, hal. 12.5), Rate = 1.
+        ''' LUMA na (legacy): dating hiwalay na "Days Worked" column ng Daily Rate cutoff, naka-save bilang
+        ''' TxnCategory CORE. Pinalitan na ito ng BASIC compensation code (Basic Salary Code +, Input unit = Days):
+        ''' ang Days Worked ay ang Qty ng BASIC sa Daily Rate cutoff. Ang SQL/2026-10-21_DaysWorked_To_Basic.sql
+        ''' ang naglilipat ng mga lumang DAYSWORKED entry sa BASIC.
         ''' </summary>
         Public Const DaysWorked As String = "DAYSWORKED"
-
-        Public Shared Function DaysWorkedColumn() As PayrollInputColumnModel
-            Return New PayrollInputColumnModel With {
-                .ColumnName = DaysWorked,
-                .Caption = "Days Worked" & Payroll.GlobalShared.Models.PayrollInputUnits.CaptionSuffix(Payroll.GlobalShared.Models.PayrollInputUnit.Days),
-                .Category = PayrollInputCategory.Core,
-                .ValueMode = PayrollTxnValueMode.Quantity,
-                .InputUnit = Payroll.GlobalShared.Models.PayrollInputUnit.Days,
-                .IsEssential = True
-            }
-        End Function
 
         ''' <summary>Fixed columns, in display order, with caption + value mode.</summary>
         Public Shared ReadOnly Columns As (Code As String, Caption As String, Mode As PayrollTxnValueMode)() = {
@@ -69,6 +58,12 @@
         Public Property ValueMode As PayrollTxnValueMode
         Public Property InputUnit As Payroll.GlobalShared.Models.PayrollInputUnit = Payroll.GlobalShared.Models.PayrollInputUnit.Amount   ' galing sa catalog row (Payroll Settings)
         Public Property IsEssential As Boolean       ' shown by default; others start hidden via Column Chooser
+
+        ''' <summary>
+        ''' True para sa BASIC column (Basic Salary Code +) ng Daily Rate cutoff: ito ang Days Worked.
+        ''' Hindi pwedeng lumampas sa bilang ng araw sa cutoff.
+        ''' </summary>
+        Public Property IsBasicDays As Boolean
     End Class
 
 End Namespace

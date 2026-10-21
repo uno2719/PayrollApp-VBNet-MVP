@@ -49,6 +49,14 @@ Namespace GlobalShared.Helpers
             Return d.Year * 100 + d.Month
         End Function
 
+        ''' <summary>
+        ''' Ang input ng BASIC (Basic Salary Code +) sa Input Entry: Compensation code na ito ang Days Worked ng Daily Rate cutoff.
+        ''' </summary>
+        Public Function IsBasicTxn(ctx As PayrollComputationContext, t As PayrollTxnInput) As Boolean
+            Return String.Equals(If(t.TxnCategory, "").Trim(), ResultCategory.Compensation, StringComparison.OrdinalIgnoreCase) AndAlso
+                   String.Equals(If(t.TxnCode, "").Trim(), If(ctx.BasicCode.Code, "").Trim(), StringComparison.OrdinalIgnoreCase)
+        End Function
+
         ''' <summary>"SemiMonthly" -> "tblIncomeTaxSemiMonthly" (Nothing kung walang ganoong tax table).</summary>
         Public Function TaxTableNameFor(cycleType As String) As String
             Dim name = "tblIncomeTax" & PayCycleChoices.Normalize(cycleType)
@@ -295,17 +303,48 @@ Namespace GlobalShared.Helpers
             End If
 
             ' ---- 1. Basic pay ----
+            '   Basic Salary basis : Basic / bilang ng cutoff kada buwan
+            '   Daily Rate basis   : Daily Rate x Days Worked (ang Days Worked ay ang input ng BASIC code sa Input Entry)
+            Dim isDaily = (ctx.PayCycle.RateBasis = PayRateBasis.DailyRate)
             Dim basicSalary = emp.BasicSalary.GetValueOrDefault()
-            Dim basicPay = Round2(basicSalary / CDec(periods))
-            Dim basicLine = AddLine(res, ResultLineType.Earning, ResultCategory.Basic, ctx.BasicCode.Code, ctx.BasicCode.Description,
-                                    1D, "Period", basicSalary, basicPay)
-            SetFlags(basicLine, ctx.BasicCode.TaxFlag, ctx.BasicCode.SSSFlag, ctx.BasicCode.PhilHealthFlag, ctx.BasicCode.PagIbigFlag)
+            Dim daysWorked As Decimal = 0D
+            Dim basicPay As Decimal
+            Dim basicQty As Decimal = 1D
+            Dim basicUnit As String = "Period"
+            Dim basicRate As Decimal = basicSalary
+
+            If isDaily Then
+                For Each t In emp.Txns
+                    If IsBasicTxn(ctx, t) Then daysWorked += t.Qty
+                Next
+                Dim dailyRate = emp.DailyRate.GetValueOrDefault()
+                h.DaysWorked = daysWorked
+                basicQty = daysWorked
+                basicUnit = "Days"
+                basicRate = dailyRate
+                basicPay = Round2(daysWorked * dailyRate)
+
+                If dailyRate <= 0D Then res.Warnings.Add("Employee has no Daily Rate (Employee > Earnings) - basic pay is 0.")
+                If daysWorked <= 0D Then res.Warnings.Add($"No Days Worked entered ({ctx.BasicCode.Code}) - basic pay is 0.")
+            Else
+                basicPay = Round2(basicSalary / CDec(periods))
+                If emp.Txns.Any(Function(t) IsBasicTxn(ctx, t) AndAlso t.Qty <> 0D) Then
+                    res.Warnings.Add($"Entry for {ctx.BasicCode.Code} ignored: this is not a Daily Rate pay cycle (basic pay is automatic).")
+                End If
+            End If
+
+            If Not isDaily OrElse basicPay <> 0D Then
+                Dim basicLine = AddLine(res, ResultLineType.Earning, ResultCategory.Basic, ctx.BasicCode.Code, ctx.BasicCode.Description,
+                                        basicQty, basicUnit, basicRate, basicPay)
+                SetFlags(basicLine, ctx.BasicCode.TaxFlag, ctx.BasicCode.SSSFlag, ctx.BasicCode.PhilHealthFlag, ctx.BasicCode.PagIbigFlag)
+            End If
             h.BasicPay = basicPay
 
             ' ---- 2. Input Entry (Overtime/Holiday/Compensation/Bonus/Deduction) ----
             For Each t In emp.Txns
                 Dim category = If(t.TxnCategory, "").Trim().ToUpperInvariant()
-                If category = "CORE" Then Continue For          ' hal. DAYSWORKED - para sa Daily (susunod na delivery)
+                If category = "CORE" Then Continue For          ' lumang DAYSWORKED (nailipat na sa BASIC ng migration script)
+                If IsBasicTxn(ctx, t) Then Continue For         ' BASIC = Days Worked; nabilang na sa Basic pay
 
                 Dim item As PayrollCatalogItem = Nothing
                 If Not ctx.Catalog.TryGetValue(CatalogKey(category, t.TxnCode), item) Then
@@ -391,10 +430,34 @@ Namespace GlobalShared.Helpers
             ' ---- 5. Tax ----
             h.TaxableIncome = Math.Max(0D, h.TaxGross - contributionEE)
 
+            ' Daily tax table (pay cycle "Daily" na Daily Rate ang basis): ang table ay BAWAT ARAW, kaya hinahanap ang bracket
+            ' gamit ang taxable income kada araw (taxable / Days Worked) at ang buwis kada araw ay minu-multiply sa Days Worked.
+            Dim perDayTax = isDaily AndAlso String.Equals(h.PayCycle, "Daily", StringComparison.OrdinalIgnoreCase)
+
             If emp.MinimumWage Then
                 h.WithholdingTax = 0D
             ElseIf ctx.TaxBrackets Is Nothing OrElse ctx.TaxBrackets.Count = 0 Then
                 res.Warnings.Add($"No income tax table rows ({ctx.TaxTableName}) - tax not computed.")
+            ElseIf perDayTax Then
+                If daysWorked > 0D Then
+                    Dim taxablePerDay = h.TaxableIncome / daysWorked
+                    Dim tb = FindTaxBracket(ctx.TaxBrackets, taxablePerDay)
+                    If tb Is Nothing Then
+                        res.Warnings.Add($"No tax bracket found for taxable income per day {taxablePerDay:N2} - tax not computed.")
+                    Else
+                        Dim taxPerDay = TaxFor(tb, taxablePerDay)
+                        h.WithholdingTax = Round2(taxPerDay * daysWorked)
+                        res.Brackets.Add(New PayrollResultBracketModel With {
+                            .Agency = ResultCategory.Tax, .SourceTable = ctx.TaxTableName, .SourceId = tb.Id,
+                            .BasisAmount = Round2(taxablePerDay), .SalaryFrom = tb.SalaryFrom, .SalaryTo = tb.SalaryTo,
+                            .TaxPercentage = tb.TaxPercentage, .FixTaxAmount = tb.FixTaxAmount})
+                        If h.WithholdingTax <> 0D Then
+                            Dim taxLine = AddLine(res, ResultLineType.Deduction, ResultCategory.Tax, "TAX", "Withholding Tax (daily table)",
+                                                  daysWorked, "Days", taxPerDay, h.WithholdingTax)
+                            taxLine.Remark = $"Taxable/day {taxablePerDay:N2}"
+                        End If
+                    End If
+                End If
             Else
                 Dim tb = FindTaxBracket(ctx.TaxBrackets, h.TaxableIncome)
                 If tb Is Nothing Then

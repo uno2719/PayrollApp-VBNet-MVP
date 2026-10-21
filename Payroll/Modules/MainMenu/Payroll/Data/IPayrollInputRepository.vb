@@ -15,6 +15,9 @@ Namespace PayrollProcessing.Data
         ''' </summary>
         Function RequiresDaysWorkedAsync(cutoffId As Integer) As Task(Of Boolean)
 
+        ''' <summary>BASIC (Basic Salary Code +) bilang Days Worked column; Nothing kung hindi naka-set sa General Settings.</summary>
+        Function GetBasicDaysColumnAsync() As Task(Of PayrollInputColumnModel)
+
         ''' <summary>One column per active Overtime/Holiday/Compensation/Bonus/Deduction catalog row (the unit of each comes from its catalog row).</summary>
         Function GetColumnsAsync() As Task(Of List(Of PayrollInputColumnModel))
 
