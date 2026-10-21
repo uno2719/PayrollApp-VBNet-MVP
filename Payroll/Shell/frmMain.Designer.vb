@@ -67,9 +67,10 @@ Partial Class frmMain
         SkinPaletteDropDownButtonItem1 = New DevExpress.XtraBars.SkinPaletteDropDownButtonItem()
         FluentFormDefaultManager1 = New DevExpress.XtraBars.FluentDesignSystem.FluentFormDefaultManager(components)
         pnlHeaderMain = New DevExpress.XtraEditors.PanelControl()
+        pnlCutoffIndicator = New DevExpress.XtraEditors.PanelControl()
+        SeparatorControl1 = New DevExpress.XtraEditors.SeparatorControl()
         btnForward = New DevExpress.XtraEditors.SimpleButton()
         btnBack = New DevExpress.XtraEditors.SimpleButton()
-        pnlCutoffIndicator = New DevExpress.XtraEditors.PanelControl()
         lblCurrentUserDisplayedName = New DevExpress.XtraEditors.LabelControl()
         PictureEdit1 = New DevExpress.XtraEditors.PictureEdit()
         lblPageTitle = New DevExpress.XtraEditors.LabelControl()
@@ -84,6 +85,7 @@ Partial Class frmMain
         CType(pnlHeaderMain, ComponentModel.ISupportInitialize).BeginInit()
         pnlHeaderMain.SuspendLayout()
         CType(pnlCutoffIndicator, ComponentModel.ISupportInitialize).BeginInit()
+        CType(SeparatorControl1, ComponentModel.ISupportInitialize).BeginInit()
         CType(PictureEdit1.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(pnlFooterMain, ComponentModel.ISupportInitialize).BeginInit()
         pnlFooterMain.SuspendLayout()
@@ -499,9 +501,10 @@ Partial Class frmMain
         pnlHeaderMain.Appearance.BackColor = Color.LightGray
         pnlHeaderMain.Appearance.Options.UseBackColor = True
         pnlHeaderMain.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
+        pnlHeaderMain.Controls.Add(pnlCutoffIndicator)
+        pnlHeaderMain.Controls.Add(SeparatorControl1)
         pnlHeaderMain.Controls.Add(btnForward)
         pnlHeaderMain.Controls.Add(btnBack)
-        pnlHeaderMain.Controls.Add(pnlCutoffIndicator)
         pnlHeaderMain.Controls.Add(lblCurrentUserDisplayedName)
         pnlHeaderMain.Controls.Add(PictureEdit1)
         pnlHeaderMain.Controls.Add(lblPageTitle)
@@ -512,6 +515,30 @@ Partial Class frmMain
         pnlHeaderMain.Padding = New Padding(5, 6, 5, 6)
         pnlHeaderMain.Size = New Size(1140, 59)
         pnlHeaderMain.TabIndex = 3
+        ' 
+        ' pnlCutoffIndicator
+        ' 
+        pnlCutoffIndicator.Appearance.BackColor = Color.Transparent
+        pnlCutoffIndicator.Appearance.Options.UseBackColor = True
+        pnlCutoffIndicator.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
+        pnlCutoffIndicator.Cursor = Cursors.Hand
+        pnlCutoffIndicator.Dock = DockStyle.Right
+        pnlCutoffIndicator.Location = New Point(450, 6)
+        pnlCutoffIndicator.Name = "pnlCutoffIndicator"
+        pnlCutoffIndicator.Size = New Size(420, 47)
+        pnlCutoffIndicator.TabIndex = 6
+        pnlCutoffIndicator.Visible = False
+        ' 
+        ' SeparatorControl1
+        ' 
+        SeparatorControl1.BackColor = Color.Transparent
+        SeparatorControl1.Dock = DockStyle.Right
+        SeparatorControl1.LineAlignment = DevExpress.XtraEditors.Alignment.Far
+        SeparatorControl1.LineOrientation = Orientation.Vertical
+        SeparatorControl1.Location = New Point(870, 6)
+        SeparatorControl1.Name = "SeparatorControl1"
+        SeparatorControl1.Size = New Size(28, 47)
+        SeparatorControl1.TabIndex = 7
         ' 
         ' btnForward
         ' 
@@ -556,19 +583,6 @@ Partial Class frmMain
         btnBack.Size = New Size(40, 47)
         btnBack.TabIndex = 4
         btnBack.TabStop = False
-        ' 
-        ' pnlCutoffIndicator
-        ' 
-        pnlCutoffIndicator.Appearance.BackColor = Color.Transparent
-        pnlCutoffIndicator.Appearance.Options.UseBackColor = True
-        pnlCutoffIndicator.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
-        pnlCutoffIndicator.Cursor = Cursors.Hand
-        pnlCutoffIndicator.Dock = DockStyle.Right
-        pnlCutoffIndicator.Location = New Point(478, 6)
-        pnlCutoffIndicator.Name = "pnlCutoffIndicator"
-        pnlCutoffIndicator.Size = New Size(420, 47)
-        pnlCutoffIndicator.TabIndex = 6
-        pnlCutoffIndicator.Visible = False
         ' 
         ' lblCurrentUserDisplayedName
         ' 
@@ -705,6 +719,7 @@ Partial Class frmMain
         pnlHeaderMain.ResumeLayout(False)
         pnlHeaderMain.PerformLayout()
         CType(pnlCutoffIndicator, ComponentModel.ISupportInitialize).EndInit()
+        CType(SeparatorControl1, ComponentModel.ISupportInitialize).EndInit()
         CType(PictureEdit1.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(pnlFooterMain, ComponentModel.ISupportInitialize).EndInit()
         pnlFooterMain.ResumeLayout(False)
@@ -765,4 +780,5 @@ Partial Class frmMain
     Friend WithEvents AccordionControlSeparator2 As DevExpress.XtraBars.Navigation.AccordionControlSeparator
     Friend WithEvents aceReportsAlphalist As DevExpress.XtraBars.Navigation.AccordionControlElement
     Friend WithEvents aceReportsCustom As DevExpress.XtraBars.Navigation.AccordionControlElement
+    Friend WithEvents SeparatorControl1 As DevExpress.XtraEditors.SeparatorControl
 End Class
