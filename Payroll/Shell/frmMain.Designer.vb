@@ -564,9 +564,9 @@ Partial Class frmMain
         pnlCutoffIndicator.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
         pnlCutoffIndicator.Cursor = Cursors.Hand
         pnlCutoffIndicator.Dock = DockStyle.Right
-        pnlCutoffIndicator.Location = New Point(458, 6)
+        pnlCutoffIndicator.Location = New Point(478, 6)
         pnlCutoffIndicator.Name = "pnlCutoffIndicator"
-        pnlCutoffIndicator.Size = New Size(440, 47)
+        pnlCutoffIndicator.Size = New Size(420, 47)
         pnlCutoffIndicator.TabIndex = 6
         pnlCutoffIndicator.Visible = False
         ' 
