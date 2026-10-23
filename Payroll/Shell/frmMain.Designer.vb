@@ -519,7 +519,9 @@ Partial Class frmMain
         ' pnlCutoffIndicator
         ' 
         pnlCutoffIndicator.Appearance.BackColor = Color.Transparent
+        pnlCutoffIndicator.Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         pnlCutoffIndicator.Appearance.Options.UseBackColor = True
+        pnlCutoffIndicator.Appearance.Options.UseFont = True
         pnlCutoffIndicator.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder
         pnlCutoffIndicator.Cursor = Cursors.Hand
         pnlCutoffIndicator.Dock = DockStyle.Right
