@@ -491,7 +491,7 @@ Partial Class frmMain
         ' 
         ' FluentFormDefaultManager1
         ' 
-        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        FluentFormDefaultManager1.DockWindowTabFont = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         FluentFormDefaultManager1.Form = Me
         FluentFormDefaultManager1.Items.AddRange(New DevExpress.XtraBars.BarItem() {SkinDropDownButtonItem1, SkinPaletteDropDownButtonItem1})
         FluentFormDefaultManager1.MaxItemId = 2
@@ -693,7 +693,7 @@ Partial Class frmMain
         Appearance.BackColor = SystemColors.Control
         Appearance.Options.UseBackColor = True
         Appearance.Options.UseFont = True
-        AutoScaleDimensions = New SizeF(6F, 13F)
+        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1398, 761)
         ControlContainer = fluentMainContainer
