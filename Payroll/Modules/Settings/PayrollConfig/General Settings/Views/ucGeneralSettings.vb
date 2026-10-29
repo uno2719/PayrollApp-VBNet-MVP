@@ -14,6 +14,15 @@ Public Class ucGeneralSettings
         _presenter = presenter
     End Sub
 
+    ' =============================================
+    ' BREADCRUMB / TITLE
+    ' =============================================
+    Public Overrides ReadOnly Property Breadcrumb As String
+        Get
+            Return $"Settings > Payroll Setup > General Settings"
+        End Get
+    End Property
+
     Public Overrides ReadOnly Property PageTitle As String
         Get
             Return "General Settings"
