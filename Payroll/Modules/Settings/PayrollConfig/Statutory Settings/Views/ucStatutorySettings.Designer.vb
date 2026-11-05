@@ -16,11 +16,11 @@ Partial Class ucStatutorySettings
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim WindowsuiButtonImageOptions1 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions9 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(ucStatutorySettings))
-        Dim WindowsuiButtonImageOptions2 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
-        Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions10 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions11 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions12 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
@@ -101,11 +101,11 @@ Partial Class ucStatutorySettings
         ' wbpMainCommands
         ' 
         wbpMainCommands.ButtonInterval = 15
-        WindowsuiButtonImageOptions1.Image = CType(resources.GetObject("WindowsuiButtonImageOptions1.Image"), Image)
-        WindowsuiButtonImageOptions2.Image = CType(resources.GetObject("WindowsuiButtonImageOptions2.Image"), Image)
-        WindowsuiButtonImageOptions3.Image = CType(resources.GetObject("WindowsuiButtonImageOptions3.Image"), Image)
-        WindowsuiButtonImageOptions4.Image = CType(resources.GetObject("WindowsuiButtonImageOptions4.Image"), Image)
-        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
+        WindowsuiButtonImageOptions9.Image = CType(resources.GetObject("WindowsuiButtonImageOptions9.Image"), Image)
+        WindowsuiButtonImageOptions10.Image = CType(resources.GetObject("WindowsuiButtonImageOptions10.Image"), Image)
+        WindowsuiButtonImageOptions11.Image = CType(resources.GetObject("WindowsuiButtonImageOptions11.Image"), Image)
+        WindowsuiButtonImageOptions12.Image = CType(resources.GetObject("WindowsuiButtonImageOptions12.Image"), Image)
+        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions9, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions10, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions11, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions12, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
         wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
         wbpMainCommands.Dock = DockStyle.Right
         wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
@@ -152,10 +152,10 @@ Partial Class ucStatutorySettings
         ' 
         ' chkActive
         ' 
-        chkActive.Location = New Point(792, 54)
+        chkActive.Location = New Point(24, 152)
         chkActive.Margin = New Padding(3, 2, 3, 2)
         chkActive.Name = "chkActive"
-        chkActive.Properties.Caption = "Active"
+        chkActive.Properties.Caption = " Active"
         chkActive.Size = New Size(90, 20)
         chkActive.TabIndex = 6
         ' 
@@ -164,7 +164,7 @@ Partial Class ucStatutorySettings
         txtSalaryFrom.Location = New Point(24, 52)
         txtSalaryFrom.Margin = New Padding(3, 2, 3, 2)
         txtSalaryFrom.Name = "txtSalaryFrom"
-        txtSalaryFrom.Size = New Size(140, 20)
+        txtSalaryFrom.Size = New Size(160, 20)
         txtSalaryFrom.TabIndex = 1
         ' 
         ' lblSalaryFrom
@@ -178,17 +178,17 @@ Partial Class ucStatutorySettings
         ' 
         ' cboEEContriType
         ' 
-        cboEEContriType.Location = New Point(280, 52)
+        cboEEContriType.Location = New Point(254, 102)
         cboEEContriType.Margin = New Padding(3, 2, 3, 2)
         cboEEContriType.Name = "cboEEContriType"
         cboEEContriType.Properties.Items.AddRange(New Object() {"Amount", "Percentage"})
         cboEEContriType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
-        cboEEContriType.Size = New Size(160, 20)
+        cboEEContriType.Size = New Size(150, 20)
         cboEEContriType.TabIndex = 3
         ' 
         ' lblEEContriType
         ' 
-        lblEEContriType.Location = New Point(280, 34)
+        lblEEContriType.Location = New Point(254, 84)
         lblEEContriType.Margin = New Padding(3, 2, 3, 2)
         lblEEContriType.Name = "lblEEContriType"
         lblEEContriType.Size = New Size(71, 13)
@@ -197,7 +197,7 @@ Partial Class ucStatutorySettings
         ' 
         ' txtECCAmount
         ' 
-        txtECCAmount.Location = New Point(536, 52)
+        txtECCAmount.Location = New Point(664, 152)
         txtECCAmount.Margin = New Padding(3, 2, 3, 2)
         txtECCAmount.Name = "txtECCAmount"
         txtECCAmount.Size = New Size(140, 20)
@@ -205,7 +205,7 @@ Partial Class ucStatutorySettings
         ' 
         ' lblECCAmount
         ' 
-        lblECCAmount.Location = New Point(536, 34)
+        lblECCAmount.Location = New Point(664, 134)
         lblECCAmount.Margin = New Padding(3, 2, 3, 2)
         lblECCAmount.Name = "lblECCAmount"
         lblECCAmount.Size = New Size(60, 13)
@@ -217,7 +217,7 @@ Partial Class ucStatutorySettings
         txtSalaryTo.Location = New Point(24, 102)
         txtSalaryTo.Margin = New Padding(3, 2, 3, 2)
         txtSalaryTo.Name = "txtSalaryTo"
-        txtSalaryTo.Size = New Size(140, 20)
+        txtSalaryTo.Size = New Size(160, 20)
         txtSalaryTo.TabIndex = 8
         ' 
         ' lblSalaryTo
@@ -231,15 +231,15 @@ Partial Class ucStatutorySettings
         ' 
         ' txtERShare
         ' 
-        txtERShare.Location = New Point(280, 102)
+        txtERShare.Location = New Point(459, 52)
         txtERShare.Margin = New Padding(3, 2, 3, 2)
         txtERShare.Name = "txtERShare"
-        txtERShare.Size = New Size(160, 20)
+        txtERShare.Size = New Size(150, 20)
         txtERShare.TabIndex = 10
         ' 
         ' lblERShare
         ' 
-        lblERShare.Location = New Point(280, 84)
+        lblERShare.Location = New Point(459, 34)
         lblERShare.Margin = New Padding(3, 2, 3, 2)
         lblERShare.Name = "lblERShare"
         lblERShare.Size = New Size(44, 13)
@@ -248,15 +248,15 @@ Partial Class ucStatutorySettings
         ' 
         ' txtEEMPF
         ' 
-        txtEEMPF.Location = New Point(536, 102)
+        txtEEMPF.Location = New Point(254, 152)
         txtEEMPF.Margin = New Padding(3, 2, 3, 2)
         txtEEMPF.Name = "txtEEMPF"
-        txtEEMPF.Size = New Size(140, 20)
+        txtEEMPF.Size = New Size(150, 20)
         txtEEMPF.TabIndex = 12
         ' 
         ' lblEEMPF
         ' 
-        lblEEMPF.Location = New Point(536, 84)
+        lblEEMPF.Location = New Point(254, 134)
         lblEEMPF.Margin = New Padding(3, 2, 3, 2)
         lblEEMPF.Name = "lblEEMPF"
         lblEEMPF.Size = New Size(35, 13)
@@ -279,15 +279,15 @@ Partial Class ucStatutorySettings
         ' 
         ' txtEEShare
         ' 
-        txtEEShare.Location = New Point(24, 152)
+        txtEEShare.Location = New Point(254, 52)
         txtEEShare.Margin = New Padding(3, 2, 3, 2)
         txtEEShare.Name = "txtEEShare"
-        txtEEShare.Size = New Size(140, 20)
+        txtEEShare.Size = New Size(150, 20)
         txtEEShare.TabIndex = 14
         ' 
         ' lblEEShare
         ' 
-        lblEEShare.Location = New Point(24, 134)
+        lblEEShare.Location = New Point(254, 34)
         lblEEShare.Margin = New Padding(3, 2, 3, 2)
         lblEEShare.Name = "lblEEShare"
         lblEEShare.Size = New Size(43, 13)
@@ -296,17 +296,17 @@ Partial Class ucStatutorySettings
         ' 
         ' cboERContriType
         ' 
-        cboERContriType.Location = New Point(280, 152)
+        cboERContriType.Location = New Point(459, 102)
         cboERContriType.Margin = New Padding(3, 2, 3, 2)
         cboERContriType.Name = "cboERContriType"
         cboERContriType.Properties.Items.AddRange(New Object() {"Amount", "Percentage"})
         cboERContriType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
-        cboERContriType.Size = New Size(160, 20)
+        cboERContriType.Size = New Size(150, 20)
         cboERContriType.TabIndex = 16
         ' 
         ' lblERContriType
         ' 
-        lblERContriType.Location = New Point(280, 134)
+        lblERContriType.Location = New Point(459, 84)
         lblERContriType.Margin = New Padding(3, 2, 3, 2)
         lblERContriType.Name = "lblERContriType"
         lblERContriType.Size = New Size(72, 13)
@@ -315,15 +315,15 @@ Partial Class ucStatutorySettings
         ' 
         ' txtERMPF
         ' 
-        txtERMPF.Location = New Point(536, 152)
+        txtERMPF.Location = New Point(459, 152)
         txtERMPF.Margin = New Padding(3, 2, 3, 2)
         txtERMPF.Name = "txtERMPF"
-        txtERMPF.Size = New Size(140, 20)
+        txtERMPF.Size = New Size(150, 20)
         txtERMPF.TabIndex = 18
         ' 
         ' lblERMPF
         ' 
-        lblERMPF.Location = New Point(536, 134)
+        lblERMPF.Location = New Point(459, 134)
         lblERMPF.Margin = New Padding(3, 2, 3, 2)
         lblERMPF.Name = "lblERMPF"
         lblERMPF.Size = New Size(36, 13)
