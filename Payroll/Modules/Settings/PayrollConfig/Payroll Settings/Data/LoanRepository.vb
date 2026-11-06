@@ -92,5 +92,24 @@ Namespace PayrollSettings.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ILoanRepository.DeleteAsync
+
+            ' tblEmployeeLoan.LoanCode at ang Loan lines ng payroll result ay string code lang (walang FK).
+            Dim refs As New List(Of UsageRef) From {
+                New UsageRef("employee loan(s)", "tblEmployeeLoan", "LoanCode = @Code"),
+                New UsageRef("payroll result line(s)", "tblPayrollResultLine", "Category = 'LOAN' AND Code = @Code")
+            }
+
+            Return Await RecordDeleter.DeleteAsync(
+                "this loan type",
+                $"DELETE FROM {TableName} WHERE {IdColumn} = @Id",
+                id,
+                $"SELECT Code FROM {TableName} WHERE {IdColumn} = @Id",
+                refs)
+        End Function
+
     End Class
 End Namespace

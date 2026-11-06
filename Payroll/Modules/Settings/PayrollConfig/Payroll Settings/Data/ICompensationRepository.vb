@@ -7,5 +7,6 @@ Namespace PayrollSettings.Data
         Function InsertAsync(item As CompensationModel, userName As String) As Task(Of Integer)
         Function UpdateAsync(item As CompensationModel, userName As String) As Task(Of Boolean)
         Function SetActiveStatusAsync(id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 End Namespace

@@ -7,5 +7,6 @@ Namespace CompanyProfile.Data
         Function InsertAsync(item As CompanyBankModel, userName As String) As Task(Of Integer)
         Function UpdateAsync(item As CompanyBankModel, userName As String) As Task(Of Boolean)
         Function SetActiveStatusAsync(id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 End Namespace

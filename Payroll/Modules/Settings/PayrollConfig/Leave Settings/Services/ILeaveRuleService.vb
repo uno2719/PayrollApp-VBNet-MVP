@@ -6,6 +6,7 @@ Namespace LeaveSettings.Services
         Function GetBracketsAsync(leaveRuleId As Integer) As Task(Of List(Of LeaveRuleBracketModel))
         Function SaveAsync(item As LeaveRuleModel, brackets As List(Of LeaveRuleBracketModel), userName As String) As Task(Of LeaveRuleSaveResult)
         Function SetActiveStatusAsync(id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 
     Public Class LeaveRuleSaveResult

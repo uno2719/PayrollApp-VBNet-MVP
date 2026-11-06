@@ -323,5 +323,19 @@ Namespace LeaveSettings.Data
 
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ILeaveRuleRepository.DeleteAsync
+
+            ' Walang tumuturo sa Rule maliban sa sarili niyang brackets (walang CASCADE sa DB),
+            ' kaya buburahin muna ang brackets sa parehong transaction bago ang Rule.
+            Return Await RecordDeleter.DeleteAsync(
+                "this leave rule",
+                $"DELETE FROM {RuleTable} WHERE LeaveRuleId = @Id",
+                id,
+                preDeleteSql:=$"DELETE FROM {BracketTable} WHERE LeaveRuleId = @Id")
+        End Function
+
     End Class
 End Namespace

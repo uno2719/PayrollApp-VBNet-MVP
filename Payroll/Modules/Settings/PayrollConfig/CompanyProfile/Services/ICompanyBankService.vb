@@ -6,6 +6,7 @@ Namespace CompanyProfile.Services
         Function GetAllAsync() As Task(Of List(Of CompanyBankModel))
         Function SaveAsync(item As CompanyBankModel, userName As String) As Task(Of CompanyBankSaveResult)
         Function SetActiveStatusAsync(id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 
     Public Class CompanyBankSaveResult

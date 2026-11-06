@@ -7,5 +7,6 @@ Namespace PayrollSettings.Data
         Function InsertAsync(tableName As String, item As PayrollFlaggedEntryModel, userName As String) As Task(Of Integer)
         Function UpdateAsync(tableName As String, item As PayrollFlaggedEntryModel, userName As String) As Task(Of Boolean)
         Function SetActiveStatusAsync(tableName As String, id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult)
     End Interface
 End Namespace

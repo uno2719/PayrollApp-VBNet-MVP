@@ -1,4 +1,5 @@
-﻿Imports Payroll.GlobalShared.Models
+﻿Imports Payroll.GlobalShared.Constants
+Imports Payroll.GlobalShared.Models
 
 Namespace PayrollSettings.Services
     Public Class LoanService
@@ -45,6 +46,18 @@ Namespace PayrollSettings.Services
             Implements ILoanService.SetActiveStatusAsync
 
             Return Await _repository.SetActiveStatusAsync(id, isActive, userName)
+        End Function
+
+
+        ' Totoong pagbura - admin lang at may in-use check (nasa repository/RecordDeleter).
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ILoanService.DeleteAsync
+
+            If Not AppSession.IsAdmin Then
+                Return DeleteResult.Fail("Only administrators can delete records.")
+            End If
+
+            Return Await _repository.DeleteAsync(id)
         End Function
 
     End Class

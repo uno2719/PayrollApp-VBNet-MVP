@@ -7,5 +7,6 @@ Namespace LeaveSettings.Data
         Function InsertAsync(item As LeaveTypeModel, userName As String) As Task(Of Integer)
         Function UpdateAsync(item As LeaveTypeModel, userName As String) As Task(Of Boolean)
         Function SetActiveStatusAsync(id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 End Namespace

@@ -15,8 +15,10 @@ Public Class ucCompanyBank
 
     Private Const BTN_NEW As Integer = 1
     Private Const BTN_EDIT As Integer = 2
-    Private Const BTN_DELETE As Integer = 3
-    Private Const BTN_REFRESH As Integer = 5
+    Private Const BTN_DEACTIVATE As Integer = 3
+    Private Const BTN_DELETE As Integer = 4
+    Private Const BTN_REFRESH As Integer = 6
+    Private _isActive As Boolean = True
 
     Public Sub SetPresenter(presenter As CompanyBankPresenter)
         _presenter = presenter
@@ -37,6 +39,7 @@ Public Class ucCompanyBank
     Public Overrides Async Function LoadFormAsync() As Task _
         Implements IAsyncLoadable.LoadFormAsync
 
+        CommandBarHelper.InitDeactivateDeleteButtons(wbpMainCommands, BTN_DEACTIVATE, BTN_DELETE)
         SetupGrid()
 
         Try
@@ -263,10 +266,12 @@ Public Class ucCompanyBank
 
     Public Property IsActive As Boolean Implements ICompanyBankMaintenanceView.IsActive
         Get
-            Return chkActive.Checked
+            Return _isActive
         End Get
         Set(value As Boolean)
-            chkActive.Checked = value
+            _isActive = value
+            CommandBarHelper.ShowStatus(lblStatus, value)
+            CommandBarHelper.RefreshToggleCaption(wbpMainCommands, BTN_DEACTIVATE, value, HasEditAccess)
         End Set
     End Property
 
@@ -343,7 +348,6 @@ Public Class ucCompanyBank
         For Each field In textFields
             field.Properties.ReadOnly = Not isEditable
         Next
-        chkActive.Properties.ReadOnly = Not isEditable
 
         ' Ang 3 employee-picker - palaging naka-link sa isang tao lang,
         ' gawin ding ReadOnly kapag hindi editing (Position ay palaging
@@ -380,7 +384,7 @@ Public Class ucCompanyBank
             wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
         End If
 
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Enabled = Not isEditable
+        CommandBarHelper.ApplyModeState(wbpMainCommands, BTN_DEACTIVATE, BTN_DELETE, isEditable, IsActive, HasEditAccess)
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.Enabled = Not isEditable
     End Sub
 
@@ -403,7 +407,7 @@ Public Class ucCompanyBank
         lookupPersonInCharge1.EditValue = Nothing
         lookupPersonInCharge2.EditValue = Nothing
 
-        chkActive.Checked = True
+        IsActive = True
     End Sub
 
     Public Sub ShowMessage(message As String) Implements ICompanyBankMaintenanceView.ShowMessage
@@ -450,7 +454,9 @@ Public Class ucCompanyBank
         Select Case tag
             Case "New"
                 If _isEditing Then
-                    Await _presenter.SaveAsync()
+                    If ConfirmSaveStatus() Then
+                        Await _presenter.SaveAsync()
+                    End If
                 Else
                     _presenter.StartNew()
                 End If
@@ -462,7 +468,7 @@ Public Class ucCompanyBank
                     _presenter.StartEdit()
                 End If
 
-            Case "Delete"
+            Case "Deactivate"
                 If Not _isEditing Then
                     Dim action = If(IsActive, "deactivate", "reactivate")
 
@@ -476,6 +482,16 @@ Public Class ucCompanyBank
                     End If
                 End If
 
+            Case "Delete"
+                If Not _isEditing Then
+                    If Not _presenter.HasSelection() Then
+                        XtraMessageBox.Show("Please select an entry first.", "Delete",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    ElseIf CommandBarHelper.ConfirmDelete(Me, $"the bank '{BankName}'") Then
+                        Await _presenter.DeleteSelectedAsync()
+                    End If
+                End If
+
             Case "Refresh"
                 If Not _isEditing Then
                     Await _presenter.LoadAsync()
@@ -483,5 +499,22 @@ Public Class ucCompanyBank
 
         End Select
     End Sub
+
+
+    ' Kapag ine-edit ang INACTIVE na record at sine-save: itanong kung ibabalik sa Active
+    ' o mananatiling Inactive. (Ang Status ay hindi na checkbox na pwedeng galawin ng user.)
+    Private Function ConfirmSaveStatus() As Boolean
+        If IsActive OrElse Not _presenter.IsEditingExisting() Then Return True
+
+        Select Case CommandBarHelper.AskInactiveSaveChoice(Me)
+            Case DialogResult.Yes
+                IsActive = True
+                Return True
+            Case DialogResult.No
+                Return True
+            Case Else
+                Return False
+        End Select
+    End Function
 
 End Class

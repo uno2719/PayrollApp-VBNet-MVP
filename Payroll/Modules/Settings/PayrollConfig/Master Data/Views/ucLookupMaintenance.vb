@@ -17,10 +17,12 @@ Public Class ucLookupMaintenance
     ' index 0 = separator
     Private Const BTN_NEW As Integer = 1
     Private Const BTN_EDIT As Integer = 2
-    Private Const BTN_DELETE As Integer = 3
-    ' index 4 = separator
-    Private Const BTN_REFRESH As Integer = 5
-    ' index 6 = separator
+    Private Const BTN_DEACTIVATE As Integer = 3
+    Private Const BTN_DELETE As Integer = 4
+    ' index 5 = separator
+    Private Const BTN_REFRESH As Integer = 6
+    Private _isActive As Boolean = True
+    ' index 7 = separator
 
     ' Tinatawag ito ng AppComposition kapag ginagawa yung 8 instances -
     ' tabTitle ay display text lang (hal. "Branch") para sa Breadcrumb/
@@ -94,8 +96,7 @@ Public Class ucLookupMaintenance
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_property_24
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
 
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
+        CommandBarHelper.InitDeactivateDeleteButtons(wbpMainCommands, BTN_DEACTIVATE, BTN_DELETE)
 
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ImageOptions.Image = My.Resources.icon_refresh_24
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ToolTip = "Reload from Database"
@@ -125,10 +126,12 @@ Public Class ucLookupMaintenance
 
     Public Property IsActive As Boolean Implements ILookupMaintenanceView.IsActive
         Get
-            Return chkActive.Checked
+            Return _isActive
         End Get
         Set(value As Boolean)
-            chkActive.Checked = value
+            _isActive = value
+            CommandBarHelper.ShowStatus(lblStatus, value)
+            CommandBarHelper.RefreshToggleCaption(wbpMainCommands, BTN_DEACTIVATE, value, HasEditAccess)
         End Set
     End Property
 
@@ -153,7 +156,6 @@ Public Class ucLookupMaintenance
         '========================================
         txtCode.Properties.ReadOnly = Not isEditable
         txtName.Properties.ReadOnly = Not isEditable
-        chkActive.Properties.ReadOnly = Not isEditable
 
         gridconLookupList.Enabled = Not isEditable
 
@@ -197,8 +199,7 @@ Public Class ucLookupMaintenance
         '========================================
         ' DELETE
         '========================================
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Enabled =
-        Not isEditable
+        CommandBarHelper.ApplyModeState(wbpMainCommands, BTN_DEACTIVATE, BTN_DELETE, isEditable, IsActive, HasEditAccess)
 
         '========================================
         ' REFRESH
@@ -211,7 +212,7 @@ Public Class ucLookupMaintenance
     Public Sub ClearFields() Implements ILookupMaintenanceView.ClearFields
         txtCode.Text = String.Empty
         txtName.Text = String.Empty
-        chkActive.Checked = True
+        IsActive = True
     End Sub
 
     ' NOTE: DisplayInfo/DisplayValidationError (HINDI ShowMessage/
@@ -268,7 +269,9 @@ Public Class ucLookupMaintenance
             Case "New"
                 If _isEditing Then
                     ' New mode = Save
-                    Await _presenter.SaveAsync()
+                    If ConfirmSaveStatus() Then
+                        Await _presenter.SaveAsync()
+                    End If
                 Else
                     ' View mode = New
                     _presenter.StartNew()
@@ -283,7 +286,7 @@ Public Class ucLookupMaintenance
                     _presenter.StartEdit()
                 End If
 
-            Case "Delete"
+            Case "Deactivate"
                 If Not _isEditing Then
                     Dim action = If(IsActive,
                                 "deactivate",
@@ -299,6 +302,16 @@ Public Class ucLookupMaintenance
                     End If
                 End If
 
+            Case "Delete"
+                If Not _isEditing Then
+                    If Not _presenter.HasSelection() Then
+                        XtraMessageBox.Show("Please select an entry first.", "Delete",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    ElseIf CommandBarHelper.ConfirmDelete(Me, $"'{Code} - {Name}'") Then
+                        Await _presenter.DeleteSelectedAsync()
+                    End If
+                End If
+
             Case "Refresh"
                 If Not _isEditing Then
                     Await _presenter.LoadAsync()
@@ -307,5 +320,22 @@ Public Class ucLookupMaintenance
         End Select
 
     End Sub
+
+
+    ' Kapag ine-edit ang INACTIVE na record at sine-save: itanong kung ibabalik sa Active
+    ' o mananatiling Inactive. (Ang Status ay hindi na checkbox na pwedeng galawin ng user.)
+    Private Function ConfirmSaveStatus() As Boolean
+        If IsActive OrElse Not _presenter.IsEditingExisting() Then Return True
+
+        Select Case CommandBarHelper.AskInactiveSaveChoice(Me)
+            Case DialogResult.Yes
+                IsActive = True
+                Return True
+            Case DialogResult.No
+                Return True
+            Case Else
+                Return False
+        End Select
+    End Function
 
 End Class

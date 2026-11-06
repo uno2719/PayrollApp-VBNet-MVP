@@ -166,6 +166,44 @@ Namespace StatutorySettings.Presenters
 
         End Function
 
+        ' True na pagbura (admin lang). Ang password/double-confirm ay ginagawa na ng View
+        ' bago tawagin ito. Kapag in-use, hindi buburahin at ituturo sa Deactivate.
+        Public Function HasSelection() As Boolean
+            Return _selectedId > 0
+        End Function
+
+        ' True kung ine-edit ang EXISTING na record (hindi bagong entry).
+        Public Function IsEditingExisting() As Boolean
+            Return (Not _isNewMode) AndAlso _selectedId > 0
+        End Function
+
+        Public Async Function DeleteSelectedAsync() As Task
+
+            If _selectedId = 0 Then
+                _view.ShowError("Please select an entry first.")
+                Return
+            End If
+
+            Dim result = Await _service.DeleteAsync(_tableName, _selectedId)
+
+            If Not result.Success Then
+                _view.ShowError(result.Message)
+                Return
+            End If
+
+            _view.ShowMessage("Bracket deleted.")
+
+            _selectedId = 0
+            _isNewMode = False
+
+            _view.ClearFields()
+            _view.SetFormMode(False, False)
+
+            Await LoadListAsync()
+
+        End Function
+
+
         ' =============================================
         ' EXCEL IMPORT - dumadaan pa rin bawat row sa
         ' _service.SaveAsync (kaya same overlap/range check gaya

@@ -114,5 +114,24 @@ Namespace StatutorySettings.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult) _
+            Implements IStatutorySettingsRepository.DeleteAsync
+
+            Dim info = StatutorySettingsTableRegistry.GetInfo(tableName)
+
+            Dim refs As New List(Of UsageRef) From {
+                New UsageRef("processed payroll record(s) that used this bracket", "tblPayrollResultBracket",
+                             $"SourceTable = '{info.TableName}' AND SourceId = @Id")
+            }
+
+            Return Await RecordDeleter.DeleteAsync(
+                "this bracket",
+                $"DELETE FROM {info.TableName} WHERE {info.IdColumn} = @Id",
+                id,
+                refs:=refs)
+        End Function
+
     End Class
 End Namespace

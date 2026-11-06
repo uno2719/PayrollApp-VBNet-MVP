@@ -5,6 +5,7 @@ Namespace StatutorySettings.Services
         Function GetAllAsync(tableName As String) As Task(Of List(Of StatutoryBracketModel))
         Function SaveAsync(tableName As String, item As StatutoryBracketModel, userName As String) As Task(Of StatutorySettingsSaveResult)
         Function SetActiveStatusAsync(tableName As String, id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult)
     End Interface
 
     Public Class StatutorySettingsSaveResult

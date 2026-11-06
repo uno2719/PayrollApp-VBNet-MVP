@@ -110,5 +110,33 @@ Namespace PayrollSettings.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult) _
+            Implements IPayrollFlaggedEntryRepository.DeleteAsync
+
+            Dim info = PayrollFlaggedEntryTableRegistry.GetInfo(tableName)
+            Dim category = PayrollInputUnits.CategoryForTable(info.TableName)
+
+            ' Walang FK ang TxnCode/Code (string lang), kaya manual ang check dito.
+            Dim refs As New List(Of UsageRef) From {
+                New UsageRef("payroll input entry(ies)", "tblPayrollInputTxn", $"TxnCategory = '{category}' AND TxnCode = @Code"),
+                New UsageRef("payroll result line(s)", "tblPayrollResultLine", $"Category = '{category}' AND Code = @Code")
+            }
+
+            ' Ang Deduction ay tinutukoy rin ng Code Mapping ng General Settings (may FK).
+            If String.Equals(info.TableName, "tblDeduction", StringComparison.OrdinalIgnoreCase) Then
+                refs.Add(New UsageRef("General Settings code mapping(s)", "tblGeneralSettings",
+                    "BasicSalaryCodeMinusId = @Id OR AbsentCodeId = @Id OR LateInCodeId = @Id OR EarlyOutCodeId = @Id"))
+            End If
+
+            Return Await RecordDeleter.DeleteAsync(
+                "this entry",
+                $"DELETE FROM {info.TableName} WHERE {info.IdColumn} = @Id",
+                id,
+                $"SELECT Code FROM {info.TableName} WHERE {info.IdColumn} = @Id",
+                refs)
+        End Function
+
     End Class
 End Namespace

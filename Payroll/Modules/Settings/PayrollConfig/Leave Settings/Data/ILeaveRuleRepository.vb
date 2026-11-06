@@ -23,5 +23,6 @@ Namespace LeaveSettings.Data
         ' (bago o dati na).
         Function SaveWithBracketsAsync(item As LeaveRuleModel, brackets As List(Of LeaveRuleBracketModel), userName As String) As Task(Of Integer)
 
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 End Namespace

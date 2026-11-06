@@ -112,5 +112,17 @@ Namespace LeaveSettings.Services
             Return New LeaveRuleSaveResult With {.Success = False, .ErrorMessage = message}
         End Function
 
+
+        ' Totoong pagbura - admin lang at may in-use check (nasa repository/RecordDeleter).
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ILeaveRuleService.DeleteAsync
+
+            If Not AppSession.IsAdmin Then
+                Return DeleteResult.Fail("Only administrators can delete records.")
+            End If
+
+            Return Await _repository.DeleteAsync(id)
+        End Function
+
     End Class
 End Namespace

@@ -132,5 +132,18 @@ Namespace CompanyProfile.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ICompanyBankRepository.DeleteAsync
+
+            ' Walang table na tumuturo sa tblCompanyBank (FK report) - sariling DELETE lang.
+            Return Await RecordDeleter.DeleteAsync(
+                "this bank entry",
+                "DELETE FROM tblCompanyBank WHERE BankId = @Id",
+                id,
+                "SELECT BankCode FROM tblCompanyBank WHERE BankId = @Id")
+        End Function
+
     End Class
 End Namespace

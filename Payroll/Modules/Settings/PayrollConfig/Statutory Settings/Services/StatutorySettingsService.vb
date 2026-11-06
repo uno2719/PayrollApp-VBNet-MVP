@@ -1,4 +1,5 @@
-﻿Imports Payroll.GlobalShared.Models
+﻿Imports Payroll.GlobalShared.Constants
+Imports Payroll.GlobalShared.Models
 
 Namespace StatutorySettings.Services
     Public Class StatutorySettingsService
@@ -41,6 +42,18 @@ Namespace StatutorySettings.Services
             Implements IStatutorySettingsService.SetActiveStatusAsync
 
             Return Await _repository.SetActiveStatusAsync(tableName, id, isActive, userName)
+        End Function
+
+
+        ' Totoong pagbura - admin lang at may in-use check (nasa repository/RecordDeleter).
+        Public Async Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult) _
+            Implements IStatutorySettingsService.DeleteAsync
+
+            If Not AppSession.IsAdmin Then
+                Return DeleteResult.Fail("Only administrators can delete records.")
+            End If
+
+            Return Await _repository.DeleteAsync(tableName, id)
         End Function
 
     End Class

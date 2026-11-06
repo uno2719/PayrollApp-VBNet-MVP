@@ -69,6 +69,50 @@ Namespace Login.Services
 
         End Function
 
+        Public Async Function VerifyCurrentUserPasswordAsync(username As String, password As String) As Task(Of PasswordCheckResult) _
+            Implements IAuthenticationService.VerifyCurrentUserPasswordAsync
+
+            If String.IsNullOrEmpty(password) Then
+                Return New PasswordCheckResult With {.Success = False, .ErrorMessage = "Please enter your password."}
+            End If
+
+            Dim user = Await _userRepo.GetByUsernameAsync(username)
+
+            If user Is Nothing OrElse Not user.IsActive Then
+                Return New PasswordCheckResult With {
+                    .Success = False, .CloseDialog = True,
+                    .ErrorMessage = "Your account could not be verified."
+                }
+            End If
+
+            If user.LockedUntil.HasValue AndAlso user.LockedUntil.Value > DateTime.Now Then
+                Return New PasswordCheckResult With {
+                    .Success = False, .CloseDialog = True,
+                    .ErrorMessage = $"Account is locked. Please try again after {user.LockedUntil.Value:hh:mm tt}."
+                }
+            End If
+
+            If PasswordHasher.VerifyPassword(password, user.PasswordHash, user.PasswordSalt) Then
+                Return New PasswordCheckResult With {.Success = True}
+            End If
+
+            Await _userRepo.IncrementFailedLoginAsync(user.RecordId)
+
+            Dim failCount = user.FailedLoginCount + 1
+            If failCount >= MaxFailedAttempts Then
+                Await _userRepo.LockAccountAsync(user.RecordId, DateTime.Now.AddMinutes(LockoutMinutes))
+                Return New PasswordCheckResult With {
+                    .Success = False, .CloseDialog = True,
+                    .ErrorMessage = $"Too many failed attempts. Account locked for {LockoutMinutes} minutes."
+                }
+            End If
+
+            Return New PasswordCheckResult With {
+                .Success = False,
+                .ErrorMessage = $"Incorrect password. {MaxFailedAttempts - failCount} attempt(s) left before the account is locked."
+            }
+        End Function
+
         Public Async Function ChangePasswordAsync(username As String, currentPassword As String, newPassword As String) As Task(Of ChangePasswordResult) _
             Implements IAuthenticationService.ChangePasswordAsync
             Dim user = Await _userRepo.GetByUsernameAsync(username)

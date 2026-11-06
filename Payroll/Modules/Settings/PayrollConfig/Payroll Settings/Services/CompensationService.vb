@@ -1,4 +1,5 @@
-﻿Imports Payroll.GlobalShared.Models
+﻿Imports Payroll.GlobalShared.Constants
+Imports Payroll.GlobalShared.Models
 
 Namespace PayrollSettings.Services
     Public Class CompensationService
@@ -72,6 +73,17 @@ Namespace PayrollSettings.Services
             Return Await _repository.SetActiveStatusAsync(id, isActive, userName)
         End Function
 
+        ' Totoong pagbura - admin lang at may in-use check (nasa repository/RecordDeleter).
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ICompensationService.DeleteAsync
+
+            If Not AppSession.IsAdmin Then
+                Return DeleteResult.Fail("Only administrators can delete records.")
+            End If
+
+            Return Await _repository.DeleteAsync(id)
+        End Function
+
     End Class
 
     ' Iisang SaveResult class na shared ng apat na Payroll Settings
@@ -83,5 +95,6 @@ Namespace PayrollSettings.Services
         Public Property ErrorMessage As String
         ''' <summary>True kung kailangan munang kumpirmahin ng user ang ErrorMessage (hal. i-clear ang draft entries) bago ituloy.</summary>
         Public Property NeedsConfirmation As Boolean
+
     End Class
 End Namespace

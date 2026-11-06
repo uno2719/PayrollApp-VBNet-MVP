@@ -17,10 +17,12 @@ Public Class ucStatutorySettings
     ' index 0 = separator
     Private Const BTN_NEW As Integer = 1
     Private Const BTN_EDIT As Integer = 2
-    Private Const BTN_DELETE As Integer = 3
-    ' index 4 = separator
-    Private Const BTN_REFRESH As Integer = 5
-    ' index 6 = separator
+    Private Const BTN_DEACTIVATE As Integer = 3
+    Private Const BTN_DELETE As Integer = 4
+    ' index 5 = separator
+    Private Const BTN_REFRESH As Integer = 6
+    Private _isActive As Boolean = True
+    ' index 7 = separator
 
     ' Tinatawag ito ng AppComposition kapag ginagawa yung 3 instances
     ' (SSS/PhilHealth/Pag-IBIG) - parehong pattern gaya ng Master Data.
@@ -99,8 +101,7 @@ Public Class ucStatutorySettings
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ImageOptions.Image = My.Resources.icon_edit_property_24
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
 
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
+        CommandBarHelper.InitDeactivateDeleteButtons(wbpMainCommands, BTN_DEACTIVATE, BTN_DELETE)
 
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ImageOptions.Image = My.Resources.icon_refresh_24
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.ToolTip = "Reload from Database"
@@ -195,10 +196,12 @@ Public Class ucStatutorySettings
 
     Public Property IsActive As Boolean Implements IStatutorySettingsMaintenanceView.IsActive
         Get
-            Return chkActive.Checked
+            Return _isActive
         End Get
         Set(value As Boolean)
-            chkActive.Checked = value
+            _isActive = value
+            CommandBarHelper.ShowStatus(lblStatus, value)
+            CommandBarHelper.RefreshToggleCaption(wbpMainCommands, BTN_DEACTIVATE, value, HasEditAccess)
         End Set
     End Property
 
@@ -230,7 +233,6 @@ Public Class ucStatutorySettings
         txtECCAmount.Properties.ReadOnly = Not isEditable
         txtEEMPF.Properties.ReadOnly = Not isEditable
         txtERMPF.Properties.ReadOnly = Not isEditable
-        chkActive.Properties.ReadOnly = Not isEditable
 
         gridconStatutoryList.Enabled = Not isEditable
 
@@ -269,7 +271,7 @@ Public Class ucStatutorySettings
         '========================================
         ' DELETE / REFRESH
         '========================================
-        wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Enabled = Not isEditable
+        CommandBarHelper.ApplyModeState(wbpMainCommands, BTN_DEACTIVATE, BTN_DELETE, isEditable, IsActive, HasEditAccess)
         wbpMainCommands.Buttons.Item(BTN_REFRESH).Properties.Enabled = Not isEditable
 
     End Sub
@@ -284,7 +286,7 @@ Public Class ucStatutorySettings
         txtECCAmount.EditValue = Nothing
         txtEEMPF.EditValue = Nothing
         txtERMPF.EditValue = Nothing
-        chkActive.Checked = True
+        IsActive = True
     End Sub
 
     Public Sub DisplayInfo(message As String) Implements IStatutorySettingsMaintenanceView.ShowMessage
@@ -333,7 +335,9 @@ Public Class ucStatutorySettings
         Select Case tag
             Case "New"
                 If _isEditing Then
-                    Await _presenter.SaveAsync()
+                    If ConfirmSaveStatus() Then
+                        Await _presenter.SaveAsync()
+                    End If
                 Else
                     _presenter.StartNew()
                 End If
@@ -345,7 +349,7 @@ Public Class ucStatutorySettings
                     _presenter.StartEdit()
                 End If
 
-            Case "Delete"
+            Case "Deactivate"
                 If Not _isEditing Then
                     Dim action = If(IsActive, "deactivate", "reactivate")
 
@@ -356,6 +360,16 @@ Public Class ucStatutorySettings
 
                     If confirm = DialogResult.Yes Then
                         Await _presenter.ToggleActiveSelectedAsync()
+                    End If
+                End If
+
+            Case "Delete"
+                If Not _isEditing Then
+                    If Not _presenter.HasSelection() Then
+                        XtraMessageBox.Show("Please select an entry first.", "Delete",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    ElseIf CommandBarHelper.ConfirmDelete(Me, "this bracket") Then
+                        Await _presenter.DeleteSelectedAsync()
                     End If
                 End If
 
@@ -414,5 +428,22 @@ Public Class ucStatutorySettings
         End Select
 
     End Sub
+
+
+    ' Kapag ine-edit ang INACTIVE na record at sine-save: itanong kung ibabalik sa Active
+    ' o mananatiling Inactive. (Ang Status ay hindi na checkbox na pwedeng galawin ng user.)
+    Private Function ConfirmSaveStatus() As Boolean
+        If IsActive OrElse Not _presenter.IsEditingExisting() Then Return True
+
+        Select Case CommandBarHelper.AskInactiveSaveChoice(Me)
+            Case DialogResult.Yes
+                IsActive = True
+                Return True
+            Case DialogResult.No
+                Return True
+            Case Else
+                Return False
+        End Select
+    End Function
 
 End Class

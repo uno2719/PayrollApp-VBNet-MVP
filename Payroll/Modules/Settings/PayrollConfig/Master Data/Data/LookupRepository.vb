@@ -102,5 +102,32 @@ Namespace Lookups.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult) _
+            Implements ILookupRepository.DeleteAsync
+
+            Dim info = LookupTableRegistry.GetInfo(tableName)
+
+            ' Ang mga tumuturo (base sa FK report ng DB): tblEmployeeEmployment para sa
+            ' halos lahat, tblEmployeeEarnings.BankId para sa Bank, at tblLeaveRule para sa Leave Group.
+            Dim refs As New List(Of UsageRef)
+            If String.Equals(tableName, "tblBank", StringComparison.OrdinalIgnoreCase) Then
+                refs.Add(New UsageRef("employee bank assignment(s)", "tblEmployeeEarnings", "BankId = @Id"))
+            Else
+                refs.Add(New UsageRef("employee employment record(s)", "tblEmployeeEmployment", $"{info.IdColumn} = @Id"))
+            End If
+            If String.Equals(tableName, "tblLeaveGroup", StringComparison.OrdinalIgnoreCase) Then
+                refs.Add(New UsageRef("leave rule(s)", "tblLeaveRule", "LeaveGroupId = @Id"))
+            End If
+
+            Return Await RecordDeleter.DeleteAsync(
+                "this entry",
+                $"DELETE FROM {tableName} WHERE {info.IdColumn} = @Id",
+                id,
+                $"SELECT {info.CodeColumn} FROM {tableName} WHERE {info.IdColumn} = @Id",
+                refs)
+        End Function
+
     End Class
 End Namespace

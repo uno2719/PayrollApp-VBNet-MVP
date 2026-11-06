@@ -89,5 +89,22 @@ Namespace LeaveSettings.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(id As Integer) As Task(Of DeleteResult) _
+            Implements ILeaveTypeRepository.DeleteAsync
+
+            Dim refs As New List(Of UsageRef) From {
+                New UsageRef("leave rule(s)", "tblLeaveRule", "LeaveTypeId = @Id")
+            }
+
+            Return Await RecordDeleter.DeleteAsync(
+                "this leave type",
+                $"DELETE FROM {TableName} WHERE LeaveTypeId = @Id",
+                id,
+                $"SELECT LeaveTypeCode FROM {TableName} WHERE LeaveTypeId = @Id",
+                refs)
+        End Function
+
     End Class
 End Namespace

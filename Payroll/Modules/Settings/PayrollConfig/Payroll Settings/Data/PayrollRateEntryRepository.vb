@@ -112,5 +112,26 @@ Namespace PayrollSettings.Data
             Return rows > 0
         End Function
 
+
+        ' --- HARD DELETE (admin lang; may in-use check sa loob ng iisang transaction) ---
+        Public Async Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult) _
+            Implements IPayrollRateEntryRepository.DeleteAsync
+
+            Dim info = PayrollRateEntryTableRegistry.GetInfo(tableName)
+            Dim category = PayrollInputUnits.CategoryForTable(info.TableName)
+
+            Dim refs As New List(Of UsageRef) From {
+                New UsageRef("payroll input entry(ies)", "tblPayrollInputTxn", $"TxnCategory = '{category}' AND TxnCode = @Code"),
+                New UsageRef("payroll result line(s)", "tblPayrollResultLine", $"Category = '{category}' AND Code = @Code")
+            }
+
+            Return Await RecordDeleter.DeleteAsync(
+                "this entry",
+                $"DELETE FROM {info.TableName} WHERE {info.IdColumn} = @Id",
+                id,
+                $"SELECT Code FROM {info.TableName} WHERE {info.IdColumn} = @Id",
+                refs)
+        End Function
+
     End Class
 End Namespace

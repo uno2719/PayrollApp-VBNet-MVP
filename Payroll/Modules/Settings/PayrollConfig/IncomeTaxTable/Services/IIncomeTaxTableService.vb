@@ -5,6 +5,7 @@ Namespace IncomeTaxTable.Services
         Function GetAllAsync(tableName As String) As Task(Of List(Of IncomeTaxBracketModel))
         Function SaveAsync(tableName As String, item As IncomeTaxBracketModel, userName As String) As Task(Of IncomeTaxTableSaveResult)
         Function SetActiveStatusAsync(tableName As String, id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult)
     End Interface
 
     Public Class IncomeTaxTableSaveResult

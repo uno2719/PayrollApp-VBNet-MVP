@@ -5,6 +5,7 @@ Namespace LeaveSettings.Services
         Function GetAllAsync() As Task(Of List(Of LeaveTypeModel))
         Function SaveAsync(item As LeaveTypeModel, userName As String) As Task(Of LeaveTypeSaveResult)
         Function SetActiveStatusAsync(id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(id As Integer) As Task(Of DeleteResult)
     End Interface
 
     Public Class LeaveTypeSaveResult

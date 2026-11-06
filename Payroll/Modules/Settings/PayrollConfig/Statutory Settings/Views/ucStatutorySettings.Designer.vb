@@ -17,6 +17,7 @@ Partial Class ucStatutorySettings
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim WindowsuiButtonImageOptions9 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptionsDeactivate As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(ucStatutorySettings))
         Dim WindowsuiButtonImageOptions10 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
         Dim WindowsuiButtonImageOptions11 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
@@ -25,7 +26,7 @@ Partial Class ucStatutorySettings
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
         grpDetails = New DevExpress.XtraEditors.GroupControl()
-        chkActive = New DevExpress.XtraEditors.CheckEdit()
+        lblStatus = New DevExpress.XtraEditors.LabelControl()
         txtSalaryFrom = New DevExpress.XtraEditors.TextEdit()
         lblSalaryFrom = New DevExpress.XtraEditors.LabelControl()
         cboEEContriType = New DevExpress.XtraEditors.ComboBoxEdit()
@@ -61,7 +62,6 @@ Partial Class ucStatutorySettings
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
         grpDetails.SuspendLayout()
-        CType(chkActive.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtSalaryFrom.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboEEContriType.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtECCAmount.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -105,14 +105,14 @@ Partial Class ucStatutorySettings
         WindowsuiButtonImageOptions10.Image = CType(resources.GetObject("WindowsuiButtonImageOptions10.Image"), Image)
         WindowsuiButtonImageOptions11.Image = CType(resources.GetObject("WindowsuiButtonImageOptions11.Image"), Image)
         WindowsuiButtonImageOptions12.Image = CType(resources.GetObject("WindowsuiButtonImageOptions12.Image"), Image)
-        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions9, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions10, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions11, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions12, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
+        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions9, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Entry", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions10, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Deactivate", True, WindowsuiButtonImageOptionsDeactivate, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Deactivate Selected", -1, True, Nothing, True, False, True, "Deactivate", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions11, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions12, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
         wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
         wbpMainCommands.Dock = DockStyle.Right
         wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        wbpMainCommands.Location = New Point(580, 4)
+        wbpMainCommands.Location = New Point(455, 4)
         wbpMainCommands.Margin = New Padding(1)
         wbpMainCommands.Name = "wbpMainCommands"
-        wbpMainCommands.Size = New Size(484, 62)
+        wbpMainCommands.Size = New Size(609, 62)
         wbpMainCommands.TabIndex = 0
         wbpMainCommands.Text = "Commands"
         ' 
@@ -122,7 +122,7 @@ Partial Class ucStatutorySettings
         grpDetails.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpDetails.AppearanceCaption.Options.UseFont = True
-        grpDetails.Controls.Add(chkActive)
+        grpDetails.Controls.Add(lblStatus)
         grpDetails.Controls.Add(txtSalaryFrom)
         grpDetails.Controls.Add(lblSalaryFrom)
         grpDetails.Controls.Add(cboEEContriType)
@@ -150,14 +150,16 @@ Partial Class ucStatutorySettings
         grpDetails.TabIndex = 1
         grpDetails.Text = " DETAILS"
         ' 
-        ' chkActive
+        ' lblStatus
         ' 
-        chkActive.Location = New Point(24, 152)
-        chkActive.Margin = New Padding(3, 2, 3, 2)
-        chkActive.Name = "chkActive"
-        chkActive.Properties.Caption = " Active"
-        chkActive.Size = New Size(90, 20)
-        chkActive.TabIndex = 6
+        lblStatus.Location = New Point(24, 152)
+        lblStatus.Appearance.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblStatus.Appearance.Options.UseFont = True
+        lblStatus.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
+        lblStatus.Name = "lblStatus"
+        lblStatus.Text = "Status: Active"
+        lblStatus.Size = New Size(130, 20)
+        lblStatus.TabIndex = 6
         ' 
         ' txtSalaryFrom
         ' 
@@ -458,7 +460,6 @@ Partial Class ucStatutorySettings
         CType(grpDetails, ComponentModel.ISupportInitialize).EndInit()
         grpDetails.ResumeLayout(False)
         grpDetails.PerformLayout()
-        CType(chkActive.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtSalaryFrom.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboEEContriType.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtECCAmount.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -477,7 +478,7 @@ Partial Class ucStatutorySettings
     Friend WithEvents wbpMainCommands As DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel
     Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
     Friend WithEvents grpDetails As DevExpress.XtraEditors.GroupControl
-    Friend WithEvents chkActive As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents lblStatus As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtSalaryFrom As DevExpress.XtraEditors.TextEdit
     Friend WithEvents lblSalaryFrom As DevExpress.XtraEditors.LabelControl
     Friend WithEvents cboEEContriType As DevExpress.XtraEditors.ComboBoxEdit

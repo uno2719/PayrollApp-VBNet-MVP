@@ -5,6 +5,7 @@ Namespace Lookups.Services
         Function GetAllAsync(tableName As String) As Task(Of List(Of LookupModel))
         Function SaveAsync(tableName As String, item As LookupModel, userName As String) As Task(Of LookupSaveResult)
         Function SetActiveStatusAsync(tableName As String, id As Integer, isActive As Boolean, userName As String) As Task(Of Boolean)
+        Function DeleteAsync(tableName As String, id As Integer) As Task(Of DeleteResult)
     End Interface
 
     Public Class LookupSaveResult
