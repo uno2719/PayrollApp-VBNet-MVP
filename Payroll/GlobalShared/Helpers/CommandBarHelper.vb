@@ -100,7 +100,10 @@ Namespace GlobalShared.Helpers
         '''   3. Password ng naka-login na user
         ''' </summary>
         ''' <param name="itemDescription">Hal. "'BDO - BDO Unibank'" o "this bracket".</param>
-        Public Function ConfirmDelete(owner As IWin32Window, itemDescription As String) As Boolean
+        ''' <param name="isSoftDelete">True kung hindi totoong binubura ang record (hal. Employee: IsDeleted flag lang);
+        ''' iba ang wording ng mga prompt (walang "permanently"). Default False = totoong Delete ng Settings.</param>
+        Public Function ConfirmDelete(owner As IWin32Window, itemDescription As String,
+                                      Optional isSoftDelete As Boolean = False) As Boolean
 
             If Not AppSession.IsAdmin Then
                 XtraMessageBox.Show(owner, "Only administrators can delete records.", "Delete",
@@ -108,19 +111,38 @@ Namespace GlobalShared.Helpers
                 Return False
             End If
 
+            Dim firstMessage As String
+            Dim secondMessage As String
+
+            If isSoftDelete Then
+                firstMessage =
+                    $"Delete {itemDescription}?" & vbCrLf & vbCrLf &
+                    "The record will be removed from the list." & vbCrLf &
+                    "If it is only no longer in use, mark it Inactive instead of deleting."
+                secondMessage =
+                    "FINAL WARNING" & vbCrLf & vbCrLf &
+                    $"{itemDescription} will be removed from the list and cannot be restored from the application." & vbCrLf & vbCrLf &
+                    "Are you absolutely sure?"
+            Else
+                firstMessage =
+                    $"Delete {itemDescription}?" & vbCrLf & vbCrLf &
+                    "This removes the record permanently." & vbCrLf &
+                    "If you only want to stop using it, use Deactivate instead."
+                secondMessage =
+                    "FINAL WARNING" & vbCrLf & vbCrLf &
+                    $"{itemDescription} will be permanently deleted and cannot be recovered." & vbCrLf & vbCrLf &
+                    "Are you absolutely sure?"
+            End If
+
             Dim first = XtraMessageBox.Show(owner,
-                $"Delete {itemDescription}?" & vbCrLf & vbCrLf &
-                "This removes the record permanently." & vbCrLf &
-                "If you only want to stop using it, use Deactivate instead.",
+                firstMessage,
                 "Confirm Delete (1 of 2)",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2)
 
             If first <> DialogResult.Yes Then Return False
 
             Dim second = XtraMessageBox.Show(owner,
-                "FINAL WARNING" & vbCrLf & vbCrLf &
-                $"{itemDescription} will be permanently deleted and cannot be recovered." & vbCrLf & vbCrLf &
-                "Are you absolutely sure?",
+                secondMessage,
                 "Confirm Delete (2 of 2)",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2)
 
@@ -130,7 +152,7 @@ Namespace GlobalShared.Helpers
             Dim auth As IAuthenticationService = New AuthenticationService(New UserRepository())
             Dim username = AppSession.CurrentUser
 
-            Using dlg As New frmConfirmPassword(itemDescription)
+            Using dlg As New frmConfirmPassword(itemDescription, isSoftDelete)
                 dlg.Verifier = Function(password As String) auth.VerifyCurrentUserPasswordAsync(username, password)
                 Return dlg.ShowDialog(owner) = DialogResult.OK
             End Using

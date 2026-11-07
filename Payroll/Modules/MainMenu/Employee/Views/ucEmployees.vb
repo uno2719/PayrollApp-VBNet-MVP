@@ -516,6 +516,20 @@ Public Class ucEmployees
 
         End Select
 
+        ' Delete button: sa Idle, admin lang (at may Edit access). Sa ibang state ito ang
+        ' Cancel button, kaya dapat laging enabled para makapag-Cancel ang non-admin na nag-e-edit.
+        With wbpMainCommands.Buttons.Item(BTN_DELETE).Properties
+            If state = FormState.Idle Then
+                Dim canDelete = GlobalShared.Constants.AppSession.IsAdmin AndAlso HasEditAccess
+                .Enabled = canDelete
+                .ToolTip = If(GlobalShared.Constants.AppSession.IsAdmin,
+                              "Delete Selected",
+                              "Only administrators can delete records.")
+            Else
+                .Enabled = True
+            End If
+        End With
+
     End Sub
 
     ' =============================================
@@ -767,22 +781,25 @@ Public Class ucEmployees
     ' DELETE
     ' =============================================
     Private Async Sub HandleDelete()
-        Dim confirm = DevExpress.XtraEditors.XtraMessageBox.Show(
-            "Are you sure you want to delete this employee?",
-            "Confirm Delete",
-            MessageBoxButtons.YesNo,
-            MessageBoxIcon.Warning)
+        ' Parehong security ng Settings Delete: admin lang, 2 confirm (default No) + password.
+        ' Soft delete ito (IsDeleted = 1, hindi physical), kaya isSoftDelete:=True ang wording.
+        Dim fullName = lblHdr_FullName.Text.Trim()
+        Dim itemDescription = If(fullName.Length = 0, "this employee", $"employee '{fullName}'")
 
-        If confirm <> DialogResult.Yes Then Return
+        If Not GlobalShared.Helpers.CommandBarHelper.ConfirmDelete(Me, itemDescription, isSoftDelete:=True) Then Return
 
         Try
             ShowLoading()
-            Await _service.DeleteAsync(_selectedRecordId)
+            Dim deleted = Await _service.DeleteAsync(_selectedRecordId)
             _selectedRecordId = 0
             Await LoadEmployeeListAsync()
             ClearHeader()
             SetFormState(FormState.Idle)
-            ShowMessage("Employee deleted successfully!")
+            If deleted Then
+                ShowMessage("Employee deleted successfully!")
+            Else
+                ShowError("Nothing was deleted - the record may no longer exist. The list has been refreshed.")
+            End If
         Catch ex As Exception
             ShowError(ex.Message)
         Finally

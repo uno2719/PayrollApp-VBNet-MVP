@@ -11,14 +11,20 @@ Public Class frmConfirmPassword
     Public Property Verifier As Func(Of String, Task(Of PasswordCheckResult))
 
     Private ReadOnly _itemDescription As String
+    Private ReadOnly _isSoftDelete As Boolean
 
-    Public Sub New(itemDescription As String)
+    ' isSoftDelete = True kapag hindi totoong binubura ang record (hal. Employee: IsDeleted flag lang),
+    ' para hindi "permanently" ang sabihin ng message.
+    Public Sub New(itemDescription As String, Optional isSoftDelete As Boolean = False)
         InitializeComponent()
         _itemDescription = itemDescription
+        _isSoftDelete = isSoftDelete
     End Sub
 
     Private Sub frmConfirmPassword_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        lblMessage.Text = $"Enter your password to permanently delete {_itemDescription}."
+        lblMessage.Text = If(_isSoftDelete,
+            $"Enter your password to delete {_itemDescription}.",
+            $"Enter your password to permanently delete {_itemDescription}.")
         txtPassword.Properties.PasswordChar = "●"c
         lblError.Text = String.Empty
         txtPassword.Focus()

@@ -74,6 +74,13 @@
 
         Public Async Function DeleteAsync(recordId As Integer) As Task(Of Boolean) _
             Implements IEmployeeService.DeleteAsync
+
+            ' Huling harang kahit lusutan ang UI: admin lang ang puwedeng mag-delete
+            ' (parehong rule ng RecordDeleter sa Settings). Soft delete pa rin ang ginagawa ng repository.
+            If Not GlobalShared.Constants.AppSession.IsAdmin Then
+                Throw New UnauthorizedAccessException("Only administrators can delete records.")
+            End If
+
             Return Await _repo.DeleteAsync(recordId)
         End Function
 
