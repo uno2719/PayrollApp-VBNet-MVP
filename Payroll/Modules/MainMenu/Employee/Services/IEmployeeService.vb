@@ -9,6 +9,12 @@
         Function UpdateAsync(model As Models.EmployeeModel) As Task(Of Boolean)
         Function DeleteAsync(recordId As Integer) As Task(Of Boolean)
 
+        ' --- Header ---
+        Function GetHeaderAsync(recordId As Integer) As Task(Of Models.EmployeeHeaderModel)
+
+        ''' <summary>Set Active/Inactive. Admin o may "Employee Actions" access lang.</summary>
+        Function SetActiveStatusAsync(recordId As Integer, isActive As Boolean) As Task(Of Boolean)
+
         ' --- Employment ---
         Function GetEmploymentAsync(recordId As Integer) As Task(Of Models.EmployeeEmploymentModel)
         Function SaveEmploymentAsync(model As Models.EmployeeEmploymentModel) As Task(Of Boolean)

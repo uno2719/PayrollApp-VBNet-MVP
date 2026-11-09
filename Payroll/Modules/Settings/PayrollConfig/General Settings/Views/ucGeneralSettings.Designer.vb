@@ -47,6 +47,10 @@ Partial Class ucGeneralSettings
         lblPhilHealthBasedOn = New DevExpress.XtraEditors.LabelControl()
         cboSSSBasedOn = New DevExpress.XtraEditors.ComboBoxEdit()
         lblSSSBasedOn = New DevExpress.XtraEditors.LabelControl()
+        grpEmployment = New DevExpress.XtraEditors.GroupControl()
+        lblProbationHint = New DevExpress.XtraEditors.LabelControl()
+        txtProbationMonths = New DevExpress.XtraEditors.TextEdit()
+        lblProbationMonths = New DevExpress.XtraEditors.LabelControl()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpPayrollParameters, ComponentModel.ISupportInitialize).BeginInit()
@@ -68,6 +72,9 @@ Partial Class ucGeneralSettings
         grpStatutoryBasis.SuspendLayout()
         CType(cboPhilHealthBasedOn.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboSSSBasedOn.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(grpEmployment, ComponentModel.ISupportInitialize).BeginInit()
+        grpEmployment.SuspendLayout()
+        CType(txtProbationMonths.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' PanelControl1
@@ -405,8 +412,55 @@ Partial Class ucGeneralSettings
         lblSSSBasedOn.TabIndex = 0
         lblSSSBasedOn.Text = "SSS Based on"
         ' 
+        ' grpEmployment
+        ' 
+        grpEmployment.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        grpEmployment.Appearance.Options.UseFont = True
+        grpEmployment.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        grpEmployment.AppearanceCaption.FontStyleDelta = FontStyle.Bold
+        grpEmployment.AppearanceCaption.Options.UseFont = True
+        grpEmployment.Controls.Add(lblProbationHint)
+        grpEmployment.Controls.Add(txtProbationMonths)
+        grpEmployment.Controls.Add(lblProbationMonths)
+        grpEmployment.Location = New Point(4, 456)
+        grpEmployment.Margin = New Padding(3, 2, 3, 2)
+        grpEmployment.Name = "grpEmployment"
+        grpEmployment.Size = New Size(1069, 92)
+        grpEmployment.TabIndex = 4
+        grpEmployment.Text = " EMPLOYMENT"
+        ' 
+        ' lblProbationHint
+        ' 
+        lblProbationHint.Appearance.ForeColor = Color.Gray
+        lblProbationHint.Appearance.Options.UseForeColor = True
+        lblProbationHint.Location = New Point(280, 55)
+        lblProbationHint.Name = "lblProbationHint"
+        lblProbationHint.Size = New Size(330, 13)
+        lblProbationHint.TabIndex = 2
+        lblProbationHint.Text = "Used for the regularization reminder in the Employee header."
+        ' 
+        ' txtProbationMonths
+        ' 
+        txtProbationMonths.Location = New Point(24, 52)
+        txtProbationMonths.Margin = New Padding(3, 2, 3, 2)
+        txtProbationMonths.Name = "txtProbationMonths"
+        txtProbationMonths.Properties.Mask.EditMask = "n0"
+        txtProbationMonths.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.Numeric
+        txtProbationMonths.Properties.Mask.UseMaskAsDisplayFormat = True
+        txtProbationMonths.Size = New Size(230, 20)
+        txtProbationMonths.TabIndex = 1
+        ' 
+        ' lblProbationMonths
+        ' 
+        lblProbationMonths.Location = New Point(24, 34)
+        lblProbationMonths.Name = "lblProbationMonths"
+        lblProbationMonths.Size = New Size(125, 13)
+        lblProbationMonths.TabIndex = 0
+        lblProbationMonths.Text = "Probation Period (months)"
+        ' 
         ' ucGeneralSettings
         ' 
+        Controls.Add(grpEmployment)
         Controls.Add(grpStatutoryBasis)
         Controls.Add(grpCodeMapping)
         Controls.Add(grpPayrollParameters)
@@ -440,6 +494,10 @@ Partial Class ucGeneralSettings
         grpStatutoryBasis.PerformLayout()
         CType(cboPhilHealthBasedOn.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboSSSBasedOn.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(grpEmployment, ComponentModel.ISupportInitialize).EndInit()
+        grpEmployment.ResumeLayout(False)
+        grpEmployment.PerformLayout()
+        CType(txtProbationMonths.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -478,5 +536,10 @@ Partial Class ucGeneralSettings
     Friend WithEvents cboSSSBasedOn As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents lblPhilHealthBasedOn As DevExpress.XtraEditors.LabelControl
     Friend WithEvents cboPhilHealthBasedOn As DevExpress.XtraEditors.ComboBoxEdit
+
+    Friend WithEvents grpEmployment As DevExpress.XtraEditors.GroupControl
+    Friend WithEvents lblProbationMonths As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents txtProbationMonths As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lblProbationHint As DevExpress.XtraEditors.LabelControl
 
 End Class

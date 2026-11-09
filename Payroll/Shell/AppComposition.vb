@@ -76,8 +76,11 @@ Public Class AppComposition
         earningsView.SetPresenter(earningsPresenter)
         statutoryView.SetPresenter(statutoryPresenter)
 
-        ' 6. Gawin ang Main View
-        Return New ucEmployees(personalInfoView, employmentView, earningsView, statutoryView)
+        ' 6. Loans service (read-only) - para sa Loans badge at quick view sa header
+        Dim loanService As New EmployeeLoanService(New EmployeeLoanRepository())
+
+        ' 7. Gawin ang Main View
+        Return New ucEmployees(personalInfoView, employmentView, earningsView, statutoryView, loanService)
 
     End Function
 

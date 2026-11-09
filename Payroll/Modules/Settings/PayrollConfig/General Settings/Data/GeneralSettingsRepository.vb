@@ -28,7 +28,7 @@ Namespace GeneralSettings.Data
                 SELECT TOP 1
                        GeneralSettingsId,
                        BonusCeiling, TotalDaysPerYear, WorkHourPerDay,
-                       AmountPrecision, PercentPrecision, DailyRateMonthlyFactor,
+                       AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths,
                        BasicSalaryCodePlusId, BasicSalaryCodeMinusId,
                        AbsentCodeId, LateInCodeId, EarlyOutCodeId,
                        SSSBasedOn, PhilHealthBasedOn,
@@ -48,7 +48,7 @@ Namespace GeneralSettings.Data
             Dim sql = $"
                 INSERT INTO {TableName}
                     (BonusCeiling, TotalDaysPerYear, WorkHourPerDay,
-                     AmountPrecision, PercentPrecision, DailyRateMonthlyFactor,
+                     AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths,
                      BasicSalaryCodePlusId, BasicSalaryCodeMinusId,
                      AbsentCodeId, LateInCodeId, EarlyOutCodeId,
                      SSSBasedOn, PhilHealthBasedOn,
@@ -56,7 +56,7 @@ Namespace GeneralSettings.Data
                 OUTPUT INSERTED.GeneralSettingsId
                 VALUES
                     (@BonusCeiling, @TotalDaysPerYear, @WorkHourPerDay,
-                     @AmountPrecision, @PercentPrecision, @DailyRateMonthlyFactor,
+                     @AmountPrecision, @PercentPrecision, @DailyRateMonthlyFactor, @ProbationMonths,
                      @BasicSalaryCodePlusId, @BasicSalaryCodeMinusId,
                      @AbsentCodeId, @LateInCodeId, @EarlyOutCodeId,
                      @SSSBasedOn, @PhilHealthBasedOn,
@@ -65,7 +65,7 @@ Namespace GeneralSettings.Data
             Using conn = GetConnection()
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
                     item.BonusCeiling, item.TotalDaysPerYear, item.WorkHourPerDay,
-                    item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor,
+                    item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor, item.ProbationMonths,
                     item.BasicSalaryCodePlusId, item.BasicSalaryCodeMinusId,
                     item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId,
                     item.SSSBasedOn, item.PhilHealthBasedOn,
@@ -86,6 +86,7 @@ Namespace GeneralSettings.Data
                     AmountPrecision        = @AmountPrecision,
                     PercentPrecision       = @PercentPrecision,
                     DailyRateMonthlyFactor = @DailyRateMonthlyFactor,
+                    ProbationMonths        = @ProbationMonths,
                     BasicSalaryCodePlusId  = @BasicSalaryCodePlusId,
                     BasicSalaryCodeMinusId = @BasicSalaryCodeMinusId,
                     AbsentCodeId           = @AbsentCodeId,
@@ -100,7 +101,7 @@ Namespace GeneralSettings.Data
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
                 item.GeneralSettingsId,
                 item.BonusCeiling, item.TotalDaysPerYear, item.WorkHourPerDay,
-                item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor,
+                item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor, item.ProbationMonths,
                 item.BasicSalaryCodePlusId, item.BasicSalaryCodeMinusId,
                 item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId,
                 item.SSSBasedOn, item.PhilHealthBasedOn,

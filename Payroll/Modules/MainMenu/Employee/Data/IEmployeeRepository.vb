@@ -10,6 +10,12 @@
         Function UpdateAsync(model As Models.EmployeeModel) As Task(Of Boolean)
         Function DeleteAsync(recordId As Integer) As Task(Of Boolean)
 
+        ''' <summary>Lahat ng kailangan ng header ng Employee screen, sa isang query.</summary>
+        Function GetHeaderAsync(recordId As Integer) As Task(Of Models.EmployeeHeaderModel)
+
+        ''' <summary>Active/Inactive lang (IsActive). Hindi ito ang Delete.</summary>
+        Function SetActiveAsync(recordId As Integer, isActive As Boolean) As Task(Of Boolean)
+
         ' --- Employment ---
         Function GetEmploymentAsync(recordId As Integer) As Task(Of Models.EmployeeEmploymentModel)
         Function SaveEmploymentAsync(model As Models.EmployeeEmploymentModel) As Task(Of Boolean)

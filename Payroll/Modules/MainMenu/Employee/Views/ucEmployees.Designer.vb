@@ -40,13 +40,12 @@ Partial Class ucEmployees
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
         grpHeader = New DevExpress.XtraEditors.GroupControl()
-        StackPanel1 = New DevExpress.Utils.Layout.StackPanel()
-        SimpleButton1 = New DevExpress.XtraEditors.SimpleButton()
-        SimpleButton2 = New DevExpress.XtraEditors.SimpleButton()
-        SimpleButton3 = New DevExpress.XtraEditors.SimpleButton()
-        SimpleButton4 = New DevExpress.XtraEditors.SimpleButton()
+        stackHdr_Buttons = New DevExpress.Utils.Layout.StackPanel()
+        btnHdr_Actions = New DevExpress.XtraEditors.DropDownButton()
+        btnHdr_Loans = New DevExpress.XtraEditors.SimpleButton()
+        pnlHdr_Chips = New FlowLayoutPanel()
+        lblHdr_Alert = New DevExpress.XtraEditors.LabelControl()
         lblHdr_MainInfo = New DevExpress.XtraEditors.LabelControl()
-        lblHdr_ActiveIndicator = New DevExpress.XtraEditors.LabelControl()
         lblHdr_FullName = New DevExpress.XtraEditors.LabelControl()
         picEmployee = New DevExpress.XtraEditors.PictureEdit()
         PictureEdit1 = New DevExpress.XtraEditors.PictureEdit()
@@ -65,8 +64,8 @@ Partial Class ucEmployees
         PanelControl1.SuspendLayout()
         CType(grpHeader, ComponentModel.ISupportInitialize).BeginInit()
         grpHeader.SuspendLayout()
-        CType(StackPanel1, ComponentModel.ISupportInitialize).BeginInit()
-        StackPanel1.SuspendLayout()
+        CType(stackHdr_Buttons, ComponentModel.ISupportInitialize).BeginInit()
+        stackHdr_Buttons.SuspendLayout()
         CType(picEmployee.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(PictureEdit1.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
@@ -82,7 +81,7 @@ Partial Class ucEmployees
         TablePanel1.Location = New Point(4, 4)
         TablePanel1.Margin = New Padding(3, 2, 3, 2)
         TablePanel1.Name = "TablePanel1"
-        TablePanel1.Rows.AddRange(New DevExpress.Utils.Layout.TablePanelRow() {New DevExpress.Utils.Layout.TablePanelRow(DevExpress.Utils.Layout.TablePanelEntityStyle.Absolute, 160F), New DevExpress.Utils.Layout.TablePanelRow(DevExpress.Utils.Layout.TablePanelEntityStyle.Absolute, 5F), New DevExpress.Utils.Layout.TablePanelRow(DevExpress.Utils.Layout.TablePanelEntityStyle.Relative, 26F)})
+        TablePanel1.Rows.AddRange(New DevExpress.Utils.Layout.TablePanelRow() {New DevExpress.Utils.Layout.TablePanelRow(DevExpress.Utils.Layout.TablePanelEntityStyle.Absolute, 168F), New DevExpress.Utils.Layout.TablePanelRow(DevExpress.Utils.Layout.TablePanelEntityStyle.Absolute, 5F), New DevExpress.Utils.Layout.TablePanelRow(DevExpress.Utils.Layout.TablePanelEntityStyle.Relative, 26F)})
         TablePanel1.Size = New Size(1099, 558)
         TablePanel1.TabIndex = 1
         TablePanel1.UseSkinIndents = True
@@ -101,13 +100,13 @@ Partial Class ucEmployees
         tabconMain.AppearancePage.HeaderActive.Options.UseFont = True
         TablePanel1.SetColumn(tabconMain, 0)
         tabconMain.Dock = DockStyle.Fill
-        tabconMain.Location = New Point(14, 177)
+        tabconMain.Location = New Point(14, 185)
         tabconMain.Margin = New Padding(3, 2, 3, 2)
         tabconMain.MultiLine = DevExpress.Utils.DefaultBoolean.True
         tabconMain.Name = "tabconMain"
         TablePanel1.SetRow(tabconMain, 2)
         tabconMain.SelectedTabPage = tabpagePersonalInfo
-        tabconMain.Size = New Size(809, 368)
+        tabconMain.Size = New Size(809, 360)
         tabconMain.TabIndex = 5
         tabconMain.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpagePersonalInfo, tabpageEmployment, tabpageEarnings, tabpageStatutory, tabpagePrevEmployer, tabpageFixTransactions})
         ' 
@@ -116,7 +115,7 @@ Partial Class ucEmployees
         tabpagePersonalInfo.Margin = New Padding(3, 2, 3, 2)
         tabpagePersonalInfo.Name = "tabpagePersonalInfo"
         tabpagePersonalInfo.Padding = New Padding(9, 8, 9, 8)
-        tabpagePersonalInfo.Size = New Size(807, 339)
+        tabpagePersonalInfo.Size = New Size(807, 331)
         tabpagePersonalInfo.Text = "Personal Info."
         ' 
         ' tabpageEmployment
@@ -124,7 +123,7 @@ Partial Class ucEmployees
         tabpageEmployment.Margin = New Padding(3, 2, 3, 2)
         tabpageEmployment.Name = "tabpageEmployment"
         tabpageEmployment.Padding = New Padding(9, 8, 9, 8)
-        tabpageEmployment.Size = New Size(807, 339)
+        tabpageEmployment.Size = New Size(807, 331)
         tabpageEmployment.Text = "Employment"
         ' 
         ' tabpageEarnings
@@ -132,7 +131,7 @@ Partial Class ucEmployees
         tabpageEarnings.Margin = New Padding(3, 2, 3, 2)
         tabpageEarnings.Name = "tabpageEarnings"
         tabpageEarnings.Padding = New Padding(9, 8, 9, 8)
-        tabpageEarnings.Size = New Size(807, 339)
+        tabpageEarnings.Size = New Size(807, 331)
         tabpageEarnings.Text = "Earnings"
         ' 
         ' tabpageStatutory
@@ -140,7 +139,7 @@ Partial Class ucEmployees
         tabpageStatutory.Margin = New Padding(3, 2, 3, 2)
         tabpageStatutory.Name = "tabpageStatutory"
         tabpageStatutory.Padding = New Padding(9, 8, 9, 8)
-        tabpageStatutory.Size = New Size(807, 339)
+        tabpageStatutory.Size = New Size(807, 331)
         tabpageStatutory.Text = "Statutory"
         ' 
         ' tabpagePrevEmployer
@@ -148,7 +147,7 @@ Partial Class ucEmployees
         tabpagePrevEmployer.Margin = New Padding(3, 2, 3, 2)
         tabpagePrevEmployer.Name = "tabpagePrevEmployer"
         tabpagePrevEmployer.Padding = New Padding(9, 8, 9, 8)
-        tabpagePrevEmployer.Size = New Size(807, 339)
+        tabpagePrevEmployer.Size = New Size(807, 331)
         tabpagePrevEmployer.Text = "Previous Employer"
         ' 
         ' tabpageFixTransactions
@@ -156,7 +155,7 @@ Partial Class ucEmployees
         tabpageFixTransactions.Margin = New Padding(3, 2, 3, 2)
         tabpageFixTransactions.Name = "tabpageFixTransactions"
         tabpageFixTransactions.Padding = New Padding(9, 8, 9, 8)
-        tabpageFixTransactions.Size = New Size(807, 339)
+        tabpageFixTransactions.Size = New Size(807, 331)
         tabpageFixTransactions.Text = "Fix Transactions"
         ' 
         ' grpMasterlist
@@ -286,9 +285,10 @@ Partial Class ucEmployees
         grpHeader.AppearanceCaption.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near
         grpHeader.CaptionImageOptions.Image = CType(resources.GetObject("grpHeader.CaptionImageOptions.Image"), Image)
         TablePanel1.SetColumn(grpHeader, 0)
-        grpHeader.Controls.Add(StackPanel1)
+        grpHeader.Controls.Add(stackHdr_Buttons)
+        grpHeader.Controls.Add(pnlHdr_Chips)
+        grpHeader.Controls.Add(lblHdr_Alert)
         grpHeader.Controls.Add(lblHdr_MainInfo)
-        grpHeader.Controls.Add(lblHdr_ActiveIndicator)
         grpHeader.Controls.Add(lblHdr_FullName)
         grpHeader.Controls.Add(picEmployee)
         grpHeader.Dock = DockStyle.Fill
@@ -297,104 +297,91 @@ Partial Class ucEmployees
         grpHeader.Name = "grpHeader"
         grpHeader.Padding = New Padding(17, 4, 4, 4)
         TablePanel1.SetRow(grpHeader, 0)
-        grpHeader.Size = New Size(809, 156)
+        grpHeader.Size = New Size(809, 164)
         grpHeader.TabIndex = 3
         grpHeader.Text = "EMPLOYEE DETAILS"
         ' 
-        ' StackPanel1
+        ' stackHdr_Buttons
         ' 
-        StackPanel1.AutoSize = True
-        StackPanel1.Controls.Add(SimpleButton1)
-        StackPanel1.Controls.Add(SimpleButton2)
-        StackPanel1.Controls.Add(SimpleButton3)
-        StackPanel1.Controls.Add(SimpleButton4)
-        StackPanel1.Dock = DockStyle.Right
-        StackPanel1.LayoutDirection = DevExpress.Utils.Layout.StackPanelLayoutDirection.TopDown
-        StackPanel1.Location = New Point(686, 27)
-        StackPanel1.Margin = New Padding(3, 2, 3, 2)
-        StackPanel1.Name = "StackPanel1"
-        StackPanel1.Size = New Size(117, 123)
-        StackPanel1.TabIndex = 4
-        StackPanel1.UseSkinIndents = True
+        stackHdr_Buttons.AutoSize = True
+        stackHdr_Buttons.Controls.Add(btnHdr_Actions)
+        stackHdr_Buttons.Controls.Add(btnHdr_Loans)
+        stackHdr_Buttons.Dock = DockStyle.Right
+        stackHdr_Buttons.LayoutDirection = DevExpress.Utils.Layout.StackPanelLayoutDirection.TopDown
+        stackHdr_Buttons.Location = New Point(686, 27)
+        stackHdr_Buttons.Margin = New Padding(3, 2, 3, 2)
+        stackHdr_Buttons.Name = "stackHdr_Buttons"
+        stackHdr_Buttons.Size = New Size(117, 131)
+        stackHdr_Buttons.TabIndex = 4
+        stackHdr_Buttons.UseSkinIndents = True
         ' 
-        ' SimpleButton1
+        ' btnHdr_Actions
         ' 
-        SimpleButton1.AllowFocus = False
-        SimpleButton1.Cursor = Cursors.Hand
-        SimpleButton1.Location = New Point(2, 12)
-        SimpleButton1.Margin = New Padding(2)
-        SimpleButton1.Name = "SimpleButton1"
-        SimpleButton1.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
-        SimpleButton1.Size = New Size(113, 21)
-        SimpleButton1.TabIndex = 4
-        SimpleButton1.Text = "SimpleButton1"
-        SimpleButton1.Visible = False
+        btnHdr_Actions.AllowFocus = False
+        btnHdr_Actions.Cursor = Cursors.Hand
+        btnHdr_Actions.Enabled = False
+        btnHdr_Actions.Location = New Point(2, 12)
+        btnHdr_Actions.Margin = New Padding(2)
+        btnHdr_Actions.Name = "btnHdr_Actions"
+        btnHdr_Actions.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
+        btnHdr_Actions.Size = New Size(113, 28)
+        btnHdr_Actions.TabIndex = 4
+        btnHdr_Actions.Text = "Actions"
+        btnHdr_Actions.ToolTip = "Employee actions"
         ' 
-        ' SimpleButton2
+        ' btnHdr_Loans
         ' 
-        SimpleButton2.AllowFocus = False
-        SimpleButton2.Cursor = Cursors.Hand
-        SimpleButton2.Location = New Point(2, 37)
-        SimpleButton2.Margin = New Padding(2)
-        SimpleButton2.Name = "SimpleButton2"
-        SimpleButton2.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
-        SimpleButton2.Size = New Size(113, 21)
-        SimpleButton2.TabIndex = 3
-        SimpleButton2.Text = "SimpleButton2"
-        SimpleButton2.Visible = False
+        btnHdr_Loans.AllowFocus = False
+        btnHdr_Loans.Cursor = Cursors.Hand
+        btnHdr_Loans.Enabled = False
+        btnHdr_Loans.Location = New Point(2, 44)
+        btnHdr_Loans.Margin = New Padding(2)
+        btnHdr_Loans.Name = "btnHdr_Loans"
+        btnHdr_Loans.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
+        btnHdr_Loans.Size = New Size(113, 28)
+        btnHdr_Loans.TabIndex = 5
+        btnHdr_Loans.Text = "Loans"
+        btnHdr_Loans.ToolTip = "View this employee's loans"
         ' 
-        ' SimpleButton3
+        ' pnlHdr_Chips
         ' 
-        SimpleButton3.AllowFocus = False
-        SimpleButton3.Cursor = Cursors.Hand
-        SimpleButton3.Location = New Point(2, 62)
-        SimpleButton3.Margin = New Padding(2)
-        SimpleButton3.Name = "SimpleButton3"
-        SimpleButton3.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
-        SimpleButton3.Size = New Size(113, 21)
-        SimpleButton3.TabIndex = 5
-        SimpleButton3.Text = "SimpleButton3"
-        SimpleButton3.Visible = False
+        pnlHdr_Chips.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        pnlHdr_Chips.BackColor = Color.Transparent
+        pnlHdr_Chips.Location = New Point(153, 96)
+        pnlHdr_Chips.Margin = New Padding(0)
+        pnlHdr_Chips.Name = "pnlHdr_Chips"
+        pnlHdr_Chips.Size = New Size(520, 26)
+        pnlHdr_Chips.TabIndex = 6
+        pnlHdr_Chips.WrapContents = False
         ' 
-        ' SimpleButton4
+        ' lblHdr_Alert
         ' 
-        SimpleButton4.AllowFocus = False
-        SimpleButton4.Cursor = Cursors.Hand
-        SimpleButton4.Location = New Point(2, 87)
-        SimpleButton4.Margin = New Padding(2)
-        SimpleButton4.Name = "SimpleButton4"
-        SimpleButton4.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
-        SimpleButton4.Size = New Size(113, 21)
-        SimpleButton4.TabIndex = 6
-        SimpleButton4.Text = "SimpleButton4"
-        SimpleButton4.Visible = False
+        lblHdr_Alert.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        lblHdr_Alert.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        lblHdr_Alert.Appearance.Options.UseFont = True
+        lblHdr_Alert.Appearance.Options.UseForeColor = True
+        lblHdr_Alert.Appearance.Options.UseTextOptions = True
+        lblHdr_Alert.Appearance.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center
+        lblHdr_Alert.AutoEllipsis = True
+        lblHdr_Alert.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
+        lblHdr_Alert.Location = New Point(153, 130)
+        lblHdr_Alert.Margin = New Padding(3, 2, 3, 2)
+        lblHdr_Alert.Name = "lblHdr_Alert"
+        lblHdr_Alert.Padding = New Padding(8, 0, 8, 0)
+        lblHdr_Alert.Size = New Size(520, 24)
+        lblHdr_Alert.TabIndex = 7
+        lblHdr_Alert.Visible = False
         ' 
         ' lblHdr_MainInfo
         ' 
         lblHdr_MainInfo.Appearance.Font = New Font("Segoe UI", 11.25F, FontStyle.Bold)
         lblHdr_MainInfo.Appearance.Options.UseFont = True
-        lblHdr_MainInfo.Location = New Point(153, 70)
+        lblHdr_MainInfo.Location = New Point(153, 68)
         lblHdr_MainInfo.Margin = New Padding(3, 2, 3, 2)
         lblHdr_MainInfo.Name = "lblHdr_MainInfo"
         lblHdr_MainInfo.Size = New Size(108, 20)
         lblHdr_MainInfo.TabIndex = 3
         lblHdr_MainInfo.Text = "..........................."
-        ' 
-        ' lblHdr_ActiveIndicator
-        ' 
-        lblHdr_ActiveIndicator.Appearance.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblHdr_ActiveIndicator.Appearance.ForeColor = Color.SeaGreen
-        lblHdr_ActiveIndicator.Appearance.Options.UseFont = True
-        lblHdr_ActiveIndicator.Appearance.Options.UseForeColor = True
-        lblHdr_ActiveIndicator.ImageAlignToText = DevExpress.XtraEditors.ImageAlignToText.LeftCenter
-        lblHdr_ActiveIndicator.ImageOptions.Alignment = ContentAlignment.MiddleLeft
-        lblHdr_ActiveIndicator.ImageOptions.Image = CType(resources.GetObject("lblHdr_ActiveIndicator.ImageOptions.Image"), Image)
-        lblHdr_ActiveIndicator.Location = New Point(153, 130)
-        lblHdr_ActiveIndicator.Margin = New Padding(3, 2, 3, 2)
-        lblHdr_ActiveIndicator.Name = "lblHdr_ActiveIndicator"
-        lblHdr_ActiveIndicator.Size = New Size(33, 20)
-        lblHdr_ActiveIndicator.TabIndex = 2
-        lblHdr_ActiveIndicator.Text = "..."
         ' 
         ' lblHdr_FullName
         ' 
@@ -417,7 +404,7 @@ Partial Class ucEmployees
         picEmployee.Properties.Padding = New Padding(5)
         picEmployee.Properties.ShowCameraMenuItem = DevExpress.XtraEditors.Controls.CameraMenuItemVisibility.Auto
         picEmployee.Properties.SizeMode = DevExpress.XtraEditors.Controls.PictureSizeMode.Stretch
-        picEmployee.Size = New Size(121, 123)
+        picEmployee.Size = New Size(121, 131)
         picEmployee.TabIndex = 0
         ' 
         ' PictureEdit1
@@ -456,8 +443,8 @@ Partial Class ucEmployees
         CType(grpHeader, ComponentModel.ISupportInitialize).EndInit()
         grpHeader.ResumeLayout(False)
         grpHeader.PerformLayout()
-        CType(StackPanel1, ComponentModel.ISupportInitialize).EndInit()
-        StackPanel1.ResumeLayout(False)
+        CType(stackHdr_Buttons, ComponentModel.ISupportInitialize).EndInit()
+        stackHdr_Buttons.ResumeLayout(False)
         CType(picEmployee.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(PictureEdit1.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
@@ -483,14 +470,13 @@ Partial Class ucEmployees
     Friend WithEvents PanelControl2 As DevExpress.XtraEditors.PanelControl
     Friend WithEvents lblHdr_FullName As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblHdr_MainInfo As DevExpress.XtraEditors.LabelControl
-    Friend WithEvents lblHdr_ActiveIndicator As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblHdr_Alert As DevExpress.XtraEditors.LabelControl
     Friend WithEvents gridconEmployeeList As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridviewEmployeeList As DevExpress.XtraGrid.Views.Grid.GridView
-    Friend WithEvents StackPanel1 As DevExpress.Utils.Layout.StackPanel
-    Friend WithEvents SimpleButton2 As DevExpress.XtraEditors.SimpleButton
-    Friend WithEvents SimpleButton1 As DevExpress.XtraEditors.SimpleButton
-    Friend WithEvents SimpleButton3 As DevExpress.XtraEditors.SimpleButton
-    Friend WithEvents SimpleButton4 As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents stackHdr_Buttons As DevExpress.Utils.Layout.StackPanel
+    Friend WithEvents btnHdr_Actions As DevExpress.XtraEditors.DropDownButton
+    Friend WithEvents btnHdr_Loans As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents pnlHdr_Chips As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents rgFilter As DevExpress.XtraEditors.RadioGroup
     Friend WithEvents LabelControl1 As DevExpress.XtraEditors.LabelControl
 

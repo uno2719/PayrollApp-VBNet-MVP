@@ -105,6 +105,10 @@ Namespace Employee.Data
         Public Async Function UpdateAsync(model As Models.EmployeeModel) As Task(Of Boolean) _
             Implements IEmployeeRepository.UpdateAsync
 
+            ' PAALALA: sinadyang HINDI isinama ang IsActive sa UPDATE na ito. Ang Personal Info save ay
+            ' laging nagpapadala ng IsActive = True, kaya mabubuhay ulit ang Inactive/Resigned na employee
+            ' tuwing may mage-edit ng pangalan. Ang IsActive ay binabago lang ng SetActiveAsync (at Delete).
+
             Dim sql = "
                 UPDATE tblEmployee SET
                     EmployeeNo          = @EmployeeNo,
@@ -126,7 +130,6 @@ Namespace Employee.Data
                     PermanentAddress1   = @PermanentAddress1,
                     PermanentAddress2   = @PermanentAddress2,
                     PermanentZipCode    = @PermanentZipCode,
-                    IsActive            = @IsActive,
                     UpdatedAt           = GETDATE(),
                     UpdatedBy           = @UpdatedBy
                 WHERE RecordId = @RecordId"
@@ -152,6 +155,73 @@ Namespace Employee.Data
 
             Dim rows = Await ExecuteAsync(sql, New With {
                 recordId,
+                .UpdatedBy = AppSession.CurrentUser
+            })
+            Return rows > 0
+
+        End Function
+
+        Public Async Function GetHeaderAsync(recordId As Integer) As Task(Of Models.EmployeeHeaderModel) _
+            Implements IEmployeeRepository.GetHeaderAsync
+
+            ' LEFT JOIN lahat: makita pa rin ang header kahit kulang ang Employment/Earnings setup.
+            Dim sql = "
+                SELECT e.RecordId, e.EmployeeNo, e.FirstName, e.MiddleName, e.LastName,
+                       CAST(ISNULL(e.IsActive, 0) AS BIT) AS IsActive,
+                       emp.EmployeeStatus, emp.DateJoined,
+                       emp.DateResigned, emp.DateRetired, emp.DateTerminated,
+                       p.PositionName, d.DepartmentName, b.BranchName,
+                       CAST(CASE WHEN ern.RecordId IS NULL THEN 0 ELSE 1 END AS BIT) AS HasEarnings,
+                       ern.PayCycle,
+                       CAST(ISNULL(ern.PayrollFlag, 0) AS BIT) AS PayrollFlag
+                FROM tblEmployee e
+                LEFT JOIN tblEmployeeEmployment emp ON emp.RecordId = e.RecordId
+                LEFT JOIN tblPosition p ON p.PositionId = emp.PositionId
+                LEFT JOIN tblDepartment d ON d.DepartmentId = emp.DepartmentId
+                LEFT JOIN tblBranch b ON b.BranchId = emp.BranchId
+                LEFT JOIN tblEmployeeEarnings ern ON ern.RecordId = e.RecordId
+                WHERE e.RecordId = @RecordId"
+
+            Using conn = GetConnection()
+                Dim header = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeHeaderModel)(
+                    sql, New With {recordId})
+
+                If header IsNot Nothing Then
+                    header.ProbationMonths = Await TryGetProbationMonthsAsync(conn)
+                End If
+
+                Return header
+            End Using
+
+        End Function
+
+        ' Galing sa General Settings (tblGeneralSettings.ProbationMonths). Kapag wala pa ang column
+        ' (hindi pa na-run ang SQL) o wala pang settings row, Nothing ang ibabalik at ang default ng
+        ' presentation ang gagamitin - hindi dapat masira ang buong header dahil dito.
+        Private Shared Async Function TryGetProbationMonthsAsync(conn As IDbConnection) As Task(Of Integer?)
+            Try
+                Return Await conn.QuerySingleOrDefaultAsync(Of Integer?)(
+                    "SELECT TOP 1 ProbationMonths FROM tblGeneralSettings ORDER BY GeneralSettingsId")
+            Catch ex As Exception
+                Debug.WriteLine($"ProbationMonths not available: {ex.Message}")
+                Return Nothing
+            End Try
+        End Function
+
+        Public Async Function SetActiveAsync(recordId As Integer, isActive As Boolean) As Task(Of Boolean) _
+            Implements IEmployeeRepository.SetActiveAsync
+
+            Dim sql = "
+                UPDATE tblEmployee SET
+                    IsActive  = @IsActive,
+                    UpdatedAt = GETDATE(),
+                    UpdatedBy = @UpdatedBy
+                WHERE RecordId = @RecordId
+                  AND IsDeleted = 0"
+
+            Dim rows = Await ExecuteAsync(sql, New With {
+                recordId,
+                isActive,
                 .UpdatedBy = AppSession.CurrentUser
             })
             Return rows > 0

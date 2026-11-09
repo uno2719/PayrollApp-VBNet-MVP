@@ -84,6 +84,22 @@
             Return Await _repo.DeleteAsync(recordId)
         End Function
 
+        Public Async Function GetHeaderAsync(recordId As Integer) As Task(Of Models.EmployeeHeaderModel) _
+            Implements IEmployeeService.GetHeaderAsync
+            Return Await _repo.GetHeaderAsync(recordId)
+        End Function
+
+        Public Async Function SetActiveStatusAsync(recordId As Integer, isActive As Boolean) As Task(Of Boolean) _
+            Implements IEmployeeService.SetActiveStatusAsync
+
+            ' Huling harang kahit lusutan ang UI: Admin o may "Employee Actions" (Can Edit) lang.
+            If Not GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Actions) Then
+                Throw New UnauthorizedAccessException("You are not allowed to change an employee's status.")
+            End If
+
+            Return Await _repo.SetActiveAsync(recordId, isActive)
+        End Function
+
         ' =============================================
         ' EMPLOYMENT
         ' =============================================

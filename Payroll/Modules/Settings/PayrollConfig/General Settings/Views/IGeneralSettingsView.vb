@@ -12,6 +12,9 @@ Namespace GeneralSettings.Views
         Property PercentPrecision As Integer
         Property DailyRateMonthlyFactor As Decimal
 
+        ' --- Employment ---
+        Property ProbationMonths As Integer
+
         ' --- Code Mapping ---
         Property BasicSalaryCodePlusId As Integer?
         Property BasicSalaryCodeMinusId As Integer?

@@ -59,6 +59,13 @@ Namespace GeneralSettings.Services
                 Return Fail("Percent Precision must be between 0 and 6.")
             End If
 
+            ' --- Employment ---
+            ' Maluwag ang range dahil nagbabago ang polisiya (dati 6, ngayon 5 buwan). Tandaan: sa pagkaalam ko,
+            ' 6 na buwan ang karaniwang itinatakda ng Labor Code bilang pinakamahaba - kumpirmahin sa HR.
+            If item.ProbationMonths < 1 OrElse item.ProbationMonths > 12 Then
+                Return Fail("Probation Period must be between 1 and 12 months.")
+            End If
+
             ' --- Code Mapping ---
             ' Basic Salary Code (+) lang ang required: wala kang maibabatay
             ' na earnings kung wala nito. Ang iba ay opsyonal - may mga

@@ -27,6 +27,13 @@ Namespace GlobalShared.Models
         ''' </summary>
         Public Property DailyRateMonthlyFactor As Decimal = 30D
 
+        ' --- Employment ---
+        ''' <summary>
+        ''' Haba ng probation sa buwan. Ginagamit ng Employee header para sa regularization reminder
+        ''' (DateJoined + ProbationMonths). Nasa settings dahil nagbabago ang polisiya ng kompanya.
+        ''' </summary>
+        Public Property ProbationMonths As Integer = 5
+
         ' --- Code Mapping (FK papunta sa tblCompensation / tblDeduction) ---
         ' Nullable dahil pwedeng hindi pa naka-set sa bagong install, o
         ' hindi talaga ginagamit ng company (hal. walang Early Out policy).

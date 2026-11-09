@@ -147,6 +147,17 @@ Public Class ucGeneralSettings
         End Set
     End Property
 
+    ' === IGeneralSettingsView : Employment ===
+
+    Public Property ProbationMonths As Integer Implements IGeneralSettingsView.ProbationMonths
+        Get
+            Return ToInteger(txtProbationMonths.Text)
+        End Get
+        Set(value As Integer)
+            txtProbationMonths.Text = value.ToString()
+        End Set
+    End Property
+
     ' === IGeneralSettingsView : Code Mapping ===
 
     Public Property BasicSalaryCodePlusId As Integer? Implements IGeneralSettingsView.BasicSalaryCodePlusId

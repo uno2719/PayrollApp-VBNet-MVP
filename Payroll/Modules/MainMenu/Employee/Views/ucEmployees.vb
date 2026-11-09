@@ -1,5 +1,6 @@
 ﻿Imports System.ComponentModel
 Imports DevExpress.Mvvm.POCO
+Imports DevExpress.Utils.Menu
 Imports DevExpress.XtraBars.Docking2010
 Imports DevExpress.XtraEditors
 Imports DevExpress.XtraGrid.Views.Grid
@@ -38,6 +39,19 @@ Public Class ucEmployees
     ' Service
     Private ReadOnly _service As New Employee.Services.EmployeeService()
 
+    ' Loans (read-only): para sa Loans badge sa header at sa quick view popup
+    Private ReadOnly _loanService As Loans.Services.IEmployeeLoanService
+
+    ' Header
+    Private _headerModel As Employee.Models.EmployeeHeaderModel
+    Private _chipStatus As GlobalShared.Controls.StatusChip
+    Private _chipKind As GlobalShared.Controls.StatusChip
+    Private _chipJoined As GlobalShared.Controls.StatusChip
+    Private _chipCycle As GlobalShared.Controls.StatusChip
+    Private _chipPayroll As GlobalShared.Controls.StatusChip
+    Private _actionsMenu As DXPopupMenu
+    Private _miToggleActive As DXMenuItem
+
     ' Button indexes
     Private Const BTN_NEW As Integer = 0
     Private Const BTN_EDIT As Integer = 2
@@ -48,10 +62,13 @@ Public Class ucEmployees
     Public Sub New(personalInfoView As ucEmployeesPersonalInfo,
                    employmentView As ucEmployeesEmployment,
                    earningsView As ucEmployeesEarnings,
-                   statutoryView As ucEmployeesStatutory
+                   statutoryView As ucEmployeesStatutory,
+                   loanService As Loans.Services.IEmployeeLoanService
                    )
 
         InitializeComponent()
+
+        _loanService = loanService
 
         ' SAVE injected instances
         _ucPersonal = personalInfoView
@@ -84,6 +101,8 @@ Public Class ucEmployees
         AddHandler _ucStatutory.OnSaveCompleted,
         AddressOf HandleSaveCompleted
 
+        BuildHeaderUi()
+
     End Sub
 
 
@@ -115,12 +134,6 @@ Public Class ucEmployees
         wbpMainCommands.Buttons.Item(BTN_EDIT).Properties.ToolTip = "Edit Selected"
         wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
         wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
-
-        ' Setup SimpleButtons — hide muna
-        SimpleButton1.Visible = False
-        SimpleButton2.Visible = False
-        SimpleButton3.Visible = False
-        SimpleButton4.Visible = False
 
         ' Setup grid
         SetupGrid()
@@ -300,26 +313,181 @@ Public Class ucEmployees
     ' UPDATE HEADER
     ' =============================================
     Private Async Sub UpdateHeaderAsync()
+        Dim recordId = _selectedRecordId
         Try
-            Dim emp = Await _service.GetByIdAsync(_selectedRecordId)
-            If emp Is Nothing Then Return
+            Dim header = Await _service.GetHeaderAsync(recordId)
+            If header Is Nothing OrElse recordId <> _selectedRecordId Then Return
 
-            lblHdr_FullName.Text = emp.FullName
+            ' Loans ay pang-badge at pang-alert lang. Kapag pumalya ang query (hal. wala pang loan tables
+            ' sa database na iyon), huwag masira ang buong header.
+            Dim loans As List(Of GlobalShared.Models.EmployeeLoanModel)
+            Try
+                loans = Await _loanService.GetByEmployeeAsync(recordId, "Active")
+            Catch ex As Exception
+                Debug.WriteLine($"Header loans query failed: {ex.Message}")
+                loans = New List(Of GlobalShared.Models.EmployeeLoanModel)()
+            End Try
 
-            ' ✅ EmployeeNo + PositionName
-            If String.IsNullOrEmpty(emp.PositionName) Then
-                lblHdr_MainInfo.Text = emp.EmployeeNo
-            Else
-                lblHdr_MainInfo.Text = $"{emp.EmployeeNo} | {StrConv(emp.PositionName, VbStrConv.ProperCase)}"
-            End If
+            ' Kung lumipat na ng ibang employee habang naghihintay, huwag nang i-apply.
+            If recordId <> _selectedRecordId Then Return
 
-            lblHdr_ActiveIndicator.Text = If(emp.IsActive, "Active", "Inactive")
-            lblHdr_ActiveIndicator.Appearance.ForeColor = If(emp.IsActive,
-                                                         Color.SeaGreen,
-                                                         Color.Red)
+            _headerModel = header
+            ApplyHeaderState(Employee.Views.EmployeeHeaderPresentation.Build(header, loans, Date.Today))
         Catch ex As Exception
             ShowError(ex.Message)
         End Try
+    End Sub
+
+    ' =============================================
+    ' HEADER UI (chips, alert, buttons)
+    ' =============================================
+    Private Sub BuildHeaderUi()
+        _chipStatus = New GlobalShared.Controls.StatusChip() With {.Bold = True}
+        _chipKind = New GlobalShared.Controls.StatusChip()
+        _chipJoined = New GlobalShared.Controls.StatusChip()
+        _chipCycle = New GlobalShared.Controls.StatusChip()
+        _chipPayroll = New GlobalShared.Controls.StatusChip()
+
+        For Each chip In HeaderChips()
+            chip.Visible = False
+            pnlHdr_Chips.Controls.Add(chip)
+        Next
+
+        ' Actions menu (Phase 1: Set inactive / Reactivate lang. Dadagdagan sa Phase 2).
+        _miToggleActive = New DXMenuItem("Set inactive", AddressOf OnToggleActiveClick)
+        _actionsMenu = New DXPopupMenu()
+        _actionsMenu.Items.Add(_miToggleActive)
+        btnHdr_Actions.DropDownControl = _actionsMenu
+
+        UpdateHeaderButtons()
+    End Sub
+
+    Private Function HeaderChips() As GlobalShared.Controls.StatusChip()
+        Return New GlobalShared.Controls.StatusChip() {_chipStatus, _chipKind, _chipJoined, _chipCycle, _chipPayroll}
+    End Function
+
+    Private Shared Sub ApplyChip(chip As GlobalShared.Controls.StatusChip, state As Employee.Views.HeaderChipState)
+        chip.Visible = state.Visible
+        If Not state.Visible Then Return
+        chip.SetColors(state.Back, state.Fore, state.Dot)
+        chip.Text = state.Text
+    End Sub
+
+    Private Sub ApplyHeaderState(st As Employee.Views.EmployeeHeaderState)
+        lblHdr_FullName.Text = st.FullName
+        lblHdr_MainInfo.Text = st.SubLine
+
+        pnlHdr_Chips.SuspendLayout()
+        ApplyChip(_chipStatus, st.Status)
+        ApplyChip(_chipKind, st.Kind)
+        ApplyChip(_chipJoined, st.Joined)
+        ApplyChip(_chipCycle, st.PayCycle)
+        ApplyChip(_chipPayroll, st.PayrollChip)
+        pnlHdr_Chips.ResumeLayout(True)
+
+        If String.IsNullOrEmpty(st.AlertText) Then
+            lblHdr_Alert.Visible = False
+        Else
+            lblHdr_Alert.Text = st.AlertText
+            lblHdr_Alert.ToolTip = st.AlertText
+            lblHdr_Alert.Appearance.BackColor = st.AlertBack
+            lblHdr_Alert.Appearance.ForeColor = st.AlertFore
+            lblHdr_Alert.Visible = True
+        End If
+
+        btnHdr_Loans.Text = st.LoansCaption
+        _miToggleActive.Caption = st.ToggleActiveCaption
+
+        UpdateHeaderButtons()
+    End Sub
+
+    ''' <summary>
+    ''' Header buttons: Loans = basta may napiling employee at Idle. Actions = dagdag pa ang
+    ''' Edit access sa Employees AT ang "Employee Actions" access (Admin laging meron).
+    ''' </summary>
+    Private Sub UpdateHeaderButtons()
+        Dim idle As Boolean = (_currentState = FormState.Idle)
+        Dim hasRecord As Boolean = (_headerModel IsNot Nothing AndAlso
+                                    _selectedRecordId > 0 AndAlso
+                                    _headerModel.RecordId = _selectedRecordId)
+
+        Dim canAct As Boolean = HasEditAccess AndAlso
+            GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Actions)
+
+        btnHdr_Actions.Enabled = idle AndAlso hasRecord AndAlso canAct
+        btnHdr_Actions.ToolTip = If(canAct,
+                                    "Employee actions",
+                                    "Only Admin or users with Employee Actions access can use these actions.")
+        btnHdr_Loans.Enabled = idle AndAlso hasRecord
+    End Sub
+
+    Private Async Sub OnToggleActiveClick(sender As Object, e As EventArgs)
+        If _headerModel Is Nothing OrElse _selectedRecordId = 0 OrElse
+           _headerModel.RecordId <> _selectedRecordId Then Return
+
+        Dim recordId = _selectedRecordId
+        Dim who = If(String.IsNullOrWhiteSpace(_headerModel.FullName), "this employee", _headerModel.FullName)
+        Dim makeActive = Not _headerModel.IsActive
+
+        Dim title As String
+        Dim prompt As String
+        If makeActive Then
+            title = "Reactivate Employee"
+            prompt = $"Reactivate {who}?" & vbCrLf & vbCrLf &
+                     "The employee will appear in the Active list again and can be included in payroll again."
+        Else
+            title = "Set Employee Inactive"
+            prompt = $"Set {who} to Inactive?" & vbCrLf & vbCrLf &
+                     "Inactive employees are hidden from the Active list. If there is no resignation, retirement, " &
+                     "or termination date, they are also not included in payroll." & vbCrLf & vbCrLf &
+                     "You can reverse this anytime using Actions > Reactivate."
+        End If
+
+        Dim answer = XtraMessageBox.Show(Me, prompt, title,
+                                         MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                                         MessageBoxDefaultButton.Button2)
+        If answer <> DialogResult.Yes Then Return
+
+        Try
+            ShowLoading()
+            Dim ok = Await _service.SetActiveStatusAsync(recordId, makeActive)
+            Await RefreshAfterStatusChangeAsync()
+
+            If ok Then
+                ShowMessage(If(makeActive, "Employee reactivated.", "Employee set to Inactive."))
+            Else
+                ShowError("Nothing was changed - the record may no longer exist. The list has been refreshed.")
+            End If
+        Catch ex As Exception
+            ShowError(ex.Message)
+        Finally
+            HideLoading()
+        End Try
+    End Sub
+
+    Private Async Function RefreshAfterStatusChangeAsync() As Task
+        If GetCurrentFilter() = "All" Then
+            ' Nasa listahan pa rin ang employee (hindi ipinapakita ng grid ang IsActive) - header lang ang i-refresh.
+            UpdateHeaderAsync()
+            Return
+        End If
+
+        ' Aalis ang employee sa kasalukuyang listahan (Active/Inactive filter). Ang pag-rebind ng grid
+        ' ang magpapa-select ng susunod na row (FocusedRowChanged) at magre-refresh ng header.
+        Await LoadEmployeeListAsync()
+        If gridviewEmployeeList.RowCount = 0 Then
+            _selectedRecordId = 0
+            ClearHeader()
+        End If
+    End Function
+
+    Private Sub btnHdr_Loans_Click(sender As Object, e As EventArgs) Handles btnHdr_Loans.Click
+        If _headerModel Is Nothing OrElse _selectedRecordId = 0 Then Return
+
+        Using dlg As New frmEmployeeLoansQuickView(_loanService, _selectedRecordId,
+                                                   _headerModel.EmployeeNo, _headerModel.FullName)
+            dlg.ShowDialog(Me)
+        End Using
     End Sub
 
     ' =============================================
@@ -364,12 +532,6 @@ Public Class ucEmployees
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.Caption = " Delete"
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ImageOptions.Image = My.Resources.icon_delete_32
                 wbpMainCommands.Buttons.Item(BTN_DELETE).Properties.ToolTip = "Delete Selected"
-
-                ' SimpleButtons — hide lahat
-                SimpleButton1.Visible = False
-                SimpleButton2.Visible = False
-                SimpleButton3.Visible = False
-                SimpleButton4.Visible = False
 
                 ' Tabs — lahat enabled, controls disabled
                 EnableTab(tabpagePersonalInfo, True)
@@ -529,6 +691,8 @@ Public Class ucEmployees
                 .Enabled = True
             End If
         End With
+
+        UpdateHeaderButtons()
 
     End Sub
 
@@ -811,10 +975,22 @@ Public Class ucEmployees
     ' CLEAR HEADER
     ' =============================================
     Private Sub ClearHeader()
+        _headerModel = Nothing
+
         lblHdr_FullName.Text = String.Empty
         lblHdr_MainInfo.Text = String.Empty
-        lblHdr_ActiveIndicator.Text = String.Empty
+
+        If _chipStatus IsNot Nothing Then
+            For Each chip In HeaderChips()
+                chip.Visible = False
+            Next
+        End If
+
+        lblHdr_Alert.Visible = False
+        btnHdr_Loans.Text = "Loans"
         picEmployee.EditValue = My.Resources.img_default_avatar1
+
+        UpdateHeaderButtons()
     End Sub
 
 
