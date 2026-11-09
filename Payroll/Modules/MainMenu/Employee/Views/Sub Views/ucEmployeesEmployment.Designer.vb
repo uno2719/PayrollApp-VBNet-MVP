@@ -57,6 +57,7 @@ Partial Class ucEmployeesEmployment
         emptyGap = New DevExpress.XtraLayout.EmptySpaceItem()
         emptyBottom = New DevExpress.XtraLayout.EmptySpaceItem()
         emptyTimekeepingGap = New DevExpress.XtraLayout.EmptySpaceItem()
+        EmptySpaceItem1 = New DevExpress.XtraLayout.EmptySpaceItem()
         sleBranchView = New DevExpress.XtraGrid.Views.Grid.GridView()
         sleDepartmentView = New DevExpress.XtraGrid.Views.Grid.GridView()
         slePositionView = New DevExpress.XtraGrid.Views.Grid.GridView()
@@ -65,7 +66,6 @@ Partial Class ucEmployeesEmployment
         sleLeaveGroupView = New DevExpress.XtraGrid.Views.Grid.GridView()
         sleSuperiorView = New DevExpress.XtraGrid.Views.Grid.GridView()
         sleScheduleGroupView = New DevExpress.XtraGrid.Views.Grid.GridView()
-        EmptySpaceItem1 = New DevExpress.XtraLayout.EmptySpaceItem()
         CType(lcEmployment, ComponentModel.ISupportInitialize).BeginInit()
         lcEmployment.SuspendLayout()
         CType(cboEmployeeStatus.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -116,6 +116,7 @@ Partial Class ucEmployeesEmployment
         CType(emptyGap, ComponentModel.ISupportInitialize).BeginInit()
         CType(emptyBottom, ComponentModel.ISupportInitialize).BeginInit()
         CType(emptyTimekeepingGap, ComponentModel.ISupportInitialize).BeginInit()
+        CType(EmptySpaceItem1, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleBranchView, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleDepartmentView, ComponentModel.ISupportInitialize).BeginInit()
         CType(slePositionView, ComponentModel.ISupportInitialize).BeginInit()
@@ -124,13 +125,12 @@ Partial Class ucEmployeesEmployment
         CType(sleLeaveGroupView, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleSuperiorView, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleScheduleGroupView, ComponentModel.ISupportInitialize).BeginInit()
-        CType(EmptySpaceItem1, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' lcEmployment
         ' 
         lcEmployment.AllowCustomization = False
-        lcEmployment.Appearance.Control.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        lcEmployment.Appearance.Control.Font = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         lcEmployment.Appearance.Control.Options.UseFont = True
         lcEmployment.Controls.Add(cboEmployeeStatus)
         lcEmployment.Controls.Add(cboEmploymentType)
@@ -152,7 +152,7 @@ Partial Class ucEmployeesEmployment
         lcEmployment.Controls.Add(SeparatorHeader)
         lcEmployment.Controls.Add(SeparatorTimekeeping)
         lcEmployment.Dock = DockStyle.Fill
-        lcEmployment.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        lcEmployment.Font = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         lcEmployment.Location = New Point(0, 0)
         lcEmployment.Name = "lcEmployment"
         lcEmployment.Root = Root_Employment
@@ -162,186 +162,186 @@ Partial Class ucEmployeesEmployment
         ' cboEmployeeStatus
         ' 
         cboEmployeeStatus.EnterMoveNextControl = True
-        cboEmployeeStatus.Location = New Point(152, 55)
+        cboEmployeeStatus.Location = New Point(149, 56)
         cboEmployeeStatus.Name = "cboEmployeeStatus"
-        cboEmployeeStatus.Properties.Appearance.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        cboEmployeeStatus.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         cboEmployeeStatus.Properties.Appearance.Options.UseFont = True
         cboEmployeeStatus.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        cboEmployeeStatus.Properties.Items.AddRange(New Object() {"Active", "Probationary", "Contractual", "Regular", "Resigned", "Retired", "Terminated"})
+        cboEmployeeStatus.Properties.Items.AddRange(New Object() {"Contractual", "Probationary", "Regular", "Project-based", "Casual", "Seasonal"})
         cboEmployeeStatus.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboEmployeeStatus.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        cboEmployeeStatus.Size = New Size(377, 22)
+        cboEmployeeStatus.Size = New Size(380, 22)
         cboEmployeeStatus.StyleController = lcEmployment
         cboEmployeeStatus.TabIndex = 0
         ' 
         ' cboEmploymentType
         ' 
         cboEmploymentType.EnterMoveNextControl = True
-        cboEmploymentType.Location = New Point(152, 81)
+        cboEmploymentType.Location = New Point(149, 82)
         cboEmploymentType.Name = "cboEmploymentType"
-        cboEmploymentType.Properties.Appearance.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        cboEmploymentType.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         cboEmploymentType.Properties.Appearance.Options.UseFont = True
         cboEmploymentType.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        cboEmploymentType.Properties.Items.AddRange(New Object() {"Full-time", "Part-time", "Contractual", "Project-based"})
+        cboEmploymentType.Properties.Items.AddRange(New Object() {"Active", "Inactive", "Resigned", "Terminated", "Retired", "End of Contract"})
         cboEmploymentType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboEmploymentType.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        cboEmploymentType.Size = New Size(377, 22)
+        cboEmploymentType.Size = New Size(380, 22)
         cboEmploymentType.StyleController = lcEmployment
         cboEmploymentType.TabIndex = 3
         ' 
         ' sleBranch
         ' 
-        sleBranch.Location = New Point(152, 107)
+        sleBranch.Location = New Point(149, 108)
         sleBranch.Name = "sleBranch"
-        sleBranch.Size = New Size(377, 24)
+        sleBranch.Size = New Size(380, 22)
         sleBranch.StyleController = lcEmployment
         sleBranch.TabIndex = 5
         ' 
         ' sleDepartment
         ' 
-        sleDepartment.Location = New Point(152, 135)
+        sleDepartment.Location = New Point(149, 134)
         sleDepartment.Name = "sleDepartment"
-        sleDepartment.Size = New Size(377, 24)
+        sleDepartment.Size = New Size(380, 22)
         sleDepartment.StyleController = lcEmployment
         sleDepartment.TabIndex = 7
         ' 
         ' slePosition
         ' 
-        slePosition.Location = New Point(152, 163)
+        slePosition.Location = New Point(149, 160)
         slePosition.Name = "slePosition"
-        slePosition.Size = New Size(377, 24)
+        slePosition.Size = New Size(380, 22)
         slePosition.StyleController = lcEmployment
         slePosition.TabIndex = 9
         ' 
         ' sleCategoryCode
         ' 
-        sleCategoryCode.Location = New Point(152, 191)
+        sleCategoryCode.Location = New Point(149, 186)
         sleCategoryCode.Name = "sleCategoryCode"
-        sleCategoryCode.Size = New Size(377, 24)
+        sleCategoryCode.Size = New Size(380, 22)
         sleCategoryCode.StyleController = lcEmployment
         sleCategoryCode.TabIndex = 11
         ' 
         ' sleJobClass
         ' 
-        sleJobClass.Location = New Point(152, 219)
+        sleJobClass.Location = New Point(149, 212)
         sleJobClass.Name = "sleJobClass"
-        sleJobClass.Size = New Size(377, 24)
+        sleJobClass.Size = New Size(380, 22)
         sleJobClass.StyleController = lcEmployment
         sleJobClass.TabIndex = 13
         ' 
         ' sleLeaveGroup
         ' 
-        sleLeaveGroup.Location = New Point(152, 247)
+        sleLeaveGroup.Location = New Point(149, 238)
         sleLeaveGroup.Name = "sleLeaveGroup"
-        sleLeaveGroup.Size = New Size(377, 24)
+        sleLeaveGroup.Size = New Size(380, 22)
         sleLeaveGroup.StyleController = lcEmployment
         sleLeaveGroup.TabIndex = 15
         ' 
         ' dtpDateJoined
         ' 
         dtpDateJoined.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
-        dtpDateJoined.Location = New Point(685, 55)
+        dtpDateJoined.Location = New Point(682, 56)
         dtpDateJoined.Name = "dtpDateJoined"
         dtpDateJoined.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        dtpDateJoined.Size = New Size(370, 24)
+        dtpDateJoined.Size = New Size(373, 22)
         dtpDateJoined.StyleController = lcEmployment
         dtpDateJoined.TabIndex = 2
         ' 
         ' dtpDateRegularization
         ' 
         dtpDateRegularization.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
-        dtpDateRegularization.Location = New Point(685, 83)
+        dtpDateRegularization.Location = New Point(682, 82)
         dtpDateRegularization.Name = "dtpDateRegularization"
         dtpDateRegularization.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        dtpDateRegularization.Size = New Size(370, 24)
+        dtpDateRegularization.Size = New Size(373, 22)
         dtpDateRegularization.StyleController = lcEmployment
         dtpDateRegularization.TabIndex = 4
         ' 
         ' dtpDateLastPromoted
         ' 
         dtpDateLastPromoted.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
-        dtpDateLastPromoted.Location = New Point(685, 111)
+        dtpDateLastPromoted.Location = New Point(682, 108)
         dtpDateLastPromoted.Name = "dtpDateLastPromoted"
         dtpDateLastPromoted.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        dtpDateLastPromoted.Size = New Size(370, 24)
+        dtpDateLastPromoted.Size = New Size(373, 22)
         dtpDateLastPromoted.StyleController = lcEmployment
         dtpDateLastPromoted.TabIndex = 6
         ' 
         ' dtpDateResigned
         ' 
         dtpDateResigned.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
-        dtpDateResigned.Location = New Point(685, 139)
+        dtpDateResigned.Location = New Point(682, 134)
         dtpDateResigned.Name = "dtpDateResigned"
         dtpDateResigned.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        dtpDateResigned.Size = New Size(370, 24)
+        dtpDateResigned.Size = New Size(373, 22)
         dtpDateResigned.StyleController = lcEmployment
         dtpDateResigned.TabIndex = 8
         ' 
         ' dtpDateRetired
         ' 
         dtpDateRetired.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
-        dtpDateRetired.Location = New Point(685, 167)
+        dtpDateRetired.Location = New Point(682, 160)
         dtpDateRetired.Name = "dtpDateRetired"
         dtpDateRetired.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        dtpDateRetired.Size = New Size(370, 24)
+        dtpDateRetired.Size = New Size(373, 22)
         dtpDateRetired.StyleController = lcEmployment
         dtpDateRetired.TabIndex = 10
         ' 
         ' dtpDateTerminated
         ' 
         dtpDateTerminated.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
-        dtpDateTerminated.Location = New Point(685, 195)
+        dtpDateTerminated.Location = New Point(682, 186)
         dtpDateTerminated.Name = "dtpDateTerminated"
         dtpDateTerminated.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        dtpDateTerminated.Size = New Size(370, 24)
+        dtpDateTerminated.Size = New Size(373, 22)
         dtpDateTerminated.StyleController = lcEmployment
         dtpDateTerminated.TabIndex = 12
         ' 
         ' sleSuperior
         ' 
-        sleSuperior.Location = New Point(685, 223)
+        sleSuperior.Location = New Point(682, 212)
         sleSuperior.Name = "sleSuperior"
-        sleSuperior.Size = New Size(370, 24)
+        sleSuperior.Size = New Size(373, 22)
         sleSuperior.StyleController = lcEmployment
         sleSuperior.TabIndex = 14
         ' 
         ' txtControlNo
         ' 
         txtControlNo.EnterMoveNextControl = True
-        txtControlNo.Location = New Point(152, 558)
+        txtControlNo.Location = New Point(149, 560)
         txtControlNo.Name = "txtControlNo"
-        txtControlNo.Properties.Appearance.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        txtControlNo.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         txtControlNo.Properties.Appearance.Options.UseFont = True
         txtControlNo.Properties.TextPadding = New Padding(5, 0, 5, 0)
-        txtControlNo.Size = New Size(377, 22)
+        txtControlNo.Size = New Size(380, 22)
         txtControlNo.StyleController = lcEmployment
         txtControlNo.TabIndex = 16
         ' 
         ' sleScheduleGroup
         ' 
-        sleScheduleGroup.Location = New Point(685, 558)
+        sleScheduleGroup.Location = New Point(682, 560)
         sleScheduleGroup.Name = "sleScheduleGroup"
-        sleScheduleGroup.Size = New Size(370, 24)
+        sleScheduleGroup.Size = New Size(373, 22)
         sleScheduleGroup.StyleController = lcEmployment
         sleScheduleGroup.TabIndex = 17
         ' 
         ' SeparatorHeader
         ' 
-        SeparatorHeader.Location = New Point(12, 31)
+        SeparatorHeader.Location = New Point(12, 32)
         SeparatorHeader.Name = "SeparatorHeader"
         SeparatorHeader.Size = New Size(1043, 20)
         SeparatorHeader.TabIndex = 1
         ' 
         ' SeparatorTimekeeping
         ' 
-        SeparatorTimekeeping.Location = New Point(12, 528)
+        SeparatorTimekeeping.Location = New Point(12, 518)
         SeparatorTimekeeping.Name = "SeparatorTimekeeping"
-        SeparatorTimekeeping.Size = New Size(1043, 26)
+        SeparatorTimekeeping.Size = New Size(1043, 38)
         SeparatorTimekeeping.TabIndex = 1
         ' 
         ' Root_Employment
         ' 
-        Root_Employment.AppearanceItemCaption.Font = New Font("Segoe UI", 9.0F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Root_Employment.AppearanceItemCaption.Font = New Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Root_Employment.AppearanceItemCaption.Options.UseFont = True
         Root_Employment.EnableIndentsWithoutBorders = DevExpress.Utils.DefaultBoolean.True
         Root_Employment.GroupBordersVisible = False
@@ -357,181 +357,181 @@ Partial Class ucEmployeesEmployment
         lciHeader.Control = SeparatorHeader
         lciHeader.Location = New Point(0, 0)
         lciHeader.Name = "lciHeader"
-        lciHeader.Size = New Size(1047, 43)
+        lciHeader.Size = New Size(1047, 44)
         lciHeader.Text = "Employment Details"
         lciHeader.TextLocation = DevExpress.Utils.Locations.Top
-        lciHeader.TextSize = New Size(128, 16)
+        lciHeader.TextSize = New Size(125, 17)
         ' 
         ' lciEmployeeStatus
         ' 
         lciEmployeeStatus.Control = cboEmployeeStatus
-        lciEmployeeStatus.Location = New Point(0, 43)
+        lciEmployeeStatus.Location = New Point(0, 44)
         lciEmployeeStatus.Name = "lciEmployeeStatus"
         lciEmployeeStatus.Size = New Size(521, 26)
         lciEmployeeStatus.Text = "Employee Status"
-        lciEmployeeStatus.TextSize = New Size(128, 17)
+        lciEmployeeStatus.TextSize = New Size(125, 15)
         ' 
         ' lciEmploymentType
         ' 
         lciEmploymentType.Control = cboEmploymentType
-        lciEmploymentType.Location = New Point(0, 69)
+        lciEmploymentType.Location = New Point(0, 70)
         lciEmploymentType.Name = "lciEmploymentType"
         lciEmploymentType.Size = New Size(521, 26)
         lciEmploymentType.Text = "Employment Type"
-        lciEmploymentType.TextSize = New Size(128, 17)
+        lciEmploymentType.TextSize = New Size(125, 15)
         ' 
         ' lciBranch
         ' 
         lciBranch.Control = sleBranch
-        lciBranch.Location = New Point(0, 95)
+        lciBranch.Location = New Point(0, 96)
         lciBranch.Name = "lciBranch"
-        lciBranch.Size = New Size(521, 28)
+        lciBranch.Size = New Size(521, 26)
         lciBranch.Text = "Branch"
-        lciBranch.TextSize = New Size(128, 17)
+        lciBranch.TextSize = New Size(125, 15)
         ' 
         ' lciDepartment
         ' 
         lciDepartment.Control = sleDepartment
-        lciDepartment.Location = New Point(0, 123)
+        lciDepartment.Location = New Point(0, 122)
         lciDepartment.Name = "lciDepartment"
-        lciDepartment.Size = New Size(521, 28)
+        lciDepartment.Size = New Size(521, 26)
         lciDepartment.Text = "Department"
-        lciDepartment.TextSize = New Size(128, 17)
+        lciDepartment.TextSize = New Size(125, 15)
         ' 
         ' lciPosition
         ' 
         lciPosition.Control = slePosition
-        lciPosition.Location = New Point(0, 151)
+        lciPosition.Location = New Point(0, 148)
         lciPosition.Name = "lciPosition"
-        lciPosition.Size = New Size(521, 28)
+        lciPosition.Size = New Size(521, 26)
         lciPosition.Text = "Position"
-        lciPosition.TextSize = New Size(128, 17)
+        lciPosition.TextSize = New Size(125, 15)
         ' 
         ' lciCategoryCode
         ' 
         lciCategoryCode.Control = sleCategoryCode
-        lciCategoryCode.Location = New Point(0, 179)
+        lciCategoryCode.Location = New Point(0, 174)
         lciCategoryCode.Name = "lciCategoryCode"
-        lciCategoryCode.Size = New Size(521, 28)
+        lciCategoryCode.Size = New Size(521, 26)
         lciCategoryCode.Text = "Category Code"
-        lciCategoryCode.TextSize = New Size(128, 17)
+        lciCategoryCode.TextSize = New Size(125, 15)
         ' 
         ' lciJobClass
         ' 
         lciJobClass.Control = sleJobClass
-        lciJobClass.Location = New Point(0, 207)
+        lciJobClass.Location = New Point(0, 200)
         lciJobClass.Name = "lciJobClass"
-        lciJobClass.Size = New Size(521, 28)
+        lciJobClass.Size = New Size(521, 26)
         lciJobClass.Text = "Job Class"
-        lciJobClass.TextSize = New Size(128, 17)
+        lciJobClass.TextSize = New Size(125, 15)
         ' 
         ' lciLeaveGroup
         ' 
         lciLeaveGroup.Control = sleLeaveGroup
-        lciLeaveGroup.Location = New Point(0, 235)
+        lciLeaveGroup.Location = New Point(0, 226)
         lciLeaveGroup.Name = "lciLeaveGroup"
-        lciLeaveGroup.Size = New Size(521, 28)
+        lciLeaveGroup.Size = New Size(521, 26)
         lciLeaveGroup.Text = "Leave Group"
-        lciLeaveGroup.TextSize = New Size(128, 17)
+        lciLeaveGroup.TextSize = New Size(125, 15)
         ' 
         ' lciDateJoined
         ' 
         lciDateJoined.Control = dtpDateJoined
-        lciDateJoined.Location = New Point(533, 43)
+        lciDateJoined.Location = New Point(533, 44)
         lciDateJoined.Name = "lciDateJoined"
-        lciDateJoined.Size = New Size(514, 28)
+        lciDateJoined.Size = New Size(514, 26)
         lciDateJoined.Text = "Date Joined *"
-        lciDateJoined.TextSize = New Size(128, 17)
+        lciDateJoined.TextSize = New Size(125, 15)
         ' 
         ' lciDateRegularization
         ' 
         lciDateRegularization.Control = dtpDateRegularization
-        lciDateRegularization.Location = New Point(533, 71)
+        lciDateRegularization.Location = New Point(533, 70)
         lciDateRegularization.Name = "lciDateRegularization"
-        lciDateRegularization.Size = New Size(514, 28)
+        lciDateRegularization.Size = New Size(514, 26)
         lciDateRegularization.Text = "Date Regularization"
-        lciDateRegularization.TextSize = New Size(128, 17)
+        lciDateRegularization.TextSize = New Size(125, 15)
         ' 
         ' lciDateLastPromoted
         ' 
         lciDateLastPromoted.Control = dtpDateLastPromoted
-        lciDateLastPromoted.Location = New Point(533, 99)
+        lciDateLastPromoted.Location = New Point(533, 96)
         lciDateLastPromoted.Name = "lciDateLastPromoted"
-        lciDateLastPromoted.Size = New Size(514, 28)
+        lciDateLastPromoted.Size = New Size(514, 26)
         lciDateLastPromoted.Text = "Date Last Promoted"
-        lciDateLastPromoted.TextSize = New Size(128, 17)
+        lciDateLastPromoted.TextSize = New Size(125, 15)
         ' 
         ' lciDateResigned
         ' 
         lciDateResigned.Control = dtpDateResigned
-        lciDateResigned.Location = New Point(533, 127)
+        lciDateResigned.Location = New Point(533, 122)
         lciDateResigned.Name = "lciDateResigned"
-        lciDateResigned.Size = New Size(514, 28)
+        lciDateResigned.Size = New Size(514, 26)
         lciDateResigned.Text = "Date Resigned"
-        lciDateResigned.TextSize = New Size(128, 17)
+        lciDateResigned.TextSize = New Size(125, 15)
         ' 
         ' lciDateRetired
         ' 
         lciDateRetired.Control = dtpDateRetired
-        lciDateRetired.Location = New Point(533, 155)
+        lciDateRetired.Location = New Point(533, 148)
         lciDateRetired.Name = "lciDateRetired"
-        lciDateRetired.Size = New Size(514, 28)
+        lciDateRetired.Size = New Size(514, 26)
         lciDateRetired.Text = "Date Retired"
-        lciDateRetired.TextSize = New Size(128, 17)
+        lciDateRetired.TextSize = New Size(125, 15)
         ' 
         ' lciDateTerminated
         ' 
         lciDateTerminated.Control = dtpDateTerminated
-        lciDateTerminated.Location = New Point(533, 183)
+        lciDateTerminated.Location = New Point(533, 174)
         lciDateTerminated.Name = "lciDateTerminated"
-        lciDateTerminated.Size = New Size(514, 28)
+        lciDateTerminated.Size = New Size(514, 26)
         lciDateTerminated.Text = "Date Terminated"
-        lciDateTerminated.TextSize = New Size(128, 17)
+        lciDateTerminated.TextSize = New Size(125, 15)
         ' 
         ' lciSuperior
         ' 
         lciSuperior.Control = sleSuperior
-        lciSuperior.Location = New Point(533, 211)
+        lciSuperior.Location = New Point(533, 200)
         lciSuperior.Name = "lciSuperior"
         lciSuperior.Size = New Size(514, 52)
         lciSuperior.Text = "Superior"
-        lciSuperior.TextSize = New Size(128, 17)
+        lciSuperior.TextSize = New Size(125, 15)
         ' 
         ' lciSeparatorTimekeeping
         ' 
         lciSeparatorTimekeeping.AppearanceItemCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold)
         lciSeparatorTimekeeping.AppearanceItemCaption.Options.UseFont = True
         lciSeparatorTimekeeping.Control = SeparatorTimekeeping
-        lciSeparatorTimekeeping.Location = New Point(0, 497)
+        lciSeparatorTimekeeping.Location = New Point(0, 486)
         lciSeparatorTimekeeping.Name = "lciSeparatorTimekeeping"
-        lciSeparatorTimekeeping.Size = New Size(1047, 49)
+        lciSeparatorTimekeeping.Size = New Size(1047, 62)
         lciSeparatorTimekeeping.Text = "Timekeeping"
         lciSeparatorTimekeeping.TextLocation = DevExpress.Utils.Locations.Top
-        lciSeparatorTimekeeping.TextSize = New Size(128, 16)
+        lciSeparatorTimekeeping.TextSize = New Size(125, 17)
         ' 
         ' lciControlNo
         ' 
         lciControlNo.Control = txtControlNo
-        lciControlNo.Location = New Point(0, 546)
+        lciControlNo.Location = New Point(0, 548)
         lciControlNo.Name = "lciControlNo"
-        lciControlNo.Size = New Size(521, 28)
+        lciControlNo.Size = New Size(521, 26)
         lciControlNo.Text = "Control No."
-        lciControlNo.TextSize = New Size(128, 17)
+        lciControlNo.TextSize = New Size(125, 15)
         ' 
         ' lciScheduleGroup
         ' 
         lciScheduleGroup.Control = sleScheduleGroup
-        lciScheduleGroup.Location = New Point(533, 546)
+        lciScheduleGroup.Location = New Point(533, 548)
         lciScheduleGroup.Name = "lciScheduleGroup"
-        lciScheduleGroup.Size = New Size(514, 28)
+        lciScheduleGroup.Size = New Size(514, 26)
         lciScheduleGroup.Text = "Schedule Group"
-        lciScheduleGroup.TextSize = New Size(128, 17)
+        lciScheduleGroup.TextSize = New Size(125, 15)
         ' 
         ' emptyGap
         ' 
-        emptyGap.Location = New Point(521, 43)
+        emptyGap.Location = New Point(521, 44)
         emptyGap.Name = "emptyGap"
-        emptyGap.Size = New Size(12, 220)
+        emptyGap.Size = New Size(12, 208)
         ' 
         ' emptyBottom
         ' 
@@ -541,9 +541,18 @@ Partial Class ucEmployeesEmployment
         ' 
         ' emptyTimekeepingGap
         ' 
-        emptyTimekeepingGap.Location = New Point(521, 546)
+        emptyTimekeepingGap.Location = New Point(521, 548)
         emptyTimekeepingGap.Name = "emptyTimekeepingGap"
-        emptyTimekeepingGap.Size = New Size(12, 28)
+        emptyTimekeepingGap.Size = New Size(12, 26)
+        ' 
+        ' EmptySpaceItem1
+        ' 
+        EmptySpaceItem1.Location = New Point(0, 252)
+        EmptySpaceItem1.MaxSize = New Size(0, 234)
+        EmptySpaceItem1.MinSize = New Size(104, 234)
+        EmptySpaceItem1.Name = "EmptySpaceItem1"
+        EmptySpaceItem1.Size = New Size(1047, 234)
+        EmptySpaceItem1.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom
         ' 
         ' sleBranchView
         ' 
@@ -577,18 +586,9 @@ Partial Class ucEmployeesEmployment
         ' 
         sleScheduleGroupView.Name = "sleScheduleGroupView"
         ' 
-        ' EmptySpaceItem1
-        ' 
-        EmptySpaceItem1.Location = New Point(0, 263)
-        EmptySpaceItem1.MaxSize = New Size(0, 234)
-        EmptySpaceItem1.MinSize = New Size(104, 234)
-        EmptySpaceItem1.Name = "EmptySpaceItem1"
-        EmptySpaceItem1.Size = New Size(1047, 234)
-        EmptySpaceItem1.SizeConstraintsType = DevExpress.XtraLayout.SizeConstraintsType.Custom
-        ' 
         ' ucEmployeesEmployment
         ' 
-        AutoScaleDimensions = New SizeF(6.0F, 13.0F)
+        AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(lcEmployment)
         Name = "ucEmployeesEmployment"
@@ -643,6 +643,7 @@ Partial Class ucEmployeesEmployment
         CType(emptyGap, ComponentModel.ISupportInitialize).EndInit()
         CType(emptyBottom, ComponentModel.ISupportInitialize).EndInit()
         CType(emptyTimekeepingGap, ComponentModel.ISupportInitialize).EndInit()
+        CType(EmptySpaceItem1, ComponentModel.ISupportInitialize).EndInit()
         CType(sleBranchView, ComponentModel.ISupportInitialize).EndInit()
         CType(sleDepartmentView, ComponentModel.ISupportInitialize).EndInit()
         CType(slePositionView, ComponentModel.ISupportInitialize).EndInit()
@@ -651,7 +652,6 @@ Partial Class ucEmployeesEmployment
         CType(sleLeaveGroupView, ComponentModel.ISupportInitialize).EndInit()
         CType(sleSuperiorView, ComponentModel.ISupportInitialize).EndInit()
         CType(sleScheduleGroupView, ComponentModel.ISupportInitialize).EndInit()
-        CType(EmptySpaceItem1, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
 
     End Sub
