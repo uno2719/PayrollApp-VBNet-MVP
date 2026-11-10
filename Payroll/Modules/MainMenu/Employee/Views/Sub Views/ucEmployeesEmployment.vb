@@ -7,6 +7,11 @@ Public Class ucEmployeesEmployment
     Private _presenter As Employee.Presenters.EmployeesEmploymentPresenter
     Private _selectedRecordId As Integer = 0
 
+    ' Lumang halaga na wala sa listahan ng combo (hal. "Active" sa Employee Status) - pansamantalang
+    ' idinadagdag para maipakita at hindi mabura ng Save. Tingnan ang SetComboValue.
+    Private _legacyStatusItem As String
+    Private _legacyTypeItem As String
+
     Public Sub New()
         InitializeComponent()
     End Sub
@@ -69,7 +74,7 @@ Public Class ucEmployeesEmployment
             Return cboEmployeeStatus.Text
         End Get
         Set(value As String)
-            cboEmployeeStatus.Text = value
+            SetComboValue(cboEmployeeStatus, _legacyStatusItem, value)
         End Set
     End Property
 
@@ -79,9 +84,42 @@ Public Class ucEmployeesEmployment
             Return cboEmploymentType.Text
         End Get
         Set(value As String)
-            cboEmploymentType.Text = value
+            SetComboValue(cboEmploymentType, _legacyTypeItem, value)
         End Set
     End Property
+
+    ''' <summary>
+    ''' Inilalagay ang value sa combo. Kung wala ito sa listahan (lumang data, hal. "Active" sa Employee Status),
+    ''' pansamantala itong idinadagdag para (1) maipakita at (2) hindi mapalitan ng blangko kapag nag-Save
+    ''' ang Employment tab. Inaalis ito pagpalit ng record.
+    ''' </summary>
+    Private Shared Sub SetComboValue(combo As DevExpress.XtraEditors.ComboBoxEdit,
+                                     ByRef legacyItem As String,
+                                     value As String)
+
+        If legacyItem IsNot Nothing Then
+            combo.Properties.Items.Remove(legacyItem)
+            legacyItem = Nothing
+        End If
+
+        Dim text = If(value, String.Empty)
+        If text.Trim().Length = 0 Then
+            combo.Text = String.Empty
+            Return
+        End If
+
+        ' Hanapin sa listahan (hindi case-sensitive) para tamang spelling ng item ang magamit.
+        For Each item In combo.Properties.Items
+            If String.Equals(item?.ToString(), text, StringComparison.OrdinalIgnoreCase) Then
+                combo.Text = item.ToString()
+                Return
+            End If
+        Next
+
+        combo.Properties.Items.Add(text)
+        legacyItem = text
+        combo.Text = text
+    End Sub
 
     ' ✅ BranchId
     Public Property BranchId As Integer? _
@@ -355,8 +393,8 @@ Public Class ucEmployeesEmployment
     End Sub
 
     Public Sub ClearFields() Implements Employee.Views.IEmployeesEmploymentView.ClearFields
-        cboEmployeeStatus.Text = String.Empty
-        cboEmploymentType.Text = String.Empty
+        SetComboValue(cboEmployeeStatus, _legacyStatusItem, String.Empty)
+        SetComboValue(cboEmploymentType, _legacyTypeItem, String.Empty)
         sleBranch.EditValue = Nothing
         sleDepartment.EditValue = Nothing
         slePosition.EditValue = Nothing

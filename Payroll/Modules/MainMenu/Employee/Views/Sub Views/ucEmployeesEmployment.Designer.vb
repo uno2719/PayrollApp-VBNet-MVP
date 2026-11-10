@@ -182,7 +182,7 @@ Partial Class ucEmployeesEmployment
         cboEmploymentType.Properties.Appearance.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
         cboEmploymentType.Properties.Appearance.Options.UseFont = True
         cboEmploymentType.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
-        cboEmploymentType.Properties.Items.AddRange(New Object() {"Active", "Inactive", "Resigned", "Terminated", "Retired", "End of Contract"})
+        cboEmploymentType.Properties.Items.AddRange(New Object() {"Full-time", "Part-time", "Internship"})
         cboEmploymentType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboEmploymentType.Properties.TextPadding = New Padding(5, 0, 5, 0)
         cboEmploymentType.Size = New Size(380, 22)
@@ -365,19 +365,21 @@ Partial Class ucEmployeesEmployment
         ' lciEmployeeStatus
         ' 
         lciEmployeeStatus.Control = cboEmployeeStatus
+        lciEmployeeStatus.CustomizationFormText = "Employment Status"
         lciEmployeeStatus.Location = New Point(0, 44)
         lciEmployeeStatus.Name = "lciEmployeeStatus"
         lciEmployeeStatus.Size = New Size(521, 26)
-        lciEmployeeStatus.Text = "Employee Status"
+        lciEmployeeStatus.Text = "Employment Status"
         lciEmployeeStatus.TextSize = New Size(125, 15)
         ' 
         ' lciEmploymentType
         ' 
         lciEmploymentType.Control = cboEmploymentType
+        lciEmploymentType.CustomizationFormText = "Employment Type"
         lciEmploymentType.Location = New Point(0, 70)
         lciEmploymentType.Name = "lciEmploymentType"
         lciEmploymentType.Size = New Size(521, 26)
-        lciEmploymentType.Text = "Employment Type"
+        lciEmploymentType.Text = "Work Schedule"
         lciEmploymentType.TextSize = New Size(125, 15)
         ' 
         ' lciBranch
