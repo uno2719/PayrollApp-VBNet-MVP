@@ -43,6 +43,7 @@ Partial Class ucEmployees
         stackHdr_Buttons = New DevExpress.Utils.Layout.StackPanel()
         btnHdr_Actions = New DevExpress.XtraEditors.DropDownButton()
         btnHdr_Loans = New DevExpress.XtraEditors.SimpleButton()
+        btnHdr_History = New DevExpress.XtraEditors.SimpleButton()
         pnlHdr_Chips = New FlowLayoutPanel()
         lblHdr_Alert = New DevExpress.XtraEditors.LabelControl()
         lblHdr_MainInfo = New DevExpress.XtraEditors.LabelControl()
@@ -306,6 +307,7 @@ Partial Class ucEmployees
         stackHdr_Buttons.AutoSize = True
         stackHdr_Buttons.Controls.Add(btnHdr_Actions)
         stackHdr_Buttons.Controls.Add(btnHdr_Loans)
+        stackHdr_Buttons.Controls.Add(btnHdr_History)
         stackHdr_Buttons.Dock = DockStyle.Right
         stackHdr_Buttons.LayoutDirection = DevExpress.Utils.Layout.StackPanelLayoutDirection.TopDown
         stackHdr_Buttons.Location = New Point(686, 27)
@@ -342,6 +344,20 @@ Partial Class ucEmployees
         btnHdr_Loans.TabIndex = 5
         btnHdr_Loans.Text = "Loans"
         btnHdr_Loans.ToolTip = "View this employee's loans"
+        ' 
+        ' btnHdr_History
+        ' 
+        btnHdr_History.AllowFocus = False
+        btnHdr_History.Cursor = Cursors.Hand
+        btnHdr_History.Enabled = False
+        btnHdr_History.Location = New Point(2, 76)
+        btnHdr_History.Margin = New Padding(2)
+        btnHdr_History.Name = "btnHdr_History"
+        btnHdr_History.ShowFocusRectangle = DevExpress.Utils.DefaultBoolean.False
+        btnHdr_History.Size = New Size(113, 28)
+        btnHdr_History.TabIndex = 8
+        btnHdr_History.Text = "History"
+        btnHdr_History.ToolTip = "View this employee's movement history (promotions, transfers, regularization, separation)"
         ' 
         ' pnlHdr_Chips
         ' 
@@ -476,6 +492,7 @@ Partial Class ucEmployees
     Friend WithEvents stackHdr_Buttons As DevExpress.Utils.Layout.StackPanel
     Friend WithEvents btnHdr_Actions As DevExpress.XtraEditors.DropDownButton
     Friend WithEvents btnHdr_Loans As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnHdr_History As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents pnlHdr_Chips As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents rgFilter As DevExpress.XtraEditors.RadioGroup
     Friend WithEvents LabelControl1 As DevExpress.XtraEditors.LabelControl

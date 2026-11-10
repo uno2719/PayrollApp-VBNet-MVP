@@ -241,6 +241,11 @@ Namespace Employee.Views
                 anyWarning = True
             End If
 
+            If sep Is Nothing AndAlso Not isKnownKind Then
+                msgs.Add("Employment Type is not set (Employment tab).")
+                anyWarning = True
+            End If
+
             If sep Is Nothing AndAlso h.DateJoined.HasValue AndAlso
                statusText.Equals("Probationary", StringComparison.OrdinalIgnoreCase) Then
 
@@ -253,10 +258,10 @@ Namespace Employee.Views
                     msgs.Add($"{probationMonths}-month probation ends {FormatDate(due)} ({days} days left).")
                     probationOnly = True
                 ElseIf days >= 0 Then
-                    msgs.Add($"Probation ends {FormatDate(due)} ({days} {If(days = 1, "day", "days")} left). Regularization is due soon.")
+                    msgs.Add($"Probation ends {FormatDate(due)} ({days} {If(days = 1, "day", "days")} left). Regularization is due soon (Actions > Regularize).")
                     anyWarning = True
                 Else
-                    msgs.Add($"Probation ended {FormatDate(due)} ({-days} {If(-days = 1, "day", "days")} ago). Regularization is overdue.")
+                    msgs.Add($"Probation ended {FormatDate(due)} ({-days} {If(-days = 1, "day", "days")} ago). Regularization is overdue (Actions > Regularize).")
                     anyWarning = True
                 End If
             End If

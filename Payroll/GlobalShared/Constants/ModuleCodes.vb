@@ -40,7 +40,7 @@ Namespace GlobalShared.Constants
 
         ' --- ADMINISTRATION ---
         Public Const Admin_UsersAccount As String = "admin_UsersAccount"
-        Public Const Admin_Modules As String = "admin_Modules"   ' <-- IDAGDAG ITO
+        Public Const Admin_Modules As String = "admin_Modules"
 
         ' --- SETTINGS > PAYROLL SETUP ---
         Public Const Settings_General As String = "settings_General"

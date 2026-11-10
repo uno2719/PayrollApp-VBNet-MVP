@@ -100,6 +100,30 @@
             Return Await _repo.SetActiveAsync(recordId, isActive)
         End Function
 
+        Public Async Function ApplyMovementAsync(request As Models.EmployeeMovementRequest) As Task(Of Boolean) _
+            Implements IEmployeeService.ApplyMovementAsync
+
+            ' Huling harang kahit lusutan ang UI (parehong rule ng SetActiveStatusAsync).
+            If Not GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Actions) Then
+                Throw New UnauthorizedAccessException("You are not allowed to perform employee actions.")
+            End If
+
+            If request Is Nothing Then Throw New ArgumentNullException(NameOf(request))
+            If request.RecordId <= 0 Then Throw New InvalidOperationException("No employee selected.")
+
+            request.Remarks = If(String.IsNullOrWhiteSpace(request.Remarks), Nothing, request.Remarks.Trim())
+            request.CreatedBy = AppSession.CurrentUser
+
+            ' Ang buong validation (petsa, remarks, kung available ang action) ay nasa
+            ' EmployeeMovementRules at tinatawag ng repository sa loob ng transaction.
+            Return Await _repo.ApplyMovementAsync(request)
+        End Function
+
+        Public Async Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel)) _
+            Implements IEmployeeService.GetMovementHistoryAsync
+            Return Await _repo.GetMovementHistoryAsync(recordId)
+        End Function
+
         ' =============================================
         ' EMPLOYMENT
         ' =============================================
@@ -117,6 +141,13 @@
                 Throw New Exception("Date Joined is required.")
             End If
 
+            ' Employment Type (nakalagay sa EmployeeStatus column): kailangan, at isa sa mga kilalang uri.
+            ' Dito napapalitan ang lumang "Active" / blangko na lumalabas na "Type not set" sa header.
+            If Not Employee.Models.EmployeeMovementRules.IsKnownEmploymentType(model.EmployeeStatus) Then
+                Throw New Exception("Employment Type is required. Choose one of: " &
+                                    String.Join(", ", Employee.Models.EmployeeMovementRules.EmploymentTypes) & ".")
+            End If
+
             ' Hindi pwedeng mas maaga sa Date Joined ang pag-alis ng empleyado.
             Dim joined = model.DateJoined.Value.Date
             If model.DateResigned.HasValue AndAlso model.DateResigned.Value.Date < joined Then
@@ -129,12 +160,10 @@
                 Throw New Exception("Date Terminated can't be earlier than Date Joined.")
             End If
 
-            ' Set audit fields
-            If model.EmploymentId = 0 Then
-                model.CreatedBy = AppSession.CurrentUser
-            Else
-                model.UpdatedBy = AppSession.CurrentUser
-            End If
+            ' Set audit fields. Ang EmploymentId ay hindi kailanman nata-tag ng presenter (laging 0), kaya dati
+            ' hindi nasusulat ang UpdatedBy sa pag-edit; ang repository ay UPSERT, kaya parehong itakda.
+            model.CreatedBy = AppSession.CurrentUser
+            model.UpdatedBy = AppSession.CurrentUser
 
             Return Await _repo.SaveEmploymentAsync(model)
 

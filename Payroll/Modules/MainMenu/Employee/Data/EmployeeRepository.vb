@@ -219,13 +219,274 @@ Namespace Employee.Data
                 WHERE RecordId = @RecordId
                   AND IsDeleted = 0"
 
-            Dim rows = Await ExecuteAsync(sql, New With {
-                recordId,
-                isActive,
-                .UpdatedBy = AppSession.CurrentUser
-            })
-            Return rows > 0
+            ' Phase 2: isang transaction ang pag-update at ang pagsulat sa History (tblEmployeeMovement),
+            ' para walang status change na walang bakas.
+            Using conn = GetConnection()
+                Using tran = conn.BeginTransaction()
+                    Try
+                        Dim rows = Await conn.ExecuteAsync(sql, New With {
+                            recordId,
+                            isActive,
+                            .UpdatedBy = AppSession.CurrentUser
+                        }, tran)
 
+                        If rows > 0 Then
+                            Await InsertMovementAsync(conn, tran, recordId,
+                                If(isActive, Models.MovementTypes.Reactivate, Models.MovementTypes.SetInactive),
+                                Date.Today,
+                                If(isActive, "Inactive", "Active"),
+                                If(isActive, "Active", "Inactive"),
+                                Nothing, AppSession.CurrentUser)
+                        End If
+
+                        tran.Commit()
+                        Return rows > 0
+                    Catch
+                        tran.Rollback()
+                        Throw
+                    End Try
+                End Using
+            End Using
+
+        End Function
+
+        ' =============================================
+        ' MOVEMENT (Phase 2)
+        ' =============================================
+
+        Private Shared Async Function InsertMovementAsync(conn As SqlConnection, tran As IDbTransaction,
+                                                          recordId As Integer, movementType As String,
+                                                          effectiveDate As Date, fromValue As String, toValue As String,
+                                                          remarks As String, createdBy As String) As Task
+
+            Dim sql = "
+                INSERT INTO tblEmployeeMovement
+                    (RecordId, MovementType, EffectiveDate, FromValue, ToValue, Remarks, CreatedAt, CreatedBy)
+                VALUES
+                    (@RecordId, @MovementType, @EffectiveDate, @FromValue, @ToValue, @Remarks, GETDATE(), @CreatedBy)"
+
+            Await conn.ExecuteAsync(sql, New With {
+                .RecordId = recordId,
+                .MovementType = movementType,
+                .EffectiveDate = effectiveDate.Date,
+                .FromValue = fromValue,
+                .ToValue = toValue,
+                .Remarks = remarks,
+                .CreatedBy = createdBy
+            }, tran)
+        End Function
+
+        Private Shared Function OrNone(value As String) As String
+            Return If(String.IsNullOrWhiteSpace(value), "(none)", value.Trim())
+        End Function
+
+        Public Async Function ApplyMovementAsync(request As Models.EmployeeMovementRequest) As Task(Of Boolean) _
+            Implements IEmployeeRepository.ApplyMovementAsync
+
+            Dim type = request.MovementType
+            Dim userName = request.CreatedBy
+
+            Using conn = GetConnection()
+                Using tran = conn.BeginTransaction()
+                    Try
+                        ' 1) Basahin ang KASALUKUYANG kalagayan NANG MAY LOCK, para ang validation at ang update ay
+                        '    sa iisang tanawin (walang ibang nag-e-edit sa pagitan).
+                        Dim cur = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
+                            EmploymentSelectSql("WITH (UPDLOCK, ROWLOCK)"),
+                            New With {.RecordId = request.RecordId}, tran)
+
+                        If cur Is Nothing Then
+                            Throw New InvalidOperationException(
+                                "This employee has no Employment record yet. Complete and save the Employment tab first.")
+                        End If
+
+                        Dim activeFlag = Await conn.ExecuteScalarAsync(Of Boolean?)(
+                            "SELECT CAST(IsActive AS BIT) FROM tblEmployee WITH (UPDLOCK, ROWLOCK) " &
+                            "WHERE RecordId = @RecordId AND IsDeleted = 0",
+                            New With {.RecordId = request.RecordId}, tran)
+
+                        If Not activeFlag.HasValue Then
+                            Throw New InvalidOperationException("The employee record no longer exists.")
+                        End If
+
+                        Dim ctx = Models.MovementContext.FromEmployment(cur, activeFlag.Value)
+                        Dim problem = Models.EmployeeMovementRules.Validate(request, ctx, Date.Today)
+                        If problem.Length > 0 Then Throw New InvalidOperationException(problem)
+
+                        ' 2) Ilapat
+                        Dim fromText As String = Nothing
+                        Dim toText As String = Nothing
+                        Dim effective = request.EffectiveDate.Date
+
+                        Select Case type
+
+                            Case Models.MovementTypes.Regularize
+                                fromText = "Employment Type: " & OrNone(cur.EmployeeStatus)
+                                toText = "Employment Type: Regular"
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEmployment SET
+                                        EmployeeStatus     = 'Regular',
+                                        DateRegularization = @EffectiveDate,
+                                        UpdatedAt          = GETDATE(),
+                                        UpdatedBy          = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.EffectiveDate = effective, .UserName = userName, .RecordId = request.RecordId}, tran)
+
+                            Case Models.MovementTypes.Promote
+                                Dim names = Await GetNewNamesAsync(conn, tran, request)
+                                Dim fromParts As New List(Of String)
+                                Dim toParts As New List(Of String)
+
+                                If Not Models.EmployeeMovementRules.SameId(cur.PositionId, request.NewPositionId) Then
+                                    fromParts.Add("Position: " & OrNone(cur.PositionName))
+                                    toParts.Add("Position: " & OrNone(names.PositionName))
+                                End If
+                                If Not Models.EmployeeMovementRules.SameId(cur.CategoryId, request.NewCategoryId) Then
+                                    fromParts.Add("Category: " & OrNone(cur.CategoryName))
+                                    toParts.Add("Category: " & OrNone(names.CategoryName))
+                                End If
+                                If Not Models.EmployeeMovementRules.SameId(cur.JobClassId, request.NewJobClassId) Then
+                                    fromParts.Add("Job Class: " & OrNone(cur.JobClassName))
+                                    toParts.Add("Job Class: " & OrNone(names.JobClassName))
+                                End If
+                                fromText = String.Join("; ", fromParts)
+                                toText = String.Join("; ", toParts)
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEmployment SET
+                                        PositionId       = @PositionId,
+                                        CategoryId       = @CategoryId,
+                                        JobClassId       = @JobClassId,
+                                        DateLastPromoted = @EffectiveDate,
+                                        UpdatedAt        = GETDATE(),
+                                        UpdatedBy        = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {
+                                        .PositionId = request.NewPositionId,
+                                        .CategoryId = request.NewCategoryId,
+                                        .JobClassId = request.NewJobClassId,
+                                        .EffectiveDate = effective,
+                                        .UserName = userName,
+                                        .RecordId = request.RecordId
+                                    }, tran)
+
+                            Case Models.MovementTypes.Transfer
+                                Dim names = Await GetNewNamesAsync(conn, tran, request)
+                                Dim fromParts As New List(Of String)
+                                Dim toParts As New List(Of String)
+
+                                If Not Models.EmployeeMovementRules.SameId(cur.BranchId, request.NewBranchId) Then
+                                    fromParts.Add("Branch: " & OrNone(cur.BranchName))
+                                    toParts.Add("Branch: " & OrNone(names.BranchName))
+                                End If
+                                If Not Models.EmployeeMovementRules.SameId(cur.DepartmentId, request.NewDepartmentId) Then
+                                    fromParts.Add("Department: " & OrNone(cur.DepartmentName))
+                                    toParts.Add("Department: " & OrNone(names.DepartmentName))
+                                End If
+                                fromText = String.Join("; ", fromParts)
+                                toText = String.Join("; ", toParts)
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEmployment SET
+                                        BranchId            = @BranchId,
+                                        DepartmentId        = @DepartmentId,
+                                        DateLastTransferred = @EffectiveDate,
+                                        UpdatedAt           = GETDATE(),
+                                        UpdatedBy           = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {
+                                        .BranchId = request.NewBranchId,
+                                        .DepartmentId = request.NewDepartmentId,
+                                        .EffectiveDate = effective,
+                                        .UserName = userName,
+                                        .RecordId = request.RecordId
+                                    }, tran)
+
+                            Case Models.MovementTypes.Resign, Models.MovementTypes.Terminate, Models.MovementTypes.Retire
+                                ' Ang lifecycle ay DERIVED (IsActive + mga petsa): petsa ng pag-alis + IsActive = 0.
+                                ' HINDI ginagalaw ang Employment Type (Regular/Probationary...).
+                                Dim dateColumn As String
+                                Select Case type
+                                    Case Models.MovementTypes.Resign : dateColumn = "DateResigned"
+                                    Case Models.MovementTypes.Terminate : dateColumn = "DateTerminated"
+                                    Case Else : dateColumn = "DateRetired"
+                                End Select
+
+                                fromText = If(activeFlag.Value, "Active", "Inactive")
+                                toText = Models.MovementTypes.HistoryLabel(type)
+
+                                Await conn.ExecuteAsync($"
+                                    UPDATE tblEmployeeEmployment SET
+                                        {dateColumn} = @EffectiveDate,
+                                        UpdatedAt    = GETDATE(),
+                                        UpdatedBy    = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.EffectiveDate = effective, .UserName = userName, .RecordId = request.RecordId}, tran)
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployee SET
+                                        IsActive  = 0,
+                                        UpdatedAt = GETDATE(),
+                                        UpdatedBy = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.UserName = userName, .RecordId = request.RecordId}, tran)
+
+                            Case Else
+                                Throw New InvalidOperationException("Unknown action.")
+                        End Select
+
+                        ' 3) Isulat sa History
+                        Dim remarks As String = If(String.IsNullOrWhiteSpace(request.Remarks), Nothing, request.Remarks.Trim())
+                        Await InsertMovementAsync(conn, tran, request.RecordId, type, effective,
+                                                  fromText, toText, remarks, userName)
+
+                        tran.Commit()
+                        Return True
+
+                    Catch
+                        tran.Rollback()
+                        Throw
+                    End Try
+                End Using
+            End Using
+
+        End Function
+
+        ' Mga pangalan ng BAGONG Position/Category/JobClass/Branch/Department para sa snapshot ng History.
+        Private Shared Async Function GetNewNamesAsync(conn As SqlConnection, tran As IDbTransaction,
+                                                       request As Models.EmployeeMovementRequest) As Task(Of Models.EmployeeEmploymentModel)
+            Dim sql = "
+                SELECT
+                    (SELECT PositionName   FROM tblPosition     WHERE PositionId   = @PositionId)   AS PositionName,
+                    (SELECT CategoryName   FROM tblCategoryCode WHERE CategoryId   = @CategoryId)   AS CategoryName,
+                    (SELECT JobClassName   FROM tblJobClass     WHERE JobClassId   = @JobClassId)   AS JobClassName,
+                    (SELECT BranchName     FROM tblBranch       WHERE BranchId     = @BranchId)     AS BranchName,
+                    (SELECT DepartmentName FROM tblDepartment   WHERE DepartmentId = @DepartmentId) AS DepartmentName"
+
+            Return Await conn.QuerySingleAsync(Of Models.EmployeeEmploymentModel)(sql, New With {
+                .PositionId = request.NewPositionId,
+                .CategoryId = request.NewCategoryId,
+                .JobClassId = request.NewJobClassId,
+                .BranchId = request.NewBranchId,
+                .DepartmentId = request.NewDepartmentId
+            }, tran)
+        End Function
+
+        Public Async Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel)) _
+            Implements IEmployeeRepository.GetMovementHistoryAsync
+
+            Dim sql = "
+                SELECT MovementId, RecordId, MovementType, EffectiveDate,
+                       FromValue, ToValue, Remarks, CreatedAt, CreatedBy
+                FROM tblEmployeeMovement
+                WHERE RecordId = @RecordId
+                ORDER BY EffectiveDate DESC, MovementId DESC"
+
+            Using conn = GetConnection()
+                Dim result = Await conn.QueryAsync(Of Models.EmployeeMovementModel)(sql, New With {.RecordId = recordId})
+                Return result.ToList()
+            End Using
         End Function
 
         ' =============================================
@@ -235,13 +496,23 @@ Namespace Employee.Data
         Public Async Function GetEmploymentAsync(recordId As Integer) As Task(Of Models.EmployeeEmploymentModel) _
             Implements IEmployeeRepository.GetEmploymentAsync
 
-            Dim sql = "
+            Using conn = GetConnection()
+                Return Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
+                    EmploymentSelectSql(String.Empty), New With {recordId})
+            End Using
+
+        End Function
+
+        ' Iisang SELECT para sa pagbasa ng Employment (may mga pangalan ng lookups). Ang lockHint
+        ' (hal. "WITH (UPDLOCK, ROWLOCK)") ay para sa pagbasa sa loob ng transaction ng movement.
+        Private Shared Function EmploymentSelectSql(lockHint As String) As String
+            Return $"
                 SELECT e.*,
                        b.BranchName, d.DepartmentName, p.PositionName,
                        c.CategoryName, j.JobClassName,
                        s.FirstName + ' ' + s.LastName AS SuperiorName,
                        lg.LeaveGroupName, hg.HolidayGroupName, sg.ScheduleGroupName
-                FROM tblEmployeeEmployment e
+                FROM tblEmployeeEmployment e {lockHint}
                 LEFT JOIN tblBranch b ON e.BranchId = b.BranchId
                 LEFT JOIN tblDepartment d ON e.DepartmentId = d.DepartmentId
                 LEFT JOIN tblPosition p ON e.PositionId = p.PositionId
@@ -252,12 +523,6 @@ Namespace Employee.Data
                 LEFT JOIN tblHolidayGroup hg ON e.HolidayGroupId = hg.HolidayGroupId
                 LEFT JOIN tblScheduleGroup sg ON e.ScheduleGroupId = sg.ScheduleGroupId
                 WHERE e.RecordId = @RecordId"
-
-            Using conn = GetConnection()
-                Return Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
-                    sql, New With {recordId})
-            End Using
-
         End Function
 
         Public Async Function SaveEmploymentAsync(model As Models.EmployeeEmploymentModel) As Task(Of Boolean) _

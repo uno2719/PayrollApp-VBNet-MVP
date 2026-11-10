@@ -365,17 +365,17 @@ Partial Class ucEmployeesEmployment
         ' lciEmployeeStatus
         ' 
         lciEmployeeStatus.Control = cboEmployeeStatus
-        lciEmployeeStatus.CustomizationFormText = "Employment Status"
+        lciEmployeeStatus.CustomizationFormText = "Employment Type"
         lciEmployeeStatus.Location = New Point(0, 44)
         lciEmployeeStatus.Name = "lciEmployeeStatus"
         lciEmployeeStatus.Size = New Size(521, 26)
-        lciEmployeeStatus.Text = "Employment Status"
+        lciEmployeeStatus.Text = "Employment Type"
         lciEmployeeStatus.TextSize = New Size(125, 15)
         ' 
         ' lciEmploymentType
         ' 
         lciEmploymentType.Control = cboEmploymentType
-        lciEmploymentType.CustomizationFormText = "Employment Type"
+        lciEmploymentType.CustomizationFormText = "Work Schedule"
         lciEmploymentType.Location = New Point(0, 70)
         lciEmploymentType.Name = "lciEmploymentType"
         lciEmploymentType.Size = New Size(521, 26)

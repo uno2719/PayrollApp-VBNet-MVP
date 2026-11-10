@@ -16,6 +16,15 @@
         ''' <summary>Active/Inactive lang (IsActive). Hindi ito ang Delete.</summary>
         Function SetActiveAsync(recordId As Integer, isActive As Boolean) As Task(Of Boolean)
 
+        ' --- Movement (Phase 2) ---
+        ''' <summary>
+        ''' Regularize / Promote / Transfer / Resign / Terminate / Retire: IISANG transaction na nag-uupdate ng
+        ''' tblEmployeeEmployment (+ tblEmployee.IsActive para sa pag-alis) at nagsusulat sa tblEmployeeMovement.
+        ''' Nagbabato ng InvalidOperationException (mensahe para sa user) kapag hindi na valid ang request.
+        ''' </summary>
+        Function ApplyMovementAsync(request As Models.EmployeeMovementRequest) As Task(Of Boolean)
+        Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel))
+
         ' --- Employment ---
         Function GetEmploymentAsync(recordId As Integer) As Task(Of Models.EmployeeEmploymentModel)
         Function SaveEmploymentAsync(model As Models.EmployeeEmploymentModel) As Task(Of Boolean)

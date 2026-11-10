@@ -6,6 +6,9 @@
         Property RecordId As Integer
 
         ' --- Employment ---
+        ' PAALALA (hindi na-rename ang mga column/property para hindi masira ang dalawang database):
+        '   EmployeeStatus = EMPLOYMENT TYPE sa screen (Probationary / Regular / Contractual / ...)
+        '   EmploymentType = WORK SCHEDULE sa screen (Full-time / Part-time / Internship)
         Property EmployeeStatus As String
         Property EmploymentType As String
 

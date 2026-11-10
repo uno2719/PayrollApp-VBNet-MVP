@@ -51,6 +51,16 @@ Public Class ucEmployees
     Private _chipPayroll As GlobalShared.Controls.StatusChip
     Private _actionsMenu As DXPopupMenu
     Private _miToggleActive As DXMenuItem
+    Private _miRegularize As DXMenuItem
+    Private _miPromote As DXMenuItem
+    Private _miTransfer As DXMenuItem
+    Private _miResign As DXMenuItem
+    Private _miTerminate As DXMenuItem
+    Private _miRetire As DXMenuItem
+
+    ' Active loans ng napiling employee (galing sa UpdateHeaderAsync) - babala sa Actions dialog
+    Private _activeLoanCount As Integer
+    Private _activeLoanBalance As Decimal
 
     ' Button indexes
     Private Const BTN_NEW As Integer = 0
@@ -331,6 +341,9 @@ Public Class ucEmployees
             ' Kung lumipat na ng ibang employee habang naghihintay, huwag nang i-apply.
             If recordId <> _selectedRecordId Then Return
 
+            _activeLoanCount = loans.Count
+            _activeLoanBalance = loans.Sum(Function(l) l.Balance)
+
             _headerModel = header
             ApplyHeaderState(Employee.Views.EmployeeHeaderPresentation.Build(header, loans, Date.Today))
         Catch ex As Exception
@@ -353,14 +366,37 @@ Public Class ucEmployees
             pnlHdr_Chips.Controls.Add(chip)
         Next
 
-        ' Actions menu (Phase 1: Set inactive / Reactivate lang. Dadagdagan sa Phase 2).
+        ' Actions menu: Regularize / Promote / Transfer | Resign / Terminate / Retire | Set inactive.
+        ' (Salary adjustment ay hindi pa kasama - naghihintay sa HR.)
+        _miRegularize = NewMovementItem("Regularize...", Employee.Models.MovementTypes.Regularize, False)
+        _miPromote = NewMovementItem("Promote...", Employee.Models.MovementTypes.Promote, False)
+        _miTransfer = NewMovementItem("Transfer...", Employee.Models.MovementTypes.Transfer, False)
+        _miResign = NewMovementItem("Resign...", Employee.Models.MovementTypes.Resign, True)
+        _miTerminate = NewMovementItem("Terminate...", Employee.Models.MovementTypes.Terminate, False)
+        _miRetire = NewMovementItem("Retire...", Employee.Models.MovementTypes.Retire, False)
+
         _miToggleActive = New DXMenuItem("Set inactive", AddressOf OnToggleActiveClick)
+        _miToggleActive.BeginGroup = True
+
         _actionsMenu = New DXPopupMenu()
+        _actionsMenu.Items.Add(_miRegularize)
+        _actionsMenu.Items.Add(_miPromote)
+        _actionsMenu.Items.Add(_miTransfer)
+        _actionsMenu.Items.Add(_miResign)
+        _actionsMenu.Items.Add(_miTerminate)
+        _actionsMenu.Items.Add(_miRetire)
         _actionsMenu.Items.Add(_miToggleActive)
         btnHdr_Actions.DropDownControl = _actionsMenu
 
         UpdateHeaderButtons()
     End Sub
+
+    Private Function NewMovementItem(caption As String, movementType As String, beginGroup As Boolean) As DXMenuItem
+        Dim item As New DXMenuItem(caption, AddressOf OnMovementMenuClick)
+        item.Tag = movementType
+        item.BeginGroup = beginGroup
+        Return item
+    End Function
 
     Private Function HeaderChips() As GlobalShared.Controls.StatusChip()
         Return New GlobalShared.Controls.StatusChip() {_chipStatus, _chipKind, _chipJoined, _chipCycle, _chipPayroll}
@@ -397,8 +433,22 @@ Public Class ucEmployees
 
         btnHdr_Loans.Text = st.LoansCaption
         _miToggleActive.Caption = st.ToggleActiveCaption
+        UpdateActionMenuState()
 
         UpdateHeaderButtons()
+    End Sub
+
+    ''' <summary>I-enable lang ang mga action na valid para sa kalagayan ng empleyado (EmployeeMovementRules).</summary>
+    Private Sub UpdateActionMenuState()
+        If _headerModel Is Nothing Then Return
+
+        Dim ctx = Employee.Models.MovementContext.FromHeader(_headerModel)
+        _miRegularize.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Regularize, ctx)
+        _miPromote.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Promote, ctx)
+        _miTransfer.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Transfer, ctx)
+        _miResign.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Resign, ctx)
+        _miTerminate.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Terminate, ctx)
+        _miRetire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Retire, ctx)
     End Sub
 
     ''' <summary>
@@ -419,6 +469,7 @@ Public Class ucEmployees
                                     "Employee actions",
                                     "Only Admin or users with Employee Actions access can use these actions.")
         btnHdr_Loans.Enabled = idle AndAlso hasRecord
+        btnHdr_History.Enabled = idle AndAlso hasRecord
     End Sub
 
     Private Async Sub OnToggleActiveClick(sender As Object, e As EventArgs)
@@ -480,6 +531,55 @@ Public Class ucEmployees
             ClearHeader()
         End If
     End Function
+
+    ' Regularize / Promote / Transfer / Resign / Terminate / Retire: bubuksan ang dialog; ang dialog ang
+    ' nagsusulat (isang transaction). Dito, refresh lang pagkatapos.
+    Private Async Sub OnMovementMenuClick(sender As Object, e As EventArgs)
+        Dim item = TryCast(sender, DXMenuItem)
+        If item Is Nothing OrElse item.Tag Is Nothing Then Return
+        If _headerModel Is Nothing OrElse _selectedRecordId = 0 OrElse
+           _headerModel.RecordId <> _selectedRecordId Then Return
+
+        Dim movementType = item.Tag.ToString()
+        Dim saved As Boolean
+
+        Using dlg As New frmEmployeeAction(_service, _headerModel, movementType,
+                                           _activeLoanCount, _activeLoanBalance)
+            saved = (dlg.ShowDialog(Me) = DialogResult.OK)
+        End Using
+
+        If Not saved Then Return
+
+        Try
+            ShowLoading()
+            Await RefreshAfterMovementAsync(movementType)
+            ShowMessage($"Employee {Employee.Models.MovementTypes.HistoryLabel(movementType).ToLowerInvariant()}. Recorded in History.")
+        Catch ex As Exception
+            ShowError(ex.Message)
+        Finally
+            HideLoading()
+        End Try
+    End Sub
+
+    Private Async Function RefreshAfterMovementAsync(movementType As String) As Task
+        ' Ang Resign/Terminate/Retire ay nagiging Inactive: sa Active list, aalis siya (parehong daan ng Set inactive).
+        If Employee.Models.MovementTypes.IsSeparation(movementType) AndAlso GetCurrentFilter() = "Active" Then
+            Await RefreshAfterStatusChangeAsync()
+        Else
+            ' Nagbago ang laman ng Employment tab (type/petsa/position...) kaya i-reload lahat ng tabs + header.
+            LoadSelectedEmployee()
+        End If
+    End Function
+
+    Private Sub btnHdr_History_Click(sender As Object, e As EventArgs) Handles btnHdr_History.Click
+        If _headerModel Is Nothing OrElse _selectedRecordId = 0 Then Return
+
+        Using dlg As New frmEmployeeHistory(_service, _selectedRecordId,
+                                            _headerModel.EmployeeNo, _headerModel.FullName,
+                                            _headerModel.DateJoined)
+            dlg.ShowDialog(Me)
+        End Using
+    End Sub
 
     Private Sub btnHdr_Loans_Click(sender As Object, e As EventArgs) Handles btnHdr_Loans.Click
         If _headerModel Is Nothing OrElse _selectedRecordId = 0 Then Return
