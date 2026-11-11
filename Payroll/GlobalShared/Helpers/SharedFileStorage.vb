@@ -8,6 +8,8 @@
 ' Istruktura sa loob ng root:
 '     Employees\<RecordId 6 digits>\201Files\<yyyyMMddHHmmssfff>_<pangalan ng file>
 '     Employees\<RecordId 6 digits>\Photo\photo_<yyyyMMddHHmmssfff>.jpg
+'     CompanyLogo\CompanyLogo_<yyyyMMddHHmmss>.<ext>      (parehong anyo ng lumang FileStorageHelper)
+' ISANG root lang para sa lahat (isang setting, isang backup, isang permission sa folder).
 ' RecordId ang ginagamit (hindi EmployeeNo) para hindi masira ang path kapag pinalitan ang EmployeeNo.
 ' ============================================================
 Imports System.Drawing.Drawing2D
@@ -159,6 +161,20 @@ Namespace GlobalShared.Helpers
             End Using
 
             Return Path.Combine(folder, storedName)
+        End Function
+
+        ''' <summary>
+        ''' Generic na kopya papunta sa root\subFolder (hal. Company Logo). Parehong anyo ng pangalan at ng relative path
+        ''' ng lumang FileStorageHelper.SaveFile, kaya VALID PA RIN ang mga relative path na nasa database na.
+        ''' </summary>
+        Public Function SaveFile(root As String, sourceFilePath As String, subFolder As String, fileNamePrefix As String) As String
+            Dim targetFolder As String = Path.Combine(root.Trim(), subFolder)
+            Directory.CreateDirectory(targetFolder)
+
+            Dim fileName As String = $"{fileNamePrefix}_{DateTime.Now:yyyyMMddHHmmss}{Path.GetExtension(sourceFilePath)}"
+            File.Copy(sourceFilePath, Path.Combine(targetFolder, fileName), overwrite:=True)
+
+            Return Path.Combine(subFolder, fileName)
         End Function
 
         Public Sub DeleteFile(root As String, relativePath As String)

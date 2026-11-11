@@ -67,6 +67,7 @@ Public Class ucEmployees
     Private _miResign As DXMenuItem
     Private _miTerminate As DXMenuItem
     Private _miRetire As DXMenuItem
+    Private _miRehire As DXMenuItem
 
     ' Active loans ng napiling employee (galing sa UpdateHeaderAsync) - babala sa Actions dialog
     Private _activeLoanCount As Integer
@@ -396,6 +397,7 @@ Public Class ucEmployees
         _miResign = NewMovementItem("Resign...", Employee.Models.MovementTypes.Resign, True)
         _miTerminate = NewMovementItem("Terminate...", Employee.Models.MovementTypes.Terminate, False)
         _miRetire = NewMovementItem("Retire...", Employee.Models.MovementTypes.Retire, False)
+        _miRehire = NewMovementItem("Rehire...", Employee.Models.MovementTypes.Rehire, True)
 
         _miToggleActive = New DXMenuItem("Set inactive", AddressOf OnToggleActiveClick)
         _miToggleActive.BeginGroup = True
@@ -407,6 +409,7 @@ Public Class ucEmployees
         _actionsMenu.Items.Add(_miResign)
         _actionsMenu.Items.Add(_miTerminate)
         _actionsMenu.Items.Add(_miRetire)
+        _actionsMenu.Items.Add(_miRehire)
         _actionsMenu.Items.Add(_miToggleActive)
         btnHdr_Actions.DropDownControl = _actionsMenu
 
@@ -483,6 +486,15 @@ Public Class ucEmployees
         _miResign.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Resign, ctx)
         _miTerminate.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Terminate, ctx)
         _miRetire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Retire, ctx)
+        _miRehire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Rehire, ctx)
+
+        ' Ang Reactivate ay hindi para sa may separation: Rehire ang daan.
+        If Employee.Models.EmployeeMovementRules.ReactivateBlockedReason(ctx).Length > 0 Then
+            _miToggleActive.Enabled = False
+            _miToggleActive.Caption = "Reactivate (use Rehire)"
+        Else
+            _miToggleActive.Enabled = True
+        End If
     End Sub
 
     ''' <summary>
@@ -597,7 +609,12 @@ Public Class ucEmployees
 
     Private Async Function RefreshAfterMovementAsync(movementType As String) As Task
         ' Ang Resign/Terminate/Retire ay nagiging Inactive: sa Active list, aalis siya (parehong daan ng Set inactive).
-        If Employee.Models.MovementTypes.IsSeparation(movementType) AndAlso GetCurrentFilter() = "Active" Then
+        ' Ang Rehire ay nagiging Active: sa Inactive list, aalis siya.
+        Dim leavesList As Boolean =
+            (Employee.Models.MovementTypes.IsSeparation(movementType) AndAlso GetCurrentFilter() = "Active") OrElse
+            (movementType = Employee.Models.MovementTypes.Rehire AndAlso GetCurrentFilter() = "Inactive")
+
+        If leavesList Then
             Await RefreshAfterStatusChangeAsync()
         Else
             ' Nagbago ang laman ng Employment tab (type/petsa/position...) kaya i-reload lahat ng tabs + header.

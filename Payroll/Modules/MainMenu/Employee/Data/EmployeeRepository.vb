@@ -202,6 +202,7 @@ Namespace Employee.Data
                 If header IsNot Nothing Then
                     header.ProbationMonths = Await TryGetProbationMonthsAsync(conn)
                     Await TryFillPhotoAndDocumentsAsync(conn, header)
+                    header.OriginalDateJoined = Await TryGetOriginalDateJoinedAsync(conn, recordId)
                 End If
 
                 Return header
@@ -246,6 +247,18 @@ Namespace Employee.Data
             Catch ex As Exception
                 Debug.WriteLine($"Required documents not available: {ex.Message}")
                 header.DocumentsKnown = False
+            End Try
+        End Function
+
+        ' Nothing kapag wala pang column (hindi pa na-run ang Rehire SQL) - hindi dapat masira ang header.
+        Private Shared Async Function TryGetOriginalDateJoinedAsync(conn As IDbConnection, recordId As Integer) As Task(Of Date?)
+            Try
+                Return Await conn.QuerySingleOrDefaultAsync(Of Date?)(
+                    "SELECT OriginalDateJoined FROM tblEmployeeEmployment WHERE RecordId = @RecordId",
+                    New With {.RecordId = recordId})
+            Catch ex As Exception
+                Debug.WriteLine($"OriginalDateJoined not available: {ex.Message}")
+                Return Nothing
             End Try
         End Function
 
@@ -328,6 +341,11 @@ Namespace Employee.Data
                 .Remarks = remarks,
                 .CreatedBy = createdBy
             }, tran)
+        End Function
+
+        Private Shared Function FmtDate(value As Date?) As String
+            If Not value.HasValue Then Return "(none)"
+            Return value.Value.ToString("MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture)
         End Function
 
         Private Shared Function OrNone(value As String) As String
@@ -481,6 +499,42 @@ Namespace Employee.Data
                                 Await conn.ExecuteAsync("
                                     UPDATE tblEmployee SET
                                         IsActive  = 0,
+                                        UpdatedAt = GETDATE(),
+                                        UpdatedBy = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.UserName = userName, .RecordId = request.RecordId}, tran)
+
+                            Case Models.MovementTypes.Rehire
+                                ' Bagong panahon ng serbisyo: ang rehire date ang bagong Date Joined (batayan ng retirement),
+                                ' ang UNANG Date Joined ay itinatabi sa OriginalDateJoined (isang beses lang), nabubura ang
+                                ' mga petsa ng pag-alis sa employment row (nananatili sa History), at Active na ulit.
+                                Dim lastDate = Models.EmployeeMovementRules.LastSeparationDate(ctx)
+                                Dim lastKind = Models.EmployeeMovementRules.LastSeparationKind(ctx)
+                                Dim empType = Models.EmployeeMovementRules.CanonicalEmploymentType(request.NewEmploymentType)
+
+                                fromText = $"Joined {FmtDate(cur.DateJoined)}; " &
+                                           $"{If(lastKind.Length = 0, "Separated", lastKind)} {FmtDate(lastDate)}; " &
+                                           $"Employment Type: {OrNone(cur.EmployeeStatus)}"
+                                toText = $"Joined {FmtDate(effective)}; Active; Employment Type: {empType}"
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEmployment SET
+                                        OriginalDateJoined = ISNULL(OriginalDateJoined, DateJoined),
+                                        DateJoined         = @EffectiveDate,
+                                        DateResigned       = NULL,
+                                        DateRetired        = NULL,
+                                        DateTerminated     = NULL,
+                                        EmployeeStatus     = @EmploymentType,
+                                        DateRegularization = CASE WHEN @EmploymentType = 'Regular' THEN @EffectiveDate ELSE NULL END,
+                                        UpdatedAt          = GETDATE(),
+                                        UpdatedBy          = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.EffectiveDate = effective, .EmploymentType = empType,
+                                              .UserName = userName, .RecordId = request.RecordId}, tran)
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployee SET
+                                        IsActive  = 1,
                                         UpdatedAt = GETDATE(),
                                         UpdatedBy = @UserName
                                     WHERE RecordId = @RecordId",

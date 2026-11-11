@@ -19,6 +19,7 @@ Namespace Employee.Models
         Public Const Retire As String = "Retire"
         Public Const SetInactive As String = "Set inactive"
         Public Const Reactivate As String = "Reactivate"
+        Public Const Rehire As String = "Rehire"
 
         Public Shared Function IsSeparation(movementType As String) As Boolean
             Return String.Equals(movementType, Resign, StringComparison.OrdinalIgnoreCase) OrElse
@@ -37,6 +38,7 @@ Namespace Employee.Models
                 Case Retire : Return "Retired"
                 Case SetInactive : Return "Set inactive"
                 Case Reactivate : Return "Reactivated"
+                Case Rehire : Return "Rehired"
                 Case Else : Return If(movementType, String.Empty)
             End Select
         End Function
@@ -74,6 +76,9 @@ Namespace Employee.Models
         ' Transfer
         Public Property NewBranchId As Integer?
         Public Property NewDepartmentId As Integer?
+
+        ' Rehire: ang Employment Type ng bagong panahon ng serbisyo (pinipili ng HR; walang default)
+        Public Property NewEmploymentType As String
 
         ''' <summary>Itinatakda ng Service (AppSession.CurrentUser), hindi ng dialog.</summary>
         Public Property CreatedBy As String
@@ -168,6 +173,46 @@ Namespace Employee.Models
             Return EmploymentTypes.Any(Function(k) k.Equals(t, StringComparison.OrdinalIgnoreCase))
         End Function
 
+        ''' <summary>Pinakahuling petsa ng pag-alis (Resigned/Retired/Terminated). Nothing kung walang petsa.</summary>
+        Public Function LastSeparationDate(c As MovementContext) As Date?
+            Dim result As Date? = Nothing
+            For Each d In {c.DateResigned, c.DateRetired, c.DateTerminated}
+                If d.HasValue AndAlso (Not result.HasValue OrElse d.Value.Date > result.Value.Date) Then result = d.Value.Date
+            Next
+            Return result
+        End Function
+
+        ''' <summary>"Resigned" / "Retired" / "Terminated" ng pinakahuling pag-alis; blangko kung hindi matukoy.</summary>
+        Public Function LastSeparationKind(c As MovementContext) As String
+            Dim last = LastSeparationDate(c)
+            If last.HasValue Then
+                If c.DateTerminated.HasValue AndAlso c.DateTerminated.Value.Date = last.Value Then Return "Terminated"
+                If c.DateResigned.HasValue AndAlso c.DateResigned.Value.Date = last.Value Then Return "Resigned"
+                Return "Retired"
+            End If
+
+            ' Lumang status na nakasulat sa EmployeeStatus (walang petsa)
+            Dim t As String = Clean(c.EmploymentType)
+            Return SeparationStatuses.FirstOrDefault(Function(s) s.Equals(t, StringComparison.OrdinalIgnoreCase)) & String.Empty
+        End Function
+
+        ''' <summary>Ang eksaktong pagkakasulat (casing) ng Employment Type mula sa listahan; blangko kung hindi kilala.</summary>
+        Public Function CanonicalEmploymentType(employmentType As String) As String
+            Dim t As String = Clean(employmentType)
+            Return EmploymentTypes.FirstOrDefault(Function(k) k.Equals(t, StringComparison.OrdinalIgnoreCase)) & String.Empty
+        End Function
+
+        ''' <summary>
+        ''' Hindi puwede ang Reactivate sa may separation: ang petsa ng pag-alis ay mananatili at ang empleyado ay
+        ''' mananatiling hindi eligible sa payroll. Ang daan ay Rehire. Empty = puwede.
+        ''' </summary>
+        Public Function ReactivateBlockedReason(c As MovementContext) As String
+            If IsSeparated(c) Then
+                Return "This employee has a separation (Resigned, Retired, or Terminated). Use Actions > Rehire instead of Reactivate."
+            End If
+            Return String.Empty
+        End Function
+
         ''' <summary>Dapat bang naka-enable ang action sa menu para sa empleyadong ito.</summary>
         Public Function IsAvailable(movementType As String, c As MovementContext) As Boolean
             Return UnavailableReason(movementType, c).Length = 0
@@ -187,6 +232,11 @@ Namespace Employee.Models
                 Case MovementTypes.Resign, MovementTypes.Terminate, MovementTypes.Retire
                     If IsSeparated(c) Then Return SeparatedMessage()
 
+                Case MovementTypes.Rehire
+                    If Not IsSeparated(c) Then
+                        Return "Only an employee who has resigned, retired, or been terminated can be rehired."
+                    End If
+
                 Case MovementTypes.SetInactive, MovementTypes.Reactivate
                     Return String.Empty
 
@@ -198,11 +248,43 @@ Namespace Employee.Models
         End Function
 
         Private Function SeparatedMessage() As String
-            Return "This employee already has a separation (Resigned, Retired, or Terminated), so this action is not available."
+            Return "This employee already has a separation (Resigned, Retired, or Terminated), so this action is not available. " &
+                   "If the employee is returning, use Actions > Rehire."
         End Function
 
         Private Function FormatDate(d As Date) As String
             Return d.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture)
+        End Function
+
+        ' Rehire: ang petsa ay dapat MAS HULI sa huling pag-alis (hindi ang Date Joined ang batayan, dahil ito
+        ' mismo ang papalitan), hindi sa hinaharap, at kailangan ng Employment Type.
+        Private Function ValidateRehire(req As EmployeeMovementRequest, c As MovementContext, today As Date) As String
+            If req.EffectiveDate.Date > today.Date Then
+                Return "The rehire date can't be in the future."
+            End If
+
+            Dim lastSep As Date? = LastSeparationDate(c)
+            If lastSep.HasValue Then
+                If req.EffectiveDate.Date <= lastSep.Value.Date Then
+                    Return $"The rehire date must be after the last separation date ({FormatDate(lastSep.Value)})."
+                End If
+            ElseIf c.DateJoined.HasValue AndAlso req.EffectiveDate.Date < c.DateJoined.Value.Date Then
+                Return $"The rehire date can't be earlier than Date Joined ({FormatDate(c.DateJoined.Value)})."
+            End If
+
+            If CanonicalEmploymentType(req.NewEmploymentType).Length = 0 Then
+                Return "Choose the Employment Type for the rehired employee."
+            End If
+
+            Dim remarks As String = Clean(req.Remarks)
+            If remarks.Length > MaxRemarksLength Then
+                Return $"Remarks is too long (maximum {MaxRemarksLength} characters)."
+            End If
+            If LastSeparationKind(c) = "Terminated" AndAlso remarks.Length = 0 Then
+                Return "Remarks is required when rehiring a terminated employee (state the reason or approval)."
+            End If
+
+            Return String.Empty
         End Function
 
         ''' <summary>Buong pagsusuri ng isang request laban sa kasalukuyang kalagayan.</summary>
@@ -215,6 +297,8 @@ Namespace Employee.Models
             If req.MovementType = MovementTypes.SetInactive OrElse req.MovementType = MovementTypes.Reactivate Then
                 Return String.Empty
             End If
+
+            If req.MovementType = MovementTypes.Rehire Then Return ValidateRehire(req, c, today)
 
             If Not c.DateJoined.HasValue Then
                 Return "Date Joined is missing. Set it in the Employment tab first."

@@ -13,6 +13,9 @@ Namespace GlobalShared.Helpers
     ''' palitan ng UNC path sa RootFolder balang araw (kapag na-configure na
     ''' sa General > Others, gaya ng "Logo/Avatar Repository" ng C1Pay).
     ''' </summary>
+    ' LEGACY (Nov 2026): ang Company Logo ay lumipat na sa SharedFileStorage (shared Files Folder sa General Settings).
+    ' Ang module na ito ay nananatili lang bilang fallback kapag wala pang Files Folder, at para mabasa ang mga lumang
+    ' logo sa Uploads\ na minsang kokopyahin sa shared folder ng CompanyPresenter.
     Public Module FileStorageHelper
 
         Private ReadOnly RootFolder As String = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Uploads")

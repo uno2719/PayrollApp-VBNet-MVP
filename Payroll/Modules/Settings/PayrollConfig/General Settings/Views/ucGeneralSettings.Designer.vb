@@ -502,7 +502,7 @@ Partial Class ucGeneralSettings
         lblFilesFolderHint.Name = "lblFilesFolderHint"
         lblFilesFolderHint.Size = New Size(560, 13)
         lblFilesFolderHint.TabIndex = 7
-        lblFilesFolderHint.Text = "Folder on the server (e.g. \\server\PayrollFiles) that every PC can read and write. Used for Employee 201 Files and photos."
+        lblFilesFolderHint.Text = "Folder on the server (e.g. \\server\PayrollFiles) that every PC can read and write. Used for Employee 201 Files, photos, and the Company Logo."
         ' 
         ' lblProbationMonths
         ' 

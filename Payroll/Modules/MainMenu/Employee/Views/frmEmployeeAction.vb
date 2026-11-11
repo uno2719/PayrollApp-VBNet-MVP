@@ -59,6 +59,7 @@ Public Class frmEmployeeAction
             End If
 
             _context = Employee.Models.MovementContext.FromEmployment(_employment, _header.IsActive)
+            lblRemarks.Text = If(RemarksRequired(), "Remarks *", "Remarks")
 
             ' Nagbago na ba ang kalagayan mula nang buksan ang menu? (hal. ibang user ang nag-resign sa kanya)
             Dim blocked = Employee.Models.EmployeeMovementRules.UnavailableReason(_movementType, _context)
@@ -68,8 +69,17 @@ Public Class frmEmployeeAction
                 Return
             End If
 
-            ' Effective date: hindi mas maaga sa Date Joined, hindi sa hinaharap.
-            If _employment.DateJoined.HasValue AndAlso _employment.DateJoined.Value.Date <= Date.Today Then
+            ' Effective date: hindi mas maaga sa Date Joined (sa Rehire: mas huli sa huling pag-alis), hindi sa hinaharap.
+            If _movementType = Employee.Models.MovementTypes.Rehire Then
+                Dim lastSep = Employee.Models.EmployeeMovementRules.LastSeparationDate(_context)
+                If lastSep.HasValue AndAlso lastSep.Value.Date.AddDays(1) <= Date.Today Then
+                    dtpEffective.Properties.MinValue = lastSep.Value.Date.AddDays(1)
+                End If
+                lblEffective.Text = "Rehire date *"
+                cboEmploymentType.Properties.Items.Clear()
+                cboEmploymentType.Properties.Items.AddRange(Employee.Models.EmployeeMovementRules.EmploymentTypes)
+                cboEmploymentType.SelectedIndex = -1   ' walang default: HR ang pipili
+            ElseIf _employment.DateJoined.HasValue AndAlso _employment.DateJoined.Value.Date <= Date.Today Then
                 dtpEffective.Properties.MinValue = _employment.DateJoined.Value.Date
             End If
             dtpEffective.Properties.MaxValue = Date.Today
@@ -112,6 +122,7 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Resign : Return "Record Resignation"
             Case Employee.Models.MovementTypes.Terminate : Return "Record Termination"
             Case Employee.Models.MovementTypes.Retire : Return "Record Retirement"
+            Case Employee.Models.MovementTypes.Rehire : Return "Rehire Employee"
             Case Else : Return "Employee Action"
         End Select
     End Function
@@ -124,11 +135,16 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Resign : Return "Resign"
             Case Employee.Models.MovementTypes.Terminate : Return "Terminate"
             Case Employee.Models.MovementTypes.Retire : Return "Retire"
+            Case Employee.Models.MovementTypes.Rehire : Return "Rehire"
             Case Else : Return "Apply"
         End Select
     End Function
 
     Private Function RemarksRequired() As Boolean
+        If _movementType = Employee.Models.MovementTypes.Rehire Then
+            ' Required lang kapag na-terminate ang huling pag-alis (hula: para may dahilan/approval na nakatala)
+            Return _context IsNot Nothing AndAlso Employee.Models.EmployeeMovementRules.LastSeparationKind(_context) = "Terminated"
+        End If
         Return _movementType = Employee.Models.MovementTypes.Resign OrElse
                _movementType = Employee.Models.MovementTypes.Terminate
     End Function
@@ -155,13 +171,20 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Retire
                 Return "Sets Date Retired and marks the employee Inactive. The Employment Type is kept on record."
 
+            Case Employee.Models.MovementTypes.Rehire
+                Return "Starts a new service period: the rehire date becomes the new Date Joined (the first Date Joined is " &
+                       "kept as Original Date Joined) and the employee becomes Active. The previous separation is cleared " &
+                       "from the Employment tab but stays in History. Salary, loans and other details are not changed - " &
+                       "please review the Earnings tab."
+
             Case Else
                 Return String.Empty
         End Select
     End Function
 
     Private Function WarningText() As String
-        If Employee.Models.MovementTypes.IsSeparation(_movementType) AndAlso _activeLoanCount > 0 Then
+        If (Employee.Models.MovementTypes.IsSeparation(_movementType) OrElse
+            _movementType = Employee.Models.MovementTypes.Rehire) AndAlso _activeLoanCount > 0 Then
             Return $"This employee still has {_activeLoanCount} active {If(_activeLoanCount = 1, "loan", "loans")} " &
                    $"with a balance of ₱{_activeLoanBalance:N2}. Loans are not changed by this action."
         End If
@@ -193,6 +216,9 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Transfer
                 PlaceRow(y, lblBranch, lookBranch, 20)
                 PlaceRow(y, lblDepartment, lookDepartment, 20)
+
+            Case Employee.Models.MovementTypes.Rehire
+                PlaceRow(y, lblEmploymentType, cboEmploymentType, 20)
         End Select
 
         PlaceRow(y, lblRemarks, memoRemarks, 70)
@@ -269,6 +295,9 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Transfer
                 req.NewBranchId = GetId(lookBranch)
                 req.NewDepartmentId = GetId(lookDepartment)
+
+            Case Employee.Models.MovementTypes.Rehire
+                req.NewEmploymentType = cboEmploymentType.Text.Trim()
         End Select
 
         Return req
@@ -305,6 +334,18 @@ Public Class frmEmployeeAction
                          "Payroll still includes cutoffs that start on or before the effective date." & vbCrLf & vbCrLf &
                          "Actions > Reactivate can make the employee Active again, but the separation date stays " &
                          "on record until it is changed in the Employment tab."
+
+            Dim answer = XtraMessageBox.Show(Me, prompt, Text,
+                                             MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                                             MessageBoxDefaultButton.Button2)
+            If answer <> DialogResult.Yes Then Return
+        End If
+
+        If _movementType = Employee.Models.MovementTypes.Rehire Then
+            Dim who = If(String.IsNullOrWhiteSpace(_header.FullName), "this employee", _header.FullName)
+            Dim prompt = $"Rehire {who} effective {req.EffectiveDate:MM/dd/yyyy} as {req.NewEmploymentType}?" & vbCrLf & vbCrLf &
+                         "The rehire date becomes the new Date Joined, the employee becomes Active, and the previous " &
+                         "separation date is cleared (it stays in History)."
 
             Dim answer = XtraMessageBox.Show(Me, prompt, Text,
                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question,

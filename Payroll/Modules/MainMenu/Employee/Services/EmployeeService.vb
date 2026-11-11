@@ -97,6 +97,16 @@
                 Throw New UnauthorizedAccessException("You are not allowed to change an employee's status.")
             End If
 
+            ' Ang Reactivate ay hindi para sa may separation: mananatili ang petsa ng pag-alis kaya hindi pa rin siya
+            ' papasok sa payroll. Ang daan ay Actions > Rehire.
+            If isActive Then
+                Dim header = Await _repo.GetHeaderAsync(recordId)
+                If header IsNot Nothing Then
+                    Dim reason = Models.EmployeeMovementRules.ReactivateBlockedReason(Models.MovementContext.FromHeader(header))
+                    If reason.Length > 0 Then Throw New InvalidOperationException(reason)
+                End If
+            End If
+
             Return Await _repo.SetActiveAsync(recordId, isActive)
         End Function
 

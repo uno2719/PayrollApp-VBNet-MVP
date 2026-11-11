@@ -21,6 +21,9 @@
         Public Property DateRetired As Date?
         Public Property DateTerminated As Date?
 
+        ''' <summary>Unang Date Joined bago ang rehire (itinatakda lang ng Rehire). Nothing = hindi pa na-rehire o wala pang column.</summary>
+        Public Property OriginalDateJoined As Date?
+
         ' --- Lookups ---
         Public Property PositionName As String
         Public Property DepartmentName As String

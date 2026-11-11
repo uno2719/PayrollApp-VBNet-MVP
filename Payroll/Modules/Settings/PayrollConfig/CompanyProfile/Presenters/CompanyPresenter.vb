@@ -1,4 +1,5 @@
 ﻿' UPDATE: Modules/Settings/SysConfig/CompanyProfile/Presenters/CompanyPresenter.vb
+Imports System.IO
 Imports Payroll.Employee.Data
 Imports Payroll.GlobalShared.Helpers
 Imports Payroll.GlobalShared.Models
@@ -12,6 +13,11 @@ Namespace CompanyProfile.Presenters
         Private ReadOnly _userName As String
 
         Private _current As CompanyModel
+
+        ' Shared Files Folder (General Settings) para sa logo, at ang logo path na nasa database ngayon
+        Private ReadOnly _fileRepository As IEmployeeFileRepository = New EmployeeFileRepository()
+        Private _storageRoot As String
+        Private _loadedLogoPath As String
 
         Public Sub New(
             view As Views.ICompanyView,
@@ -52,19 +58,80 @@ Namespace CompanyProfile.Presenters
             _view.Website = _current.Website
             _view.IsActive = _current.IsActive
 
-            _view.ShowLogo(FileStorageHelper.GetFullPath(_current.LogoPath))
+            Try
+                _storageRoot = Await _fileRepository.GetStorageRootAsync()
+            Catch ex As Exception
+                ' Wala pang column (hindi pa na-run ang Phase 3 SQL): gumamit ng lumang gawi.
+                Debug.WriteLine($"Files Folder not available: {ex.Message}")
+                _storageRoot = Nothing
+            End Try
+
+            _loadedLogoPath = _current.LogoPath
+            _view.ShowLogo(ResolveLogoFullPath(_current.LogoPath))
         End Function
 
+        ' Shared folder muna. Kung wala pa roon ang file pero nasa lokal na Uploads\ ng PC na ito (lumang logo na na-upload
+        ' dito dati), kokopyahin ito sa shared folder (isang beses, walang binabago sa database dahil pareho ang relative path).
+        Private Function ResolveLogoFullPath(relativePath As String) As String
+            If String.IsNullOrWhiteSpace(relativePath) Then Return String.Empty
+
+            Dim localFull As String = FileStorageHelper.GetFullPath(relativePath)
+            If String.IsNullOrWhiteSpace(_storageRoot) Then Return localFull
+
+            Dim sharedFull As String = SharedFileStorage.GetFullPath(_storageRoot, relativePath)
+            Try
+                If Not File.Exists(sharedFull) AndAlso File.Exists(localFull) Then
+                    Directory.CreateDirectory(Path.GetDirectoryName(sharedFull))
+                    File.Copy(localFull, sharedFull, overwrite:=False)
+                End If
+                Return If(File.Exists(sharedFull), sharedFull, localFull)
+            Catch ex As Exception
+                Debug.WriteLine($"Logo migration/read failed: {ex.Message}")
+                Return localFull
+            End Try
+        End Function
+
+        Private Sub TryDeleteLogo(relativePath As String)
+            If String.IsNullOrWhiteSpace(relativePath) OrElse String.IsNullOrWhiteSpace(_storageRoot) Then Return
+            Try
+                SharedFileStorage.DeleteFile(_storageRoot, relativePath)
+            Catch ex As Exception
+                Debug.WriteLine($"Old logo not deleted: {ex.Message}")
+            End Try
+        End Sub
+
         Public Sub UploadLogo()
+            If String.IsNullOrWhiteSpace(_storageRoot) Then
+                _view.ShowError("The Files Folder is not set. An administrator must set it in Settings > General Settings " &
+                                "before a logo can be uploaded.")
+                Return
+            End If
+
+            Dim problem As String = SharedFileStorage.ValidateRoot(_storageRoot)
+            If problem.Length > 0 Then
+                _view.ShowError(problem)
+                Return
+            End If
+
             Dim pickedFile = _view.PromptForLogoFile()
             If String.IsNullOrWhiteSpace(pickedFile) Then Return
 
-            If Not String.IsNullOrWhiteSpace(_current.LogoPath) Then
-                FileStorageHelper.DeleteFile(_current.LogoPath)
+            Dim newPath As String
+            Try
+                newPath = SharedFileStorage.SaveFile(_storageRoot, pickedFile, "CompanyLogo", "CompanyLogo")
+            Catch ex As Exception
+                _view.ShowError($"The logo could not be uploaded: {ex.Message}")
+                Return
+            End Try
+
+            ' Naunang upload sa session na ito na hindi pa nase-save: ligtas nang burahin. Ang logo na nasa database
+            ' ay buburahin lang pagkatapos ng matagumpay na Save (para hindi masira ang logo kung hindi mase-save).
+            If Not String.IsNullOrWhiteSpace(_current.LogoPath) AndAlso _current.LogoPath <> _loadedLogoPath Then
+                TryDeleteLogo(_current.LogoPath)
             End If
 
-            _current.LogoPath = FileStorageHelper.SaveFile(pickedFile, "CompanyLogo", "CompanyLogo")
-            _view.ShowLogo(FileStorageHelper.GetFullPath(_current.LogoPath))
+            _current.LogoPath = newPath
+            _view.ShowLogo(SharedFileStorage.GetFullPath(_storageRoot, newPath))
         End Sub
 
         Public Async Function SaveAsync() As Task
@@ -84,12 +151,21 @@ Namespace CompanyProfile.Presenters
             _current.Website = _view.Website
             _current.IsActive = _view.IsActive
 
+            Dim previousLogo As String = _loadedLogoPath
+            Dim savedLogo As String = _current.LogoPath
+
             Dim result = Await _service.SaveAsync(_current, _userName)
 
             If Not result.Success Then
                 _view.ShowError(result.ErrorMessage)
                 Return
             End If
+
+            ' Napalitan ang logo at nase-save na: burahin ang luma sa shared folder (best-effort).
+            If Not String.IsNullOrWhiteSpace(previousLogo) AndAlso previousLogo <> savedLogo Then
+                TryDeleteLogo(previousLogo)
+            End If
+            _loadedLogoPath = savedLogo
 
             _current = Await _service.GetAsync()
             _view.ShowMessage("Company Profile saved.")

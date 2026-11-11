@@ -31,6 +31,8 @@ Partial Class frmEmployeeAction
         lookBranch = New DevExpress.XtraEditors.LookUpEdit()
         lblDepartment = New DevExpress.XtraEditors.LabelControl()
         lookDepartment = New DevExpress.XtraEditors.LookUpEdit()
+        lblEmploymentType = New DevExpress.XtraEditors.LabelControl()
+        cboEmploymentType = New DevExpress.XtraEditors.ComboBoxEdit()
         lblRemarks = New DevExpress.XtraEditors.LabelControl()
         memoRemarks = New DevExpress.XtraEditors.MemoEdit()
         lblWarning = New DevExpress.XtraEditors.LabelControl()
@@ -43,6 +45,7 @@ Partial Class frmEmployeeAction
         CType(lookJobClass.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookBranch.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookDepartment.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboEmploymentType.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -177,6 +180,25 @@ Partial Class frmEmployeeAction
         lookDepartment.TabIndex = 13
         lookDepartment.Visible = False
         ' 
+        ' lblEmploymentType
+        ' 
+        lblEmploymentType.Location = New Point(20, 280)
+        lblEmploymentType.Name = "lblEmploymentType"
+        lblEmploymentType.Size = New Size(86, 13)
+        lblEmploymentType.TabIndex = 19
+        lblEmploymentType.Text = "Employment Type *"
+        lblEmploymentType.Visible = False
+        ' 
+        ' cboEmploymentType
+        ' 
+        cboEmploymentType.Location = New Point(150, 276)
+        cboEmploymentType.Name = "cboEmploymentType"
+        cboEmploymentType.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        cboEmploymentType.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboEmploymentType.Size = New Size(300, 20)
+        cboEmploymentType.TabIndex = 20
+        cboEmploymentType.Visible = False
+        ' 
         ' lblRemarks
         ' 
         lblRemarks.Location = New Point(20, 280)
@@ -239,6 +261,8 @@ Partial Class frmEmployeeAction
         Controls.Add(btnApply)
         Controls.Add(lblWarning)
         Controls.Add(memoRemarks)
+        Controls.Add(cboEmploymentType)
+        Controls.Add(lblEmploymentType)
         Controls.Add(lblRemarks)
         Controls.Add(lookDepartment)
         Controls.Add(lblDepartment)
@@ -268,6 +292,7 @@ Partial Class frmEmployeeAction
         CType(lookJobClass.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookBranch.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookDepartment.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboEmploymentType.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
         PerformLayout()
@@ -287,6 +312,8 @@ Partial Class frmEmployeeAction
     Friend WithEvents lookBranch As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents lblDepartment As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lookDepartment As DevExpress.XtraEditors.LookUpEdit
+    Friend WithEvents lblEmploymentType As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboEmploymentType As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents lblRemarks As DevExpress.XtraEditors.LabelControl
     Friend WithEvents memoRemarks As DevExpress.XtraEditors.MemoEdit
     Friend WithEvents lblWarning As DevExpress.XtraEditors.LabelControl

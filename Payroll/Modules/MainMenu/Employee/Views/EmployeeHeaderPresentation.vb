@@ -190,7 +190,8 @@ Namespace Employee.Views
             If h.DateJoined.HasValue Then
                 Dim endDate = If(sep IsNot Nothing AndAlso sep.OnDate.HasValue, sep.OnDate.Value, today)
                 Dim tenure = FormatTenure(h.DateJoined.Value, endDate)
-                Dim joinedText = $"Joined {FormatDate(h.DateJoined.Value)}" & If(tenure.Length > 0, $"  ·  {tenure}", String.Empty)
+                Dim joinedLabel = If(h.OriginalDateJoined.HasValue, "Rehired", "Joined")
+                Dim joinedText = $"{joinedLabel} {FormatDate(h.DateJoined.Value)}" & If(tenure.Length > 0, $"  ·  {tenure}", String.Empty)
                 state.Joined = MakeChip(joinedText, PalGray)
             Else
                 state.Joined = MakeChip("No date joined", PalAmber)
