@@ -158,6 +158,44 @@ Public Class ucGeneralSettings
         End Set
     End Property
 
+    ' === IGeneralSettingsView : Files ===
+
+    Public Property FileStorageRoot As String Implements IGeneralSettingsView.FileStorageRoot
+        Get
+            Return txtFilesFolder.Text.Trim()
+        End Get
+        Set(value As String)
+            txtFilesFolder.Text = If(value, String.Empty)
+        End Set
+    End Property
+
+    Private Sub btnBrowseFilesFolder_Click(sender As Object, e As EventArgs) Handles btnBrowseFilesFolder.Click
+        Using dlg As New FolderBrowserDialog()
+            dlg.Description = "Choose the shared folder for Employee files (it must be reachable by every PC that uses the system)."
+            dlg.ShowNewFolderButton = True
+            If Not String.IsNullOrWhiteSpace(txtFilesFolder.Text) Then dlg.SelectedPath = txtFilesFolder.Text.Trim()
+            If dlg.ShowDialog(Me) = DialogResult.OK Then txtFilesFolder.Text = dlg.SelectedPath
+        End Using
+    End Sub
+
+    ' Sinusubukan mula sa PC na ito: umiiral ba ang folder at nasusulatan ba (nagsusulat/nagbubura ng maliit na test file).
+    Private Async Sub btnTestFilesFolder_Click(sender As Object, e As EventArgs) Handles btnTestFilesFolder.Click
+        Dim root As String = txtFilesFolder.Text.Trim()
+        btnTestFilesFolder.Enabled = False
+        Try
+            Dim problem As String = Await Task.Run(Function() SharedFileStorage.ValidateRoot(root))
+            If problem.Length = 0 Then
+                DevExpress.XtraEditors.XtraMessageBox.Show(Me, "This PC can reach and write to the Files Folder.",
+                    "Files Folder", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Else
+                DevExpress.XtraEditors.XtraMessageBox.Show(Me, problem,
+                    "Files Folder", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            End If
+        Finally
+            btnTestFilesFolder.Enabled = True
+        End Try
+    End Sub
+
     ' === IGeneralSettingsView : Code Mapping ===
 
     Public Property BasicSalaryCodePlusId As Integer? Implements IGeneralSettingsView.BasicSalaryCodePlusId

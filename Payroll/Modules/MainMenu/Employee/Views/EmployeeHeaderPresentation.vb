@@ -35,6 +35,10 @@ Namespace Employee.Views
         Public Property PayCycle As New HeaderChipState()
         Public Property PayrollChip As New HeaderChipState()
 
+        ''' <summary>"Profile 80%" (Phase 3). Nakatago kapag may pag-alis na ang empleyado.</summary>
+        Public Property Completeness As New HeaderChipState()
+        Public Property CompletenessTip As String = String.Empty
+
         ''' <summary>Walang laman = itago ang alert strip.</summary>
         Public Property AlertText As String = String.Empty
         Public Property AlertBack As Color
@@ -205,6 +209,18 @@ Namespace Employee.Views
                                          New ChipPalette(PalGray.Back, PalGray.Fore, dot))
             Else
                 state.PayrollChip = HiddenChip()
+            End If
+
+            ' ---------- Profile completeness (Phase 3) ----------
+            If sep Is Nothing Then
+                Dim comp = Models.ProfileCompleteness.Evaluate(h)
+                Dim compPal = If(comp.Percent >= 100, PalGreen, If(comp.Percent >= 60, PalAmber, PalRed))
+                state.Completeness = MakeChip($"Profile {comp.Percent}%", compPal)
+                state.CompletenessTip = If(comp.Missing.Count = 0,
+                                           "Profile is complete.",
+                                           "Missing: " & String.Join(", ", comp.Missing))
+            Else
+                state.Completeness = HiddenChip()
             End If
 
             ' ---------- Buttons ----------

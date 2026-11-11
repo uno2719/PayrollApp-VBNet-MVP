@@ -29,6 +29,7 @@ Partial Class ucEmployees
         tabpageEmployment = New DevExpress.XtraTab.XtraTabPage()
         tabpageEarnings = New DevExpress.XtraTab.XtraTabPage()
         tabpageStatutory = New DevExpress.XtraTab.XtraTabPage()
+        tabpage201Files = New DevExpress.XtraTab.XtraTabPage()
         tabpagePrevEmployer = New DevExpress.XtraTab.XtraTabPage()
         tabpageFixTransactions = New DevExpress.XtraTab.XtraTabPage()
         grpMasterlist = New DevExpress.XtraEditors.GroupControl()
@@ -109,7 +110,7 @@ Partial Class ucEmployees
         tabconMain.SelectedTabPage = tabpagePersonalInfo
         tabconMain.Size = New Size(809, 360)
         tabconMain.TabIndex = 5
-        tabconMain.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpagePersonalInfo, tabpageEmployment, tabpageEarnings, tabpageStatutory, tabpagePrevEmployer, tabpageFixTransactions})
+        tabconMain.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpagePersonalInfo, tabpageEmployment, tabpageEarnings, tabpageStatutory, tabpage201Files, tabpagePrevEmployer, tabpageFixTransactions})
         ' 
         ' tabpagePersonalInfo
         ' 
@@ -142,6 +143,14 @@ Partial Class ucEmployees
         tabpageStatutory.Padding = New Padding(9, 8, 9, 8)
         tabpageStatutory.Size = New Size(807, 331)
         tabpageStatutory.Text = "Statutory"
+        ' 
+        ' tabpage201Files
+        ' 
+        tabpage201Files.Margin = New Padding(3, 2, 3, 2)
+        tabpage201Files.Name = "tabpage201Files"
+        tabpage201Files.Padding = New Padding(9, 8, 9, 8)
+        tabpage201Files.Size = New Size(807, 331)
+        tabpage201Files.Text = "201 Files"
         ' 
         ' tabpagePrevEmployer
         ' 
@@ -476,6 +485,7 @@ Partial Class ucEmployees
     Friend WithEvents tabpageEmployment As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageEarnings As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageStatutory As DevExpress.XtraTab.XtraTabPage
+    Friend WithEvents tabpage201Files As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpagePrevEmployer As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageFixTransactions As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents wbpMainCommands As DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel

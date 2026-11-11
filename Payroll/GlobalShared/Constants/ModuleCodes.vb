@@ -34,6 +34,10 @@ Namespace GlobalShared.Constants
         ' Sub-permission: Employee header Actions (Set inactive, at mga susunod pang action). Admin laging may access;
         ' ang HR ay bibigyan ng Can Edit dito sa Users Account (tingnan ang sql/Phase1_EmployeeActions_Permission.sql).
         Public Const Main_Employees_Actions As String = "main_Employees_Actions"
+        ' Sub-permission: Employee 201 Files (tab) at Employee Photo. View = makikita ang tab; Can Edit = upload, delete
+        ' (may password), at palitan/alisin ang photo. Admin laging may access; ang HR ay bibigyan sa Users Account.
+        ' Ang module ay nire-register ng SQL/2026-11-11_Employee_Phase3_Files.sql.
+        Public Const Main_Employees_Documents As String = "main_Employees_Documents"
         Public Const Main_Payroll As String = "main_Payroll"
         Public Const Main_Loan As String = "main_Loan"
         Public Const Main_Leave As String = "main_Leave"

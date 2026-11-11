@@ -34,6 +34,13 @@ Namespace GlobalShared.Models
         ''' </summary>
         Public Property ProbationMonths As Integer = 5
 
+        ' --- Files ---
+        ''' <summary>
+        ''' Shared folder (UNC path, hal. \\server\share\PayrollFiles) kung saan nakalagay ang Employee 201 Files at Photo.
+        ''' Dapat maabot at masulatan ng LAHAT ng PC na gumagamit ng system. Blangko = hindi pa naka-set.
+        ''' </summary>
+        Public Property FileStorageRoot As String
+
         ' --- Code Mapping (FK papunta sa tblCompensation / tblDeduction) ---
         ' Nullable dahil pwedeng hindi pa naka-set sa bagong install, o
         ' hindi talaga ginagamit ng company (hal. walang Early Out policy).

@@ -49,6 +49,16 @@ Public Class ucEmployees
     Private _chipJoined As GlobalShared.Controls.StatusChip
     Private _chipCycle As GlobalShared.Controls.StatusChip
     Private _chipPayroll As GlobalShared.Controls.StatusChip
+    Private _chipComplete As GlobalShared.Controls.StatusChip
+    Private ReadOnly _chipTip As New System.Windows.Forms.ToolTip()
+
+    ' Phase 3: 201 Files tab + Photo
+    Private ReadOnly _fileService As New Employee.Services.EmployeeFileService()
+    Private _ucDocuments As ucEmployeesDocuments
+    Private _photoImage As Image
+    Private _photoMenu As ContextMenuStrip
+    Private _miPhotoChange As ToolStripMenuItem
+    Private _miPhotoRemove As ToolStripMenuItem
     Private _actionsMenu As DXPopupMenu
     Private _miToggleActive As DXMenuItem
     Private _miRegularize As DXMenuItem
@@ -110,6 +120,13 @@ Public Class ucEmployees
 
         AddHandler _ucStatutory.OnSaveCompleted,
         AddressOf HandleSaveCompleted
+
+        ' Phase 3: 201 Files tab (hindi injected; ang service ay iisa lang at walang dependency)
+        _ucDocuments = New ucEmployeesDocuments()
+        _ucDocuments.Initialize(_fileService)
+        _ucDocuments.Dock = DockStyle.Fill
+        tabpage201Files.Controls.Add(_ucDocuments)
+        AddHandler _ucDocuments.DocumentsChanged, AddressOf OnDocumentsChanged
 
         BuildHeaderUi()
 
@@ -316,6 +333,8 @@ Public Class ucEmployees
             _ucStatutory.LoadEmployee(_selectedRecordId)
         End If
 
+        _ucDocuments?.SetRecord(_selectedRecordId)
+
         UpdateHeaderAsync()
     End Sub
 
@@ -346,6 +365,8 @@ Public Class ucEmployees
 
             _headerModel = header
             ApplyHeaderState(Employee.Views.EmployeeHeaderPresentation.Build(header, loans, Date.Today))
+            _ucDocuments?.SetEmployeeName(header.FullName)
+            LoadPhotoAsync(recordId)
         Catch ex As Exception
             ShowError(ex.Message)
         End Try
@@ -360,6 +381,7 @@ Public Class ucEmployees
         _chipJoined = New GlobalShared.Controls.StatusChip()
         _chipCycle = New GlobalShared.Controls.StatusChip()
         _chipPayroll = New GlobalShared.Controls.StatusChip()
+        _chipComplete = New GlobalShared.Controls.StatusChip()
 
         For Each chip In HeaderChips()
             chip.Visible = False
@@ -388,6 +410,16 @@ Public Class ucEmployees
         _actionsMenu.Items.Add(_miToggleActive)
         btnHdr_Actions.DropDownControl = _actionsMenu
 
+        ' Photo: right-click sa larawan = Change / Remove (Can Edit sa "Employee Documents"). Ang built-in na menu
+        ' ng PictureEdit (Load/Cut/Copy/Paste...) ay pinatay para hindi makapagpalit ng larawan na hindi nase-save.
+        picEmployee.Properties.ShowMenu = False
+        _miPhotoChange = New ToolStripMenuItem("Change photo...", Nothing, AddressOf OnChangePhotoClick)
+        _miPhotoRemove = New ToolStripMenuItem("Remove photo", Nothing, AddressOf OnRemovePhotoClick)
+        _photoMenu = New ContextMenuStrip()
+        _photoMenu.Items.AddRange(New ToolStripItem() {_miPhotoChange, _miPhotoRemove})
+        AddHandler _photoMenu.Opening, AddressOf OnPhotoMenuOpening
+        picEmployee.ContextMenuStrip = _photoMenu
+
         UpdateHeaderButtons()
     End Sub
 
@@ -399,7 +431,7 @@ Public Class ucEmployees
     End Function
 
     Private Function HeaderChips() As GlobalShared.Controls.StatusChip()
-        Return New GlobalShared.Controls.StatusChip() {_chipStatus, _chipKind, _chipJoined, _chipCycle, _chipPayroll}
+        Return New GlobalShared.Controls.StatusChip() {_chipStatus, _chipKind, _chipJoined, _chipCycle, _chipPayroll, _chipComplete}
     End Function
 
     Private Shared Sub ApplyChip(chip As GlobalShared.Controls.StatusChip, state As Employee.Views.HeaderChipState)
@@ -419,6 +451,8 @@ Public Class ucEmployees
         ApplyChip(_chipJoined, st.Joined)
         ApplyChip(_chipCycle, st.PayCycle)
         ApplyChip(_chipPayroll, st.PayrollChip)
+        ApplyChip(_chipComplete, st.Completeness)
+        _chipTip.SetToolTip(_chipComplete, st.CompletenessTip)
         pnlHdr_Chips.ResumeLayout(True)
 
         If String.IsNullOrEmpty(st.AlertText) Then
@@ -639,6 +673,7 @@ Public Class ucEmployees
                 EnableTab(tabpageEarnings, True)
                 EnableTab(tabpageStatutory, True)
                 EnableTab(tabpagePrevEmployer, True)
+                EnableTab(tabpage201Files, CanView201Files())
                 EnableTab(tabpageFixTransactions, True)
 
                 ' Disable controls ng SubViews
@@ -666,6 +701,7 @@ Public Class ucEmployees
                 EnableTab(tabpageEarnings, False)
                 EnableTab(tabpageStatutory, False)
                 EnableTab(tabpagePrevEmployer, False)
+                EnableTab(tabpage201Files, False)
                 EnableTab(tabpageFixTransactions, False)
 
                 ' Navigate to Personal Info tab
@@ -699,6 +735,7 @@ Public Class ucEmployees
                 EnableTab(tabpageEarnings, False)
                 EnableTab(tabpageStatutory, False)
                 EnableTab(tabpagePrevEmployer, False)
+                EnableTab(tabpage201Files, False)
                 EnableTab(tabpageFixTransactions, False)
 
                 ' Navigate to Employment tab
@@ -720,6 +757,7 @@ Public Class ucEmployees
                 EnableTab(tabpageEarnings, True)
                 EnableTab(tabpageStatutory, False)
                 EnableTab(tabpagePrevEmployer, False)
+                EnableTab(tabpage201Files, False)
                 EnableTab(tabpageFixTransactions, False)
 
                 tabconMain.SelectedTabPage = tabpageEarnings
@@ -739,6 +777,7 @@ Public Class ucEmployees
                 EnableTab(tabpageEarnings, False)
                 EnableTab(tabpageStatutory, True)
                 EnableTab(tabpagePrevEmployer, False)
+                EnableTab(tabpage201Files, False)
                 EnableTab(tabpageFixTransactions, False)
 
                 tabconMain.SelectedTabPage = tabpageStatutory
@@ -809,6 +848,7 @@ Public Class ucEmployees
         EnableTab(tabpageEarnings, tabconMain.SelectedTabPage Is tabpageEarnings)
         EnableTab(tabpageStatutory, tabconMain.SelectedTabPage Is tabpageStatutory)
         EnableTab(tabpagePrevEmployer, tabconMain.SelectedTabPage Is tabpagePrevEmployer)
+        EnableTab(tabpage201Files, tabconMain.SelectedTabPage Is tabpage201Files)
         EnableTab(tabpageFixTransactions, tabconMain.SelectedTabPage Is tabpageFixTransactions)
     End Sub
 
@@ -1088,10 +1128,106 @@ Public Class ucEmployees
 
         lblHdr_Alert.Visible = False
         btnHdr_Loans.Text = "Loans"
-        picEmployee.EditValue = My.Resources.img_default_avatar1
+        SetPhotoImage(Nothing)
+        _ucDocuments?.SetRecord(0)
 
         UpdateHeaderButtons()
     End Sub
+
+    ' =============================================
+    ' PHOTO + 201 FILES (Phase 3)
+    ' =============================================
+    ''' <summary>Nothing = ibalik ang default na avatar. Dini-dispose ang naunang larawan (hindi ang resource).</summary>
+    Private Sub SetPhotoImage(img As Image)
+        Dim old As Image = _photoImage
+        _photoImage = img
+        If img IsNot Nothing Then
+            picEmployee.EditValue = img
+        Else
+            picEmployee.EditValue = My.Resources.img_default_avatar1
+        End If
+        If old IsNot Nothing Then old.Dispose()
+    End Sub
+
+    Private Async Sub LoadPhotoAsync(recordId As Integer)
+        Dim img As Image = Await _fileService.GetPhotoAsync(recordId)  ' hindi nagbabato; Nothing kung wala
+        If recordId <> _selectedRecordId Then
+            If img IsNot Nothing Then img.Dispose()
+            Return
+        End If
+        SetPhotoImage(img)
+    End Sub
+
+    Private Function CanChangePhoto() As Boolean
+        Return _currentState = FormState.Idle AndAlso
+               _headerModel IsNot Nothing AndAlso _selectedRecordId > 0 AndAlso
+               _headerModel.RecordId = _selectedRecordId AndAlso
+               GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Documents)
+    End Function
+
+    Private Sub OnPhotoMenuOpening(sender As Object, e As System.ComponentModel.CancelEventArgs)
+        Dim allowed As Boolean = CanChangePhoto()
+        _miPhotoChange.Enabled = allowed
+        _miPhotoRemove.Enabled = allowed AndAlso _photoImage IsNot Nothing
+    End Sub
+
+    Private Async Sub OnChangePhotoClick(sender As Object, e As EventArgs)
+        If Not CanChangePhoto() Then Return
+        Dim recordId As Integer = _selectedRecordId
+
+        Dim path As String
+        Using ofd As New OpenFileDialog()
+            ofd.Title = "Choose a photo"
+            ofd.CheckFileExists = True
+            ofd.Filter = "Images (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png"
+            If ofd.ShowDialog(Me) <> DialogResult.OK Then Return
+            path = ofd.FileName
+        End Using
+
+        Try
+            ShowLoading()
+            Await _fileService.SetPhotoAsync(recordId, path)
+            If recordId = _selectedRecordId Then
+                SetPhotoImage(Await _fileService.GetPhotoAsync(recordId))
+                UpdateHeaderAsync() ' para ma-update ang "Profile %"
+            End If
+        Catch ex As Exception
+            ShowError(ex.Message)
+        Finally
+            HideLoading()
+        End Try
+    End Sub
+
+    Private Async Sub OnRemovePhotoClick(sender As Object, e As EventArgs)
+        If Not CanChangePhoto() Then Return
+        Dim recordId As Integer = _selectedRecordId
+
+        If XtraMessageBox.Show(Me, "Remove this employee's photo?", "Remove photo",
+                               MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                               MessageBoxDefaultButton.Button2) <> DialogResult.Yes Then Return
+
+        Try
+            ShowLoading()
+            Await _fileService.RemovePhotoAsync(recordId)
+            If recordId = _selectedRecordId Then
+                SetPhotoImage(Nothing)
+                UpdateHeaderAsync()
+            End If
+        Catch ex As Exception
+            ShowError(ex.Message)
+        Finally
+            HideLoading()
+        End Try
+    End Sub
+
+    ' Nagbago ang 201 Files (Add/Delete): i-refresh ang header para sa "Profile %".
+    Private Sub OnDocumentsChanged(sender As Object, e As EventArgs)
+        UpdateHeaderAsync()
+    End Sub
+
+    Private Shared Function CanView201Files() As Boolean
+        Return GlobalShared.Security.PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Employees_Documents)
+    End Function
 
 
 End Class

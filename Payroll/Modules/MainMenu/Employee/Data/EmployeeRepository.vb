@@ -173,13 +173,26 @@ Namespace Employee.Data
                        p.PositionName, d.DepartmentName, b.BranchName,
                        CAST(CASE WHEN ern.RecordId IS NULL THEN 0 ELSE 1 END AS BIT) AS HasEarnings,
                        ern.PayCycle,
-                       CAST(ISNULL(ern.PayrollFlag, 0) AS BIT) AS PayrollFlag
+                       CAST(ISNULL(ern.PayrollFlag, 0) AS BIT) AS PayrollFlag,
+                       CAST(CASE WHEN e.BirthDate IS NULL THEN 0 ELSE 1 END AS BIT) AS HasBirthDate,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(e.Gender, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasGender,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(e.CivilStatus, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasCivilStatus,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(e.ContactNo, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasContactNo,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(e.EmailAddress, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasEmail,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(e.PermanentAddress1, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasPermanentAddress,
+                       CAST(CASE WHEN ISNULL(ern.BasicSalary, 0) > 0 OR ISNULL(ern.DailyRate, 0) > 0 THEN 1 ELSE 0 END AS BIT) AS HasPayRate,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(ern.PayBy, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasPayBy,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(st.TIN, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasTIN,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(st.SSSNo, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasSSSNo,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(st.PagIBIGNo, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasPagIBIGNo,
+                       CAST(CASE WHEN LTRIM(RTRIM(ISNULL(st.PhilHealthNo, ''))) <> '' THEN 1 ELSE 0 END AS BIT) AS HasPhilHealthNo
                 FROM tblEmployee e
                 LEFT JOIN tblEmployeeEmployment emp ON emp.RecordId = e.RecordId
                 LEFT JOIN tblPosition p ON p.PositionId = emp.PositionId
                 LEFT JOIN tblDepartment d ON d.DepartmentId = emp.DepartmentId
                 LEFT JOIN tblBranch b ON b.BranchId = emp.BranchId
                 LEFT JOIN tblEmployeeEarnings ern ON ern.RecordId = e.RecordId
+                LEFT JOIN tblEmployeeStatutory st ON st.RecordId = e.RecordId
                 WHERE e.RecordId = @RecordId"
 
             Using conn = GetConnection()
@@ -188,11 +201,52 @@ Namespace Employee.Data
 
                 If header IsNot Nothing Then
                     header.ProbationMonths = Await TryGetProbationMonthsAsync(conn)
+                    Await TryFillPhotoAndDocumentsAsync(conn, header)
                 End If
 
                 Return header
             End Using
 
+        End Function
+
+        ' Phase 3: photo at required 201 files para sa "Profile %". Kapag wala pa ang mga bagong column/table
+        ' (hindi pa na-run ang Phase 3 SQL), tahimik na lalaktawan - hindi dapat masira ang header dahil dito.
+        Public Class RequiredDocumentRow
+            Public Property CategoryName As String
+            Public Property HasDocument As Boolean
+        End Class
+
+        Private Shared Async Function TryFillPhotoAndDocumentsAsync(conn As IDbConnection,
+                                                                    header As Models.EmployeeHeaderModel) As Task
+            Try
+                header.HasPhoto = Await conn.ExecuteScalarAsync(Of Boolean)(
+                    "SELECT CAST(CASE WHEN LTRIM(RTRIM(ISNULL(PhotoPath, ''))) <> '' THEN 1 ELSE 0 END AS BIT) " &
+                    "FROM tblEmployee WHERE RecordId = @RecordId",
+                    New With {.RecordId = header.RecordId})
+            Catch ex As Exception
+                Debug.WriteLine($"PhotoPath not available: {ex.Message}")
+                header.HasPhoto = False
+            End Try
+
+            Try
+                Dim rows = (Await conn.QueryAsync(Of RequiredDocumentRow)("
+                    SELECT c.CategoryName,
+                           CAST(CASE WHEN EXISTS (SELECT 1 FROM tblEmployeeDocument d
+                                                  WHERE d.RecordId = @RecordId AND d.CategoryId = c.CategoryId AND d.IsDeleted = 0)
+                                     THEN 1 ELSE 0 END AS BIT) AS HasDocument
+                    FROM tblDocumentCategory c
+                    WHERE c.IsActive = 1 AND c.IsRequired = 1
+                    ORDER BY c.SortOrder, c.CategoryName",
+                    New With {.RecordId = header.RecordId})).ToList()
+
+                header.RequiredDocumentCount = rows.Count
+                header.MissingRequiredDocuments = rows.Where(Function(r) Not r.HasDocument).
+                                                       Select(Function(r) r.CategoryName).ToList()
+                header.DocumentsKnown = True
+            Catch ex As Exception
+                Debug.WriteLine($"Required documents not available: {ex.Message}")
+                header.DocumentsKnown = False
+            End Try
         End Function
 
         ' Galing sa General Settings (tblGeneralSettings.ProbationMonths). Kapag wala pa ang column

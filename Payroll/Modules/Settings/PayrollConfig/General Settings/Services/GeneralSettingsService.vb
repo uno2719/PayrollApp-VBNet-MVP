@@ -66,6 +66,17 @@ Namespace GeneralSettings.Services
                 Return Fail("Probation Period must be between 1 and 12 months.")
             End If
 
+            ' --- Files ---
+            ' Hindi sinusuri dito kung maabot ang folder (iba-iba ang PC; may "Test" button sa screen). Ang tinitiyak lang:
+            ' buong path (UNC o may drive letter). Ang bawat upload ay nagtsi-check ulit mula sa PC ng nag-a-upload.
+            If Not String.IsNullOrWhiteSpace(item.FileStorageRoot) Then
+                Dim root As String = item.FileStorageRoot.Trim()
+                If root.Length > 400 Then Return Fail("Files Folder is too long (maximum 400 characters).")
+                If Not System.IO.Path.IsPathRooted(root) Then
+                    Return Fail("Files Folder must be a full path, such as \\server\share\PayrollFiles.")
+                End If
+            End If
+
             ' --- Code Mapping ---
             ' Basic Salary Code (+) lang ang required: wala kang maibabatay
             ' na earnings kung wala nito. Ang iba ay opsyonal - may mga

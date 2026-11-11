@@ -15,6 +15,9 @@ Namespace GeneralSettings.Views
         ' --- Employment ---
         Property ProbationMonths As Integer
 
+        ' --- Files ---
+        Property FileStorageRoot As String
+
         ' --- Code Mapping ---
         Property BasicSalaryCodePlusId As Integer?
         Property BasicSalaryCodeMinusId As Integer?

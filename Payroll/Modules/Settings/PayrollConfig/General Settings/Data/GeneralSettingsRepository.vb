@@ -28,7 +28,7 @@ Namespace GeneralSettings.Data
                 SELECT TOP 1
                        GeneralSettingsId,
                        BonusCeiling, TotalDaysPerYear, WorkHourPerDay,
-                       AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths,
+                       AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths, FileStorageRoot,
                        BasicSalaryCodePlusId, BasicSalaryCodeMinusId,
                        AbsentCodeId, LateInCodeId, EarlyOutCodeId,
                        SSSBasedOn, PhilHealthBasedOn,
@@ -48,7 +48,7 @@ Namespace GeneralSettings.Data
             Dim sql = $"
                 INSERT INTO {TableName}
                     (BonusCeiling, TotalDaysPerYear, WorkHourPerDay,
-                     AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths,
+                     AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths, FileStorageRoot,
                      BasicSalaryCodePlusId, BasicSalaryCodeMinusId,
                      AbsentCodeId, LateInCodeId, EarlyOutCodeId,
                      SSSBasedOn, PhilHealthBasedOn,
@@ -56,7 +56,7 @@ Namespace GeneralSettings.Data
                 OUTPUT INSERTED.GeneralSettingsId
                 VALUES
                     (@BonusCeiling, @TotalDaysPerYear, @WorkHourPerDay,
-                     @AmountPrecision, @PercentPrecision, @DailyRateMonthlyFactor, @ProbationMonths,
+                     @AmountPrecision, @PercentPrecision, @DailyRateMonthlyFactor, @ProbationMonths, @FileStorageRoot,
                      @BasicSalaryCodePlusId, @BasicSalaryCodeMinusId,
                      @AbsentCodeId, @LateInCodeId, @EarlyOutCodeId,
                      @SSSBasedOn, @PhilHealthBasedOn,
@@ -66,6 +66,7 @@ Namespace GeneralSettings.Data
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
                     item.BonusCeiling, item.TotalDaysPerYear, item.WorkHourPerDay,
                     item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor, item.ProbationMonths,
+                    item.FileStorageRoot,
                     item.BasicSalaryCodePlusId, item.BasicSalaryCodeMinusId,
                     item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId,
                     item.SSSBasedOn, item.PhilHealthBasedOn,
@@ -87,6 +88,7 @@ Namespace GeneralSettings.Data
                     PercentPrecision       = @PercentPrecision,
                     DailyRateMonthlyFactor = @DailyRateMonthlyFactor,
                     ProbationMonths        = @ProbationMonths,
+                    FileStorageRoot        = @FileStorageRoot,
                     BasicSalaryCodePlusId  = @BasicSalaryCodePlusId,
                     BasicSalaryCodeMinusId = @BasicSalaryCodeMinusId,
                     AbsentCodeId           = @AbsentCodeId,
@@ -102,6 +104,7 @@ Namespace GeneralSettings.Data
                 item.GeneralSettingsId,
                 item.BonusCeiling, item.TotalDaysPerYear, item.WorkHourPerDay,
                 item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor, item.ProbationMonths,
+                item.FileStorageRoot,
                 item.BasicSalaryCodePlusId, item.BasicSalaryCodeMinusId,
                 item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId,
                 item.SSSBasedOn, item.PhilHealthBasedOn,

@@ -51,6 +51,11 @@ Partial Class ucGeneralSettings
         lblProbationHint = New DevExpress.XtraEditors.LabelControl()
         txtProbationMonths = New DevExpress.XtraEditors.TextEdit()
         lblProbationMonths = New DevExpress.XtraEditors.LabelControl()
+        lblFilesFolder = New DevExpress.XtraEditors.LabelControl()
+        txtFilesFolder = New DevExpress.XtraEditors.TextEdit()
+        btnBrowseFilesFolder = New DevExpress.XtraEditors.SimpleButton()
+        btnTestFilesFolder = New DevExpress.XtraEditors.SimpleButton()
+        lblFilesFolderHint = New DevExpress.XtraEditors.LabelControl()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpPayrollParameters, ComponentModel.ISupportInitialize).BeginInit()
@@ -75,6 +80,7 @@ Partial Class ucGeneralSettings
         CType(grpEmployment, ComponentModel.ISupportInitialize).BeginInit()
         grpEmployment.SuspendLayout()
         CType(txtProbationMonths.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(txtFilesFolder.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' PanelControl1
@@ -419,15 +425,20 @@ Partial Class ucGeneralSettings
         grpEmployment.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         grpEmployment.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpEmployment.AppearanceCaption.Options.UseFont = True
+        grpEmployment.Controls.Add(lblFilesFolderHint)
+        grpEmployment.Controls.Add(btnTestFilesFolder)
+        grpEmployment.Controls.Add(btnBrowseFilesFolder)
+        grpEmployment.Controls.Add(txtFilesFolder)
+        grpEmployment.Controls.Add(lblFilesFolder)
         grpEmployment.Controls.Add(lblProbationHint)
         grpEmployment.Controls.Add(txtProbationMonths)
         grpEmployment.Controls.Add(lblProbationMonths)
         grpEmployment.Location = New Point(4, 456)
         grpEmployment.Margin = New Padding(3, 2, 3, 2)
         grpEmployment.Name = "grpEmployment"
-        grpEmployment.Size = New Size(1069, 92)
+        grpEmployment.Size = New Size(1069, 176)
         grpEmployment.TabIndex = 4
-        grpEmployment.Text = " EMPLOYMENT"
+        grpEmployment.Text = " EMPLOYMENT AND FILES"
         ' 
         ' lblProbationHint
         ' 
@@ -450,6 +461,49 @@ Partial Class ucGeneralSettings
         txtProbationMonths.Size = New Size(230, 20)
         txtProbationMonths.TabIndex = 1
         ' 
+        ' lblFilesFolder
+        ' 
+        lblFilesFolder.Location = New Point(24, 98)
+        lblFilesFolder.Name = "lblFilesFolder"
+        lblFilesFolder.Size = New Size(157, 13)
+        lblFilesFolder.TabIndex = 3
+        lblFilesFolder.Text = "Files Folder (shared path)"
+        ' 
+        ' txtFilesFolder
+        ' 
+        txtFilesFolder.Location = New Point(24, 116)
+        txtFilesFolder.Margin = New Padding(3, 2, 3, 2)
+        txtFilesFolder.Name = "txtFilesFolder"
+        txtFilesFolder.Properties.MaxLength = 400
+        txtFilesFolder.Size = New Size(560, 20)
+        txtFilesFolder.TabIndex = 4
+        ' 
+        ' btnBrowseFilesFolder
+        ' 
+        btnBrowseFilesFolder.Location = New Point(594, 113)
+        btnBrowseFilesFolder.Name = "btnBrowseFilesFolder"
+        btnBrowseFilesFolder.Size = New Size(80, 26)
+        btnBrowseFilesFolder.TabIndex = 5
+        btnBrowseFilesFolder.Text = "Browse..."
+        ' 
+        ' btnTestFilesFolder
+        ' 
+        btnTestFilesFolder.Location = New Point(680, 113)
+        btnTestFilesFolder.Name = "btnTestFilesFolder"
+        btnTestFilesFolder.Size = New Size(80, 26)
+        btnTestFilesFolder.TabIndex = 6
+        btnTestFilesFolder.Text = "Test"
+        ' 
+        ' lblFilesFolderHint
+        ' 
+        lblFilesFolderHint.Appearance.ForeColor = Color.Gray
+        lblFilesFolderHint.Appearance.Options.UseForeColor = True
+        lblFilesFolderHint.Location = New Point(24, 144)
+        lblFilesFolderHint.Name = "lblFilesFolderHint"
+        lblFilesFolderHint.Size = New Size(560, 13)
+        lblFilesFolderHint.TabIndex = 7
+        lblFilesFolderHint.Text = "Folder on the server (e.g. \\server\PayrollFiles) that every PC can read and write. Used for Employee 201 Files and photos."
+        ' 
         ' lblProbationMonths
         ' 
         lblProbationMonths.Location = New Point(24, 34)
@@ -468,7 +522,7 @@ Partial Class ucGeneralSettings
         Margin = New Padding(3, 2, 3, 2)
         Name = "ucGeneralSettings"
         Padding = New Padding(4)
-        Size = New Size(1077, 600)
+        Size = New Size(1077, 700)
         CType(PanelControl1, ComponentModel.ISupportInitialize).EndInit()
         PanelControl1.ResumeLayout(False)
         PanelControl1.PerformLayout()
@@ -498,6 +552,7 @@ Partial Class ucGeneralSettings
         grpEmployment.ResumeLayout(False)
         grpEmployment.PerformLayout()
         CType(txtProbationMonths.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(txtFilesFolder.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -540,6 +595,11 @@ Partial Class ucGeneralSettings
     Friend WithEvents grpEmployment As DevExpress.XtraEditors.GroupControl
     Friend WithEvents lblProbationMonths As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtProbationMonths As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lblFilesFolder As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents txtFilesFolder As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents btnBrowseFilesFolder As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnTestFilesFolder As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents lblFilesFolderHint As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblProbationHint As DevExpress.XtraEditors.LabelControl
 
 End Class

@@ -31,6 +31,28 @@
         Public Property PayCycle As String
         Public Property PayrollFlag As Boolean
 
+        ' --- Para sa "Profile %" (presence flags lang; hindi dinadala ang aktwal na halaga, hal. sahod o TIN) ---
+        Public Property HasBirthDate As Boolean
+        Public Property HasGender As Boolean
+        Public Property HasCivilStatus As Boolean
+        Public Property HasContactNo As Boolean
+        Public Property HasEmail As Boolean
+        Public Property HasPermanentAddress As Boolean
+        Public Property HasPayRate As Boolean
+        Public Property HasPayBy As Boolean
+        Public Property HasTIN As Boolean
+        Public Property HasSSSNo As Boolean
+        Public Property HasPagIBIGNo As Boolean
+        Public Property HasPhilHealthNo As Boolean
+
+        ''' <summary>Itinatakda ng repository (hiwalay na query): may photo ba. False kung wala pang PhotoPath column.</summary>
+        Public Property HasPhoto As Boolean
+
+        ''' <summary>True kung nabasa ang listahan ng required 201 categories (nandoon na ang mga bagong table).</summary>
+        Public Property DocumentsKnown As Boolean
+        Public Property RequiredDocumentCount As Integer
+        Public Property MissingRequiredDocuments As List(Of String)
+
         ' --- General Settings ---
         ''' <summary>Galing sa tblGeneralSettings.ProbationMonths. Nothing = hindi mabasa (default ng presentation ang gagamitin).</summary>
         Public Property ProbationMonths As Integer?
