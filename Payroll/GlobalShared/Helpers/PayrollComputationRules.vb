@@ -114,7 +114,7 @@ Namespace GlobalShared.Helpers
 
         Public Function SeparationDateOf(emp As PayrollEmployeeInput) As Date?
             Dim result As Date? = Nothing
-            For Each d In {emp.DateResigned, emp.DateRetired, emp.DateTerminated}
+            For Each d In {emp.DateResigned, emp.DateRetired, emp.DateTerminated, emp.DateEndOfContract}
                 If d.HasValue AndAlso (Not result.HasValue OrElse d.Value.Date < result.Value) Then
                     result = d.Value.Date
                 End If

@@ -29,6 +29,7 @@ Partial Class ucEmployeesEmployment
         dtpDateResigned = New DevExpress.XtraEditors.DateEdit()
         dtpDateRetired = New DevExpress.XtraEditors.DateEdit()
         dtpDateTerminated = New DevExpress.XtraEditors.DateEdit()
+        dtpDateEndOfContract = New DevExpress.XtraEditors.DateEdit()
         sleSuperior = New DevExpress.XtraEditors.SearchLookUpEdit()
         txtControlNo = New DevExpress.XtraEditors.TextEdit()
         sleScheduleGroup = New DevExpress.XtraEditors.SearchLookUpEdit()
@@ -50,6 +51,7 @@ Partial Class ucEmployeesEmployment
         lciDateResigned = New DevExpress.XtraLayout.LayoutControlItem()
         lciDateRetired = New DevExpress.XtraLayout.LayoutControlItem()
         lciDateTerminated = New DevExpress.XtraLayout.LayoutControlItem()
+        lciDateEndOfContract = New DevExpress.XtraLayout.LayoutControlItem()
         lciSuperior = New DevExpress.XtraLayout.LayoutControlItem()
         lciSeparatorTimekeeping = New DevExpress.XtraLayout.LayoutControlItem()
         lciControlNo = New DevExpress.XtraLayout.LayoutControlItem()
@@ -88,6 +90,8 @@ Partial Class ucEmployeesEmployment
         CType(dtpDateRetired.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).BeginInit()
         CType(dtpDateTerminated.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(dtpDateTerminated.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(dtpDateEndOfContract.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(dtpDateEndOfContract.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleSuperior.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtControlNo.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(sleScheduleGroup.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -109,6 +113,7 @@ Partial Class ucEmployeesEmployment
         CType(lciDateResigned, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciDateRetired, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciDateTerminated, ComponentModel.ISupportInitialize).BeginInit()
+        CType(lciDateEndOfContract, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciSuperior, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciSeparatorTimekeeping, ComponentModel.ISupportInitialize).BeginInit()
         CType(lciControlNo, ComponentModel.ISupportInitialize).BeginInit()
@@ -146,6 +151,7 @@ Partial Class ucEmployeesEmployment
         lcEmployment.Controls.Add(dtpDateResigned)
         lcEmployment.Controls.Add(dtpDateRetired)
         lcEmployment.Controls.Add(dtpDateTerminated)
+        lcEmployment.Controls.Add(dtpDateEndOfContract)
         lcEmployment.Controls.Add(sleSuperior)
         lcEmployment.Controls.Add(txtControlNo)
         lcEmployment.Controls.Add(sleScheduleGroup)
@@ -297,9 +303,19 @@ Partial Class ucEmployeesEmployment
         dtpDateTerminated.StyleController = lcEmployment
         dtpDateTerminated.TabIndex = 12
         ' 
+        ' dtpDateEndOfContract
+        ' 
+        dtpDateEndOfContract.EditValue = New Date(2026, 6, 15, 0, 0, 0, 0)
+        dtpDateEndOfContract.Location = New Point(682, 212)
+        dtpDateEndOfContract.Name = "dtpDateEndOfContract"
+        dtpDateEndOfContract.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        dtpDateEndOfContract.Size = New Size(373, 22)
+        dtpDateEndOfContract.StyleController = lcEmployment
+        dtpDateEndOfContract.TabIndex = 18
+        ' 
         ' sleSuperior
         ' 
-        sleSuperior.Location = New Point(682, 212)
+        sleSuperior.Location = New Point(682, 238)
         sleSuperior.Name = "sleSuperior"
         sleSuperior.Size = New Size(373, 22)
         sleSuperior.StyleController = lcEmployment
@@ -345,7 +361,7 @@ Partial Class ucEmployeesEmployment
         Root_Employment.AppearanceItemCaption.Options.UseFont = True
         Root_Employment.EnableIndentsWithoutBorders = DevExpress.Utils.DefaultBoolean.True
         Root_Employment.GroupBordersVisible = False
-        Root_Employment.Items.AddRange(New DevExpress.XtraLayout.BaseLayoutItem() {lciHeader, lciEmployeeStatus, lciEmploymentType, lciBranch, lciDepartment, lciPosition, lciCategoryCode, lciJobClass, lciLeaveGroup, lciDateJoined, lciDateRegularization, lciDateLastPromoted, lciDateResigned, lciDateRetired, lciDateTerminated, lciSuperior, lciSeparatorTimekeeping, lciControlNo, lciScheduleGroup, emptyGap, emptyBottom, emptyTimekeepingGap, EmptySpaceItem1})
+        Root_Employment.Items.AddRange(New DevExpress.XtraLayout.BaseLayoutItem() {lciHeader, lciEmployeeStatus, lciEmploymentType, lciBranch, lciDepartment, lciPosition, lciCategoryCode, lciJobClass, lciLeaveGroup, lciDateJoined, lciDateRegularization, lciDateLastPromoted, lciDateResigned, lciDateRetired, lciDateTerminated, lciDateEndOfContract, lciSuperior, lciSeparatorTimekeeping, lciControlNo, lciScheduleGroup, emptyGap, emptyBottom, emptyTimekeepingGap, EmptySpaceItem1})
         Root_Employment.Name = "Root_Employment"
         Root_Employment.Size = New Size(1067, 713)
         Root_Employment.TextVisible = False
@@ -490,12 +506,21 @@ Partial Class ucEmployeesEmployment
         lciDateTerminated.Text = "Date Terminated"
         lciDateTerminated.TextSize = New Size(125, 15)
         ' 
+        ' lciDateEndOfContract
+        ' 
+        lciDateEndOfContract.Control = dtpDateEndOfContract
+        lciDateEndOfContract.Location = New Point(533, 200)
+        lciDateEndOfContract.Name = "lciDateEndOfContract"
+        lciDateEndOfContract.Size = New Size(514, 26)
+        lciDateEndOfContract.Text = "Date End of Contract"
+        lciDateEndOfContract.TextSize = New Size(125, 15)
+        ' 
         ' lciSuperior
         ' 
         lciSuperior.Control = sleSuperior
-        lciSuperior.Location = New Point(533, 200)
+        lciSuperior.Location = New Point(533, 226)
         lciSuperior.Name = "lciSuperior"
-        lciSuperior.Size = New Size(514, 52)
+        lciSuperior.Size = New Size(514, 26)
         lciSuperior.Text = "Superior"
         lciSuperior.TextSize = New Size(125, 15)
         ' 
@@ -617,6 +642,8 @@ Partial Class ucEmployeesEmployment
         CType(dtpDateRetired.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(dtpDateTerminated.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).EndInit()
         CType(dtpDateTerminated.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(dtpDateEndOfContract.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).EndInit()
+        CType(dtpDateEndOfContract.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(sleSuperior.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtControlNo.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(sleScheduleGroup.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -638,6 +665,7 @@ Partial Class ucEmployeesEmployment
         CType(lciDateResigned, ComponentModel.ISupportInitialize).EndInit()
         CType(lciDateRetired, ComponentModel.ISupportInitialize).EndInit()
         CType(lciDateTerminated, ComponentModel.ISupportInitialize).EndInit()
+        CType(lciDateEndOfContract, ComponentModel.ISupportInitialize).EndInit()
         CType(lciSuperior, ComponentModel.ISupportInitialize).EndInit()
         CType(lciSeparatorTimekeeping, ComponentModel.ISupportInitialize).EndInit()
         CType(lciControlNo, ComponentModel.ISupportInitialize).EndInit()
@@ -723,6 +751,7 @@ Partial Class ucEmployeesEmployment
     Friend WithEvents dtpDateResigned As DevExpress.XtraEditors.DateEdit
     Friend WithEvents dtpDateRetired As DevExpress.XtraEditors.DateEdit
     Friend WithEvents dtpDateTerminated As DevExpress.XtraEditors.DateEdit
+    Friend WithEvents dtpDateEndOfContract As DevExpress.XtraEditors.DateEdit
     Friend WithEvents txtControlNo As DevExpress.XtraEditors.TextEdit
     Friend WithEvents sleScheduleGroup As DevExpress.XtraEditors.SearchLookUpEdit
     Friend WithEvents sleScheduleGroupView As DevExpress.XtraGrid.Views.Grid.GridView
@@ -743,6 +772,7 @@ Partial Class ucEmployeesEmployment
     Friend WithEvents lciDateResigned As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciDateRetired As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciDateTerminated As DevExpress.XtraLayout.LayoutControlItem
+    Friend WithEvents lciDateEndOfContract As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciSuperior As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciControlNo As DevExpress.XtraLayout.LayoutControlItem
     Friend WithEvents lciScheduleGroup As DevExpress.XtraLayout.LayoutControlItem

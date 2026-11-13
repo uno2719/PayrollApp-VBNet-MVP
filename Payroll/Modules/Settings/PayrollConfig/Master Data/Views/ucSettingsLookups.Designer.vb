@@ -23,6 +23,7 @@ Partial Class ucSettingsLookups
         tabpageHolidayGroup = New DevExpress.XtraTab.XtraTabPage()
         tabpageScheduleGroup = New DevExpress.XtraTab.XtraTabPage()
         tabpageBank = New DevExpress.XtraTab.XtraTabPage()
+        tabpageDocCategory = New DevExpress.XtraTab.XtraTabPage()
         CType(tabconMasterData, ComponentModel.ISupportInitialize).BeginInit()
         tabconMasterData.SuspendLayout()
         SuspendLayout()
@@ -45,7 +46,7 @@ Partial Class ucSettingsLookups
         tabconMasterData.SelectedTabPage = tabpageBranch
         tabconMasterData.Size = New Size(900, 480)
         tabconMasterData.TabIndex = 0
-        tabconMasterData.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageBranch, tabpageDepartment, tabpagePosition, tabpageCategory, tabpageJobClass, tabpageHolidayGroup, tabpageScheduleGroup, tabpageBank})
+        tabconMasterData.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageBranch, tabpageDepartment, tabpagePosition, tabpageCategory, tabpageJobClass, tabpageHolidayGroup, tabpageScheduleGroup, tabpageBank, tabpageDocCategory})
         '
         ' tabpageBranch
         '
@@ -103,6 +104,13 @@ Partial Class ucSettingsLookups
         tabpageBank.Size = New Size(898, 451)
         tabpageBank.Text = "Bank"
         '
+        ' tabpageDocCategory
+        '
+        tabpageDocCategory.Margin = New Padding(3, 2, 3, 2)
+        tabpageDocCategory.Name = "tabpageDocCategory"
+        tabpageDocCategory.Size = New Size(898, 451)
+        tabpageDocCategory.Text = "Document Categories"
+        '
         ' ucSettingsLookups
         '
         AutoScaleDimensions = New SizeF(6.0F, 13.0F)
@@ -125,5 +133,6 @@ Partial Class ucSettingsLookups
     Friend WithEvents tabpageHolidayGroup As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageScheduleGroup As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageBank As DevExpress.XtraTab.XtraTabPage
+    Friend WithEvents tabpageDocCategory As DevExpress.XtraTab.XtraTabPage
 
 End Class

@@ -5,6 +5,9 @@ Imports Payroll.CompanyProfile.Views
 Imports Payroll.DBConnection.Presenters
 Imports Payroll.DBConnection.Services
 Imports Payroll.DBConnection.Views
+Imports Payroll.DocumentCategories.Data
+Imports Payroll.DocumentCategories.Presenters
+Imports Payroll.DocumentCategories.Services
 Imports Payroll.EmailSettings.Data
 Imports Payroll.EmailSettings.Presenters
 Imports Payroll.EmailSettings.Services
@@ -234,9 +237,17 @@ Public Class AppComposition
         scheduleGroupView.SetPresenter(scheduleGroupPresenter, "Schedule Group")
         bankView.SetPresenter(bankPresenter, "Bank")
 
-        ' 6. Gawin ang Main View
+        ' 6. Document Categories (201 Files) - sariling Repository/Service/Presenter, dahil may extra fields
+        ' (Required, Sort Order) na wala sa generic Lookup shape.
+        Dim docCategoryRepo As New DocCategoryRepository()
+        Dim docCategoryService As New DocCategoryService(docCategoryRepo)
+        Dim docCategoryView As New ucDocumentCategory()
+        Dim docCategoryPresenter As New DocCategoryPresenter(docCategoryView, docCategoryService, currentUser)
+        docCategoryView.SetPresenter(docCategoryPresenter)
+
+        ' 7. Gawin ang Main View
         Return New ucSettingsLookups(branchView, departmentView, positionView,
-            categoryView, jobClassView, holidayGroupView, scheduleGroupView, bankView)
+            categoryView, jobClassView, holidayGroupView, scheduleGroupView, bankView, docCategoryView)
 
     End Function
 

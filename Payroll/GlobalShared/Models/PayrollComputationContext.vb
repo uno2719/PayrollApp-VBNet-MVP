@@ -68,6 +68,7 @@ Namespace GlobalShared.Models
         Public Property DateResigned As Date?
         Public Property DateRetired As Date?
         Public Property DateTerminated As Date?
+        Public Property DateEndOfContract As Date?
 
         Public Property Txns As List(Of PayrollTxnInput) = New List(Of PayrollTxnInput)()
         Public Property Loans As List(Of PayrollLoanDue) = New List(Of PayrollLoanDue)()

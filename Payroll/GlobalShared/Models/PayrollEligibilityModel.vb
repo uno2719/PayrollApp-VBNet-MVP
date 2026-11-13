@@ -40,6 +40,7 @@ Namespace GlobalShared.Models
         Public Property DateResigned As DateTime?
         Public Property DateRetired As DateTime?
         Public Property DateTerminated As DateTime?
+        Public Property DateEndOfContract As DateTime?
     End Class
 
     Public Class PayrollEligibleEmployee

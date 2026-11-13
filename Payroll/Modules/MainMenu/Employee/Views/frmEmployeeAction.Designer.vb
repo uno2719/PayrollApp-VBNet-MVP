@@ -33,6 +33,10 @@ Partial Class frmEmployeeAction
         lookDepartment = New DevExpress.XtraEditors.LookUpEdit()
         lblEmploymentType = New DevExpress.XtraEditors.LabelControl()
         cboEmploymentType = New DevExpress.XtraEditors.ComboBoxEdit()
+        lblCurrentRate = New DevExpress.XtraEditors.LabelControl()
+        lblCurrentRateValue = New DevExpress.XtraEditors.LabelControl()
+        lblNewRate = New DevExpress.XtraEditors.LabelControl()
+        spnNewRate = New DevExpress.XtraEditors.SpinEdit()
         lblRemarks = New DevExpress.XtraEditors.LabelControl()
         memoRemarks = New DevExpress.XtraEditors.MemoEdit()
         lblWarning = New DevExpress.XtraEditors.LabelControl()
@@ -46,6 +50,7 @@ Partial Class frmEmployeeAction
         CType(lookBranch.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookDepartment.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboEmploymentType.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(spnNewRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -199,6 +204,51 @@ Partial Class frmEmployeeAction
         cboEmploymentType.TabIndex = 20
         cboEmploymentType.Visible = False
         ' 
+        ' lblCurrentRate
+        ' 
+        lblCurrentRate.Location = New Point(20, 280)
+        lblCurrentRate.Name = "lblCurrentRate"
+        lblCurrentRate.Size = New Size(100, 13)
+        lblCurrentRate.TabIndex = 21
+        lblCurrentRate.Text = "Current Basic Salary"
+        lblCurrentRate.Visible = False
+        ' 
+        ' lblCurrentRateValue
+        ' 
+        lblCurrentRateValue.Appearance.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblCurrentRateValue.Appearance.Options.UseFont = True
+        lblCurrentRateValue.Location = New Point(150, 276)
+        lblCurrentRateValue.Name = "lblCurrentRateValue"
+        lblCurrentRateValue.Size = New Size(300, 15)
+        lblCurrentRateValue.TabIndex = 22
+        lblCurrentRateValue.Text = "-"
+        lblCurrentRateValue.Visible = False
+        ' 
+        ' lblNewRate
+        ' 
+        lblNewRate.Location = New Point(20, 280)
+        lblNewRate.Name = "lblNewRate"
+        lblNewRate.Size = New Size(80, 13)
+        lblNewRate.TabIndex = 23
+        lblNewRate.Text = "New Basic Salary *"
+        lblNewRate.Visible = False
+        ' 
+        ' spnNewRate
+        ' 
+        spnNewRate.EditValue = Nothing
+        spnNewRate.Location = New Point(150, 276)
+        spnNewRate.Name = "spnNewRate"
+        spnNewRate.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        spnNewRate.Properties.DisplayFormat.FormatString = "n2"
+        spnNewRate.Properties.DisplayFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnNewRate.Properties.EditFormat.FormatString = "n2"
+        spnNewRate.Properties.EditFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnNewRate.Properties.MaxValue = New Decimal(New Integer() {999999999, 0, 0, 131072})
+        spnNewRate.Properties.MinValue = New Decimal(New Integer() {0, 0, 0, 0})
+        spnNewRate.Size = New Size(300, 20)
+        spnNewRate.TabIndex = 24
+        spnNewRate.Visible = False
+        ' 
         ' lblRemarks
         ' 
         lblRemarks.Location = New Point(20, 280)
@@ -261,6 +311,10 @@ Partial Class frmEmployeeAction
         Controls.Add(btnApply)
         Controls.Add(lblWarning)
         Controls.Add(memoRemarks)
+        Controls.Add(spnNewRate)
+        Controls.Add(lblNewRate)
+        Controls.Add(lblCurrentRateValue)
+        Controls.Add(lblCurrentRate)
         Controls.Add(cboEmploymentType)
         Controls.Add(lblEmploymentType)
         Controls.Add(lblRemarks)
@@ -293,6 +347,7 @@ Partial Class frmEmployeeAction
         CType(lookBranch.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookDepartment.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboEmploymentType.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(spnNewRate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
         PerformLayout()
@@ -314,6 +369,10 @@ Partial Class frmEmployeeAction
     Friend WithEvents lookDepartment As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents lblEmploymentType As DevExpress.XtraEditors.LabelControl
     Friend WithEvents cboEmploymentType As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents lblCurrentRate As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblCurrentRateValue As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblNewRate As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents spnNewRate As DevExpress.XtraEditors.SpinEdit
     Friend WithEvents lblRemarks As DevExpress.XtraEditors.LabelControl
     Friend WithEvents memoRemarks As DevExpress.XtraEditors.MemoEdit
     Friend WithEvents lblWarning As DevExpress.XtraEditors.LabelControl

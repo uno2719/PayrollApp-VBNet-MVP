@@ -170,7 +170,7 @@ Public Class frmMain
                 _nav.NavigateTo(Of ucDashboard)()
 
             Case "main_Employees"
-                _nav.NavigateTo(Of ucEmployees)(Function() AppComposition.BuildEmployeeView())
+                _nav.NavigateTo(Of ucEmployees)(Function() CreateEmployeesView())
 
             Case "main_Payroll"
                 _nav.NavigateTo(Of ucPayroll)(Function() AppComposition.BuildPayrollView())
@@ -293,6 +293,26 @@ Public Class frmMain
     Private Sub OnChangePasswordRequested()
         Dim changePasswordForm = AppComposition.BuildChangePasswordForm()
         changePasswordForm.ShowDialog(Me)
+    End Sub
+
+    ' Ang Employees view + koneksyon para sa "Open in Loans module" ng Loans popup (frmEmployeeLoansQuickView).
+    Private Function CreateEmployeesView() As ucEmployees
+        Dim view = AppComposition.BuildEmployeeView()
+        AddHandler view.OpenLoansRequested, AddressOf OnOpenLoansRequested
+        Return view
+    End Function
+
+    Private Async Sub OnOpenLoansRequested(employeeRecordId As Integer)
+        If Not PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Loan) Then Return
+
+        Try
+            _nav.NavigateTo(Of ucLoans)(Function() AppComposition.BuildLoansView())
+
+            Dim loans = _nav.TryGetView(Of ucLoans)()
+            If loans IsNot Nothing Then Await loans.FocusEmployeeAsync(employeeRecordId)
+        Catch ex As Exception
+            XtraMessageBox.Show(ex.Message, "Loans", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
     End Sub
 
     Private Sub OnLogoutRequested()

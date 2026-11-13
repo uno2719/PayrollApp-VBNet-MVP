@@ -519,6 +519,52 @@ Public Class ucLoans
     End Sub
 
     ' ========================================================
+    ' HAND-OFF MULA SA EMPLOYEES ("Open in Loans module")
+    ' ========================================================
+    ''' <summary>
+    ''' Piliin ang empleyado sa kaliwang listahan (at ipakita ang mga loan niya). Kapag wala siya sa kasalukuyang
+    ''' filter (hal. Inactive), ililipat ang filter sa All. Hindi ginagalaw kung may ine-edit na loan.
+    ''' </summary>
+    Public Async Function FocusEmployeeAsync(employeeRecordId As Integer) As Task
+        If _presenter Is Nothing Then Return
+
+        If _isEditing Then
+            ShowMessageBox("Finish or cancel the loan you are editing first, then select the employee from the list.")
+            Return
+        End If
+
+        Await EnsureLoadedAsync()
+
+        ' Kung kabubukas pa lang ng screen, hintayin munang ma-bind ang listahan (hanggang ~5 segundo).
+        Dim handle As Integer = Await WaitForEmployeeRowAsync(employeeRecordId, 100)
+
+        If handle = DevExpress.XtraGrid.GridControl.InvalidRowHandle Then
+            ' Wala sa Active list? Subukan ang All.
+            rgEmployeeFilter.EditValue = "All"
+            handle = Await WaitForEmployeeRowAsync(employeeRecordId, 60)
+        End If
+
+        If handle = DevExpress.XtraGrid.GridControl.InvalidRowHandle Then Return
+
+        gridviewEmployeeList.FocusedRowHandle = handle
+        gridviewEmployeeList.MakeRowVisible(handle)
+        Await SelectFocusedEmployeeAsync()
+    End Function
+
+    Private Async Function WaitForEmployeeRowAsync(employeeRecordId As Integer, maxTries As Integer) As Task(Of Integer)
+        For i As Integer = 1 To maxTries
+            If gridviewEmployeeList.RowCount > 0 Then
+                Dim handle As Integer = gridviewEmployeeList.LocateByValue("RecordId", employeeRecordId)
+                If handle <> DevExpress.XtraGrid.GridControl.InvalidRowHandle Then Return handle
+                ' May laman na ang listahan pero wala siya: hindi na hihintayin kung hindi nagbabago ang filter.
+                If i >= 3 Then Exit For
+            End If
+            Await Task.Delay(50)
+        Next
+        Return DevExpress.XtraGrid.GridControl.InvalidRowHandle
+    End Function
+
+    ' ========================================================
     ' EMPLOYEE GRID
     ' ========================================================
     Private Async Sub gridviewEmployeeList_FocusedRowChanged(

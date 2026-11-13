@@ -27,6 +27,9 @@ Public Class frmEmployeeLoansQuickView
     Private ReadOnly _fullName As String
     Private _initializing As Boolean = True
 
+    ''' <summary>True kung pinindot ang "Open in Loans module" (isinara ang dialog para pumunta sa Loans).</summary>
+    Public Property OpenInLoansRequested As Boolean
+
     Public Sub New(loanService As Loans.Services.IEmployeeLoanService,
                    employeeRecordId As Integer,
                    employeeNo As String,
@@ -40,8 +43,16 @@ Public Class frmEmployeeLoansQuickView
         _fullName = fullName
     End Sub
 
+    Private Sub btnOpenLoans_Click(sender As Object, e As EventArgs) Handles btnOpenLoans.Click
+        OpenInLoansRequested = True
+        DialogResult = DialogResult.OK
+    End Sub
+
     Private Async Sub frmEmployeeLoansQuickView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         lblEmployee.Text = If(String.IsNullOrWhiteSpace(_employeeNo), _fullName, $"{_fullName}  ({_employeeNo})")
+
+        ' Makikita lang ang button kung may access ang user sa Loans module (Admin laging meron).
+        btnOpenLoans.Visible = GlobalShared.Security.PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Loan)
 
         cboShow.Properties.Items.AddRange(New Object() {"Active", "Inactive", "Completed", "All"})
         cboShow.SelectedIndex = 0

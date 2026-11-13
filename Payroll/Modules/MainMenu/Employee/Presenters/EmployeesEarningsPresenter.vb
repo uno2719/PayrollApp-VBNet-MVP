@@ -65,6 +65,7 @@ Namespace Employee.Presenters
 
                 Dim earnings = Await _service.GetEarningsAsync(recordId)
                 If earnings Is Nothing Then
+                    _view.SetRateLock(False)
                     _view.RecordId = 0
                     _view.BasicSalary = Nothing
                     _view.DailyRate = Nothing
@@ -92,6 +93,10 @@ Namespace Employee.Presenters
                 _view.BankId = earnings.BankId
                 _view.BankAccount = If(earnings.BankAccount, String.Empty)
 
+                ' May naka-save nang rate = naka-lock; ang pagbabago ay sa Actions > Salary adjustment.
+                _view.SetRateLock((earnings.BasicSalary.HasValue AndAlso earnings.BasicSalary.Value > 0D) OrElse
+                                  (earnings.DailyRate.HasValue AndAlso earnings.DailyRate.Value > 0D))
+
             Catch ex As Exception
                 _view.ShowError(ex.Message)
             Finally
@@ -103,6 +108,7 @@ Namespace Employee.Presenters
         ' NEW
         ' =============================================
         Private Sub HandleNew(sender As Object, e As EventArgs)
+            _view.SetRateLock(False)
             _recordId = _view.RecordId
             LoadLookups()
             Dim loadPayCycles = LoadPayCyclesAsync()   ' fire-and-forget; wala pang value na ilalagay sa bagong employee

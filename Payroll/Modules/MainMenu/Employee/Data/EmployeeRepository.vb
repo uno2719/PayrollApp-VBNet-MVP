@@ -203,6 +203,7 @@ Namespace Employee.Data
                     header.ProbationMonths = Await TryGetProbationMonthsAsync(conn)
                     Await TryFillPhotoAndDocumentsAsync(conn, header)
                     header.OriginalDateJoined = Await TryGetOriginalDateJoinedAsync(conn, recordId)
+                    header.DateEndOfContract = Await TryGetEndOfContractAsync(conn, recordId)
                 End If
 
                 Return header
@@ -258,6 +259,18 @@ Namespace Employee.Data
                     New With {.RecordId = recordId})
             Catch ex As Exception
                 Debug.WriteLine($"OriginalDateJoined not available: {ex.Message}")
+                Return Nothing
+            End Try
+        End Function
+
+        ' Petsa ng End of Contract. Kapag wala pa ang column (hindi pa na-run ang SQL), Nothing - hindi masisira ang header.
+        Private Shared Async Function TryGetEndOfContractAsync(conn As IDbConnection, recordId As Integer) As Task(Of Date?)
+            Try
+                Return Await conn.QuerySingleOrDefaultAsync(Of Date?)(
+                    "SELECT DateEndOfContract FROM tblEmployeeEmployment WHERE RecordId = @RecordId",
+                    New With {.RecordId = recordId})
+            Catch ex As Exception
+                Debug.WriteLine($"DateEndOfContract not available: {ex.Message}")
                 Return Nothing
             End Try
         End Function
@@ -382,6 +395,23 @@ Namespace Employee.Data
                         End If
 
                         Dim ctx = Models.MovementContext.FromEmployment(cur, activeFlag.Value)
+
+                        ' Salary adjustment: basahin (may lock) ang kasalukuyang Earnings at ang pay basis ng cycle niya.
+                        Dim earningsRow As Models.EmployeeEarningsModel = Nothing
+                        If Models.MovementTypes.IsSalary(type) Then
+                            earningsRow = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEarningsModel)(
+                                "SELECT * FROM tblEmployeeEarnings WITH (UPDLOCK, ROWLOCK) WHERE RecordId = @RecordId",
+                                New With {.RecordId = request.RecordId}, tran)
+
+                            If earningsRow IsNot Nothing Then
+                                ctx.UsesDailyRate = Await UsesDailyRateAsync(conn, tran, earningsRow.PayCycle)
+                                ctx.CurrentBasicSalary = earningsRow.BasicSalary
+                                ctx.CurrentDailyRate = earningsRow.DailyRate
+                                ctx.HasPayRate = (earningsRow.BasicSalary.HasValue AndAlso earningsRow.BasicSalary.Value > 0D) OrElse
+                                                 (earningsRow.DailyRate.HasValue AndAlso earningsRow.DailyRate.Value > 0D)
+                            End If
+                        End If
+
                         Dim problem = Models.EmployeeMovementRules.Validate(request, ctx, Date.Today)
                         If problem.Length > 0 Then Throw New InvalidOperationException(problem)
 
@@ -475,13 +505,15 @@ Namespace Employee.Data
                                         .RecordId = request.RecordId
                                     }, tran)
 
-                            Case Models.MovementTypes.Resign, Models.MovementTypes.Terminate, Models.MovementTypes.Retire
+                            Case Models.MovementTypes.Resign, Models.MovementTypes.Terminate,
+                                 Models.MovementTypes.Retire, Models.MovementTypes.EndOfContract
                                 ' Ang lifecycle ay DERIVED (IsActive + mga petsa): petsa ng pag-alis + IsActive = 0.
                                 ' HINDI ginagalaw ang Employment Type (Regular/Probationary...).
                                 Dim dateColumn As String
                                 Select Case type
                                     Case Models.MovementTypes.Resign : dateColumn = "DateResigned"
                                     Case Models.MovementTypes.Terminate : dateColumn = "DateTerminated"
+                                    Case Models.MovementTypes.EndOfContract : dateColumn = "DateEndOfContract"
                                     Case Else : dateColumn = "DateRetired"
                                 End Select
 
@@ -504,6 +536,44 @@ Namespace Employee.Data
                                     WHERE RecordId = @RecordId",
                                     New With {.UserName = userName, .RecordId = request.RecordId}, tran)
 
+                            Case Models.MovementTypes.SalaryAdjustment
+                                ' Binabago ang Earnings (Basic o Daily, ayon sa pay basis) at kinukuwenta ang Daily/Hourly sa
+                                ' parehong pormula ng Earnings tab. Ang dating halaga ay nananatili sa History (From -> To).
+                                Dim usesDaily As Boolean = ctx.UsesDailyRate
+                                Dim newInput As Decimal = If(usesDaily, request.NewDailyRate.Value, request.NewBasicSalary.Value)
+                                Dim oldInput As Decimal? = If(usesDaily, ctx.CurrentDailyRate, ctx.CurrentBasicSalary)
+
+                                Dim rates = Models.EmployeeMovementRules.ComputeAdjustedRates(
+                                    usesDaily, newInput, earningsRow.DaysInYear, earningsRow.WorkHourPer,
+                                    earningsRow.BasicSalary, earningsRow.DailyRate, earningsRow.HourlyRate)
+
+                                fromText = Models.EmployeeMovementRules.SalaryText(usesDaily, oldInput)
+                                toText = Models.EmployeeMovementRules.SalaryText(usesDaily, Math.Round(newInput, 2))
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEarnings SET
+                                        BasicSalary = @BasicSalary,
+                                        DailyRate   = @DailyRate,
+                                        HourlyRate  = @HourlyRate,
+                                        UpdatedAt   = GETDATE(),
+                                        UpdatedBy   = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.BasicSalary = rates.BasicSalary, .DailyRate = rates.DailyRate,
+                                              .HourlyRate = rates.HourlyRate, .UserName = userName,
+                                              .RecordId = request.RecordId}, tran)
+
+                                ' Date Last Incremented: kapag TUMAAS lang ang sahod (hindi sa pagbaba o correction pababa).
+                                If oldInput.HasValue AndAlso newInput > oldInput.Value Then
+                                    Await conn.ExecuteAsync("
+                                        UPDATE tblEmployeeEmployment SET
+                                            DateLastIncremented = @EffectiveDate,
+                                            UpdatedAt           = GETDATE(),
+                                            UpdatedBy           = @UserName
+                                        WHERE RecordId = @RecordId",
+                                        New With {.EffectiveDate = effective, .UserName = userName,
+                                                  .RecordId = request.RecordId}, tran)
+                                End If
+
                             Case Models.MovementTypes.Rehire
                                 ' Bagong panahon ng serbisyo: ang rehire date ang bagong Date Joined (batayan ng retirement),
                                 ' ang UNANG Date Joined ay itinatabi sa OriginalDateJoined (isang beses lang), nabubura ang
@@ -524,6 +594,7 @@ Namespace Employee.Data
                                         DateResigned       = NULL,
                                         DateRetired        = NULL,
                                         DateTerminated     = NULL,
+                                        DateEndOfContract  = NULL,
                                         EmployeeStatus     = @EmploymentType,
                                         DateRegularization = CASE WHEN @EmploymentType = 'Regular' THEN @EffectiveDate ELSE NULL END,
                                         UpdatedAt          = GETDATE(),
@@ -559,6 +630,25 @@ Namespace Employee.Data
                 End Using
             End Using
 
+        End Function
+
+        ' Ang pay basis ng Pay Cycle ng empleyado: True kung Daily Rate ang input (kapareho ng EmployeeService.GetPayCycleRateBasesAsync).
+        ' Walang pay cycle o hindi kilala = Basic Salary.
+        Private Shared Async Function UsesDailyRateAsync(conn As SqlConnection, tran As IDbTransaction,
+                                                         payCycle As String) As Task(Of Boolean)
+            If String.IsNullOrWhiteSpace(payCycle) Then Return False
+
+            Dim infos = Await conn.QueryAsync(Of Models.PayCycleInfoModel)(
+                "SELECT PayCycleType, RateBasis, IsActive FROM tblPayCycle", Nothing, tran)
+
+            Dim wanted = GlobalShared.Models.PayCycleChoices.Normalize(payCycle)
+            For Each info In infos
+                If String.Equals(GlobalShared.Models.PayCycleChoices.Normalize(info.PayCycleType), wanted,
+                                 StringComparison.OrdinalIgnoreCase) Then
+                    Return info.RateBasis = CByte(GlobalShared.Models.PayRateBasis.DailyRate)
+                End If
+            Next
+            Return False
         End Function
 
         ' Mga pangalan ng BAGONG Position/Category/JobClass/Branch/Department para sa snapshot ng History.
@@ -659,6 +749,7 @@ Namespace Employee.Data
                         DateResigned            = @DateResigned,
                         DateRetired             = @DateRetired,
                         DateTerminated          = @DateTerminated,
+                        DateEndOfContract       = @DateEndOfContract,
                         TimekeepingControlNo    = @TimekeepingControlNo,
                         UpdatedAt               = GETDATE(),
                         UpdatedBy               = @UpdatedBy
@@ -671,7 +762,7 @@ Namespace Employee.Data
                         LeaveGroupId, HolidayGroupId, ScheduleGroupId,
                         DateJoined, DateRegularization, DateLastPromoted,
                         DateLastIncremented, DateLastTransferred,
-                        DateResigned, DateRetired, DateTerminated,
+                        DateResigned, DateRetired, DateTerminated, DateEndOfContract,
                         TimekeepingControlNo, CreatedAt, CreatedBy
                     ) VALUES (
                         @RecordId, @EmployeeStatus, @EmploymentType,
@@ -680,7 +771,7 @@ Namespace Employee.Data
                         @LeaveGroupId, @HolidayGroupId, @ScheduleGroupId,
                         @DateJoined, @DateRegularization, @DateLastPromoted,
                         @DateLastIncremented, @DateLastTransferred,
-                        @DateResigned, @DateRetired, @DateTerminated,
+                        @DateResigned, @DateRetired, @DateTerminated, @DateEndOfContract,
                         @TimekeepingControlNo, GETDATE(), @CreatedBy
                     )"
 

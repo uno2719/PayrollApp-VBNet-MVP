@@ -9,6 +9,9 @@ Public Class ucEmployees
     Inherits GlobalShared.Base.ucBase
     Implements IAsyncLoadable
 
+    ''' <summary>Hiniling ng user (Loans popup) na buksan ang Loans module para sa empleyadong ito. Ang frmMain ang tumutugon.</summary>
+    Public Event OpenLoansRequested As Action(Of Integer)
+
     ' =============================================
     ' STATE ENUM
     ' =============================================
@@ -64,6 +67,8 @@ Public Class ucEmployees
     Private _miRegularize As DXMenuItem
     Private _miPromote As DXMenuItem
     Private _miTransfer As DXMenuItem
+    Private _miSalary As DXMenuItem
+    Private _miEndOfContract As DXMenuItem
     Private _miResign As DXMenuItem
     Private _miTerminate As DXMenuItem
     Private _miRetire As DXMenuItem
@@ -389,14 +394,16 @@ Public Class ucEmployees
             pnlHdr_Chips.Controls.Add(chip)
         Next
 
-        ' Actions menu: Regularize / Promote / Transfer | Resign / Terminate / Retire | Set inactive.
-        ' (Salary adjustment ay hindi pa kasama - naghihintay sa HR.)
+        ' Actions menu: Regularize / Promote / Transfer / Salary adjustment | Resign / Terminate / Retire / End of Contract
+        ' | Rehire | Set inactive. (Ang Salary adjustment ay kailangan din ng "Employee Salary" na Can Edit.)
         _miRegularize = NewMovementItem("Regularize...", Employee.Models.MovementTypes.Regularize, False)
         _miPromote = NewMovementItem("Promote...", Employee.Models.MovementTypes.Promote, False)
         _miTransfer = NewMovementItem("Transfer...", Employee.Models.MovementTypes.Transfer, False)
+        _miSalary = NewMovementItem("Salary adjustment...", Employee.Models.MovementTypes.SalaryAdjustment, False)
         _miResign = NewMovementItem("Resign...", Employee.Models.MovementTypes.Resign, True)
         _miTerminate = NewMovementItem("Terminate...", Employee.Models.MovementTypes.Terminate, False)
         _miRetire = NewMovementItem("Retire...", Employee.Models.MovementTypes.Retire, False)
+        _miEndOfContract = NewMovementItem("End of Contract...", Employee.Models.MovementTypes.EndOfContract, False)
         _miRehire = NewMovementItem("Rehire...", Employee.Models.MovementTypes.Rehire, True)
 
         _miToggleActive = New DXMenuItem("Set inactive", AddressOf OnToggleActiveClick)
@@ -406,9 +413,11 @@ Public Class ucEmployees
         _actionsMenu.Items.Add(_miRegularize)
         _actionsMenu.Items.Add(_miPromote)
         _actionsMenu.Items.Add(_miTransfer)
+        _actionsMenu.Items.Add(_miSalary)
         _actionsMenu.Items.Add(_miResign)
         _actionsMenu.Items.Add(_miTerminate)
         _actionsMenu.Items.Add(_miRetire)
+        _actionsMenu.Items.Add(_miEndOfContract)
         _actionsMenu.Items.Add(_miRehire)
         _actionsMenu.Items.Add(_miToggleActive)
         btnHdr_Actions.DropDownControl = _actionsMenu
@@ -486,6 +495,13 @@ Public Class ucEmployees
         _miResign.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Resign, ctx)
         _miTerminate.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Terminate, ctx)
         _miRetire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Retire, ctx)
+        _miEndOfContract.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.EndOfContract, ctx)
+
+        ' Salary adjustment: valid sa rules (may rate na) AT may "Employee Salary" na Can Edit (Admin laging meron).
+        Dim canAdjustSalary As Boolean =
+            GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary)
+        _miSalary.Enabled = canAdjustSalary AndAlso
+            Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.SalaryAdjustment, ctx)
         _miRehire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Rehire, ctx)
 
         ' Ang Reactivate ay hindi para sa may separation: Rehire ang daan.
@@ -635,10 +651,16 @@ Public Class ucEmployees
     Private Sub btnHdr_Loans_Click(sender As Object, e As EventArgs) Handles btnHdr_Loans.Click
         If _headerModel Is Nothing OrElse _selectedRecordId = 0 Then Return
 
+        Dim openLoans As Boolean = False
+        Dim recordId As Integer = _selectedRecordId
+
         Using dlg As New frmEmployeeLoansQuickView(_loanService, _selectedRecordId,
                                                    _headerModel.EmployeeNo, _headerModel.FullName)
             dlg.ShowDialog(Me)
+            openLoans = dlg.OpenInLoansRequested
         End Using
+
+        If openLoans Then RaiseEvent OpenLoansRequested(recordId)
     End Sub
 
     ' =============================================

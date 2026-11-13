@@ -30,6 +30,7 @@ Public Class ucEmployeesEarnings
     End Sub
 
     Public Sub RaiseNew(recordId As Integer)
+        SetRateLock(False)
         _selectedRecordId = recordId
         Me.RecordId = recordId
         RaiseEvent OnNew(Me, EventArgs.Empty)
@@ -39,10 +40,32 @@ Public Class ucEmployeesEarnings
         RaiseEvent OnSave(Me, EventArgs.Empty)
     End Sub
 
+    ' Naka-lock ang Basic/Daily/Hourly kapag may naka-save nang rate: ang pagbabago ng sahod ay dumadaan sa
+    ' Actions > Salary adjustment (may reason, may History). Bukas pa rin ito para sa bagong empleyado.
+    Private _editEnabled As Boolean = False
+    Private _rateLocked As Boolean = False
+    Private Const RateLockHint As String = "Locked. Use Actions > Salary adjustment to change the rate (it is recorded in History)."
+
+    Public Sub SetRateLock(isLocked As Boolean) Implements Employee.Views.IEmployeesEarningsView.SetRateLock
+        _rateLocked = isLocked
+        ApplyRateReadOnly()
+    End Sub
+
+    Private Sub ApplyRateReadOnly()
+        Dim readOnlyRates As Boolean = (Not _editEnabled) OrElse _rateLocked
+        txtBasicSalary.Properties.ReadOnly = readOnlyRates
+        txtDailyRate.Properties.ReadOnly = readOnlyRates
+        txtHourlyRate.Properties.ReadOnly = readOnlyRates
+
+        Dim hint As String = If(_rateLocked, RateLockHint, String.Empty)
+        txtBasicSalary.ToolTip = hint
+        txtDailyRate.ToolTip = hint
+        txtHourlyRate.ToolTip = hint
+    End Sub
+
     Public Sub SetEditMode(enabled As Boolean)
-        txtBasicSalary.Properties.ReadOnly = Not enabled
-        txtDailyRate.Properties.ReadOnly = Not enabled
-        txtHourlyRate.Properties.ReadOnly = Not enabled
+        _editEnabled = enabled
+        ApplyRateReadOnly()
         txtDaysInYear.Properties.ReadOnly = Not enabled
         txtWorkHourPer.Properties.ReadOnly = Not enabled
         chkPayrollFlag.Properties.ReadOnly = Not enabled

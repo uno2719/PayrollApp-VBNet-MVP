@@ -36,6 +36,7 @@
         Public Property DateResigned As Date?
         Public Property DateRetired As Date?
         Public Property DateTerminated As Date?
+        Public Property DateEndOfContract As Date?
 
         ' Timekeeping
         Public Property TimekeepingControlNo As String

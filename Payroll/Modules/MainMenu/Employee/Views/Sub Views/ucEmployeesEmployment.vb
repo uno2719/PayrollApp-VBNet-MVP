@@ -60,6 +60,7 @@ Public Class ucEmployeesEmployment
         dtpDateResigned.Properties.ReadOnly = Not enabled
         dtpDateRetired.Properties.ReadOnly = Not enabled
         dtpDateTerminated.Properties.ReadOnly = Not enabled
+        dtpDateEndOfContract.Properties.ReadOnly = Not enabled
     End Sub
 
     ' =============================================
@@ -291,6 +292,19 @@ Public Class ucEmployeesEmployment
         End Set
     End Property
 
+    ' ✅ DateEndOfContract
+    Public Property DateEndOfContract As Date? _
+    Implements Employee.Views.IEmployeesEmploymentView.DateEndOfContract
+        Get
+            If dtpDateEndOfContract.EditValue Is Nothing OrElse
+           dtpDateEndOfContract.EditValue Is DBNull.Value Then Return Nothing
+            Return CType(dtpDateEndOfContract.EditValue, Date)
+        End Get
+        Set(value As Date?)
+            dtpDateEndOfContract.EditValue = If(value.HasValue, CObj(value.Value), Nothing)
+        End Set
+    End Property
+
     ' ✅ DateTerminated
     Public Property DateTerminated As Date? _
     Implements Employee.Views.IEmployeesEmploymentView.DateTerminated
@@ -409,6 +423,7 @@ Public Class ucEmployeesEmployment
         dtpDateResigned.EditValue = Nothing
         dtpDateRetired.EditValue = Nothing
         dtpDateTerminated.EditValue = Nothing
+        dtpDateEndOfContract.EditValue = Nothing
         txtControlNo.Text = String.Empty
     End Sub
 

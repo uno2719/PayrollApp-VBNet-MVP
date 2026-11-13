@@ -1,0 +1,288 @@
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
+Partial Class ucDocumentCategory
+    Inherits GlobalShared.Base.ucBase
+
+    <System.Diagnostics.DebuggerNonUserCode()>
+    Protected Overrides Sub Dispose(ByVal disposing As Boolean)
+        If disposing AndAlso components IsNot Nothing Then
+            components.Dispose()
+        End If
+        MyBase.Dispose(disposing)
+    End Sub
+
+    Private components As System.ComponentModel.IContainer
+
+    <System.Diagnostics.DebuggerStepThrough()>
+    Private Sub InitializeComponent()
+        Dim WindowsuiButtonImageOptions1 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptionsDeactivate As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions2 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions3 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        Dim WindowsuiButtonImageOptions4 As DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions = New DevExpress.XtraBars.Docking2010.WindowsUIButtonImageOptions()
+        PanelControl1 = New DevExpress.XtraEditors.PanelControl()
+        lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
+        wbpMainCommands = New DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel()
+        grpDetails = New DevExpress.XtraEditors.GroupControl()
+        lblStatus = New DevExpress.XtraEditors.LabelControl()
+        chkRequired = New DevExpress.XtraEditors.CheckEdit()
+        spnSortOrder = New DevExpress.XtraEditors.SpinEdit()
+        lblSortOrder = New DevExpress.XtraEditors.LabelControl()
+        txtName = New DevExpress.XtraEditors.TextEdit()
+        lblName = New DevExpress.XtraEditors.LabelControl()
+        gridconDocCategoryList = New DevExpress.XtraGrid.GridControl()
+        gridviewDocCategoryList = New DevExpress.XtraGrid.Views.Grid.GridView()
+        colName = New DevExpress.XtraGrid.Columns.GridColumn()
+        colRequired = New DevExpress.XtraGrid.Columns.GridColumn()
+        colSortOrder = New DevExpress.XtraGrid.Columns.GridColumn()
+        colFiles = New DevExpress.XtraGrid.Columns.GridColumn()
+        colActive = New DevExpress.XtraGrid.Columns.GridColumn()
+        CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
+        PanelControl1.SuspendLayout()
+        CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
+        grpDetails.SuspendLayout()
+        CType(chkRequired.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(spnSortOrder.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(txtName.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(gridconDocCategoryList, ComponentModel.ISupportInitialize).BeginInit()
+        CType(gridviewDocCategoryList, ComponentModel.ISupportInitialize).BeginInit()
+        SuspendLayout()
+        ' 
+        ' PanelControl1
+        ' 
+        PanelControl1.Controls.Add(lblTabPageTitle)
+        PanelControl1.Controls.Add(wbpMainCommands)
+        PanelControl1.Dock = DockStyle.Top
+        PanelControl1.Location = New Point(4, 4)
+        PanelControl1.Margin = New Padding(3, 2, 3, 2)
+        PanelControl1.Name = "PanelControl1"
+        PanelControl1.Padding = New Padding(3, 2, 3, 2)
+        PanelControl1.Size = New Size(948, 70)
+        PanelControl1.TabIndex = 0
+        ' 
+        ' lblTabPageTitle
+        ' 
+        lblTabPageTitle.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
+        lblTabPageTitle.Appearance.Font = New Font("Segoe UI", 15F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblTabPageTitle.Appearance.Options.UseFont = True
+        lblTabPageTitle.Location = New Point(8, 17)
+        lblTabPageTitle.Name = "lblTabPageTitle"
+        lblTabPageTitle.Size = New Size(210, 28)
+        lblTabPageTitle.TabIndex = 2
+        lblTabPageTitle.Text = "DOCUMENT CATEGORIES"
+        ' 
+        ' wbpMainCommands
+        ' 
+        wbpMainCommands.ButtonInterval = 15
+        WindowsuiButtonImageOptions1.Image = My.Resources.Resources.icon_add_property_24_png
+        WindowsuiButtonImageOptions2.Image = My.Resources.Resources.icon_edit_property_24
+        WindowsuiButtonImageOptions3.Image = My.Resources.Resources.icon_delete_24
+        WindowsuiButtonImageOptionsDeactivate.Image = My.Resources.Resources.icon_deactivate_24
+        WindowsuiButtonImageOptions4.Image = My.Resources.Resources.icon_refresh_24
+        wbpMainCommands.Buttons.AddRange(New DevExpress.XtraEditors.ButtonPanel.IBaseButton() {New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" New", True, WindowsuiButtonImageOptions1, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Add New Category", -1, True, Nothing, True, False, True, "New", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Edit", True, WindowsuiButtonImageOptions2, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Edit Selected", -1, True, Nothing, True, False, True, "Edit", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Deactivate", True, WindowsuiButtonImageOptionsDeactivate, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Deactivate Selected", -1, True, Nothing, True, False, True, "Deactivate", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Delete", True, WindowsuiButtonImageOptions3, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Delete Selected", -1, True, Nothing, True, False, True, "Delete", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator(), New DevExpress.XtraBars.Docking2010.WindowsUIButton(" Refresh", True, WindowsuiButtonImageOptions4, DevExpress.XtraBars.Docking2010.ButtonStyle.PushButton, "Reload from Database", -1, True, Nothing, True, False, True, "Refresh", -1, False), New DevExpress.XtraBars.Docking2010.WindowsUISeparator()})
+        wbpMainCommands.ContentAlignment = ContentAlignment.MiddleRight
+        wbpMainCommands.Dock = DockStyle.Right
+        wbpMainCommands.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        wbpMainCommands.Location = New Point(334, 4)
+        wbpMainCommands.Margin = New Padding(1)
+        wbpMainCommands.Name = "wbpMainCommands"
+        wbpMainCommands.Size = New Size(609, 62)
+        wbpMainCommands.TabIndex = 0
+        wbpMainCommands.Text = "Commands"
+        ' 
+        ' grpDetails
+        ' 
+        grpDetails.Appearance.Options.UseFont = True
+        grpDetails.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        grpDetails.AppearanceCaption.FontStyleDelta = FontStyle.Bold
+        grpDetails.AppearanceCaption.Options.UseFont = True
+        grpDetails.Controls.Add(lblStatus)
+        grpDetails.Controls.Add(chkRequired)
+        grpDetails.Controls.Add(spnSortOrder)
+        grpDetails.Controls.Add(lblSortOrder)
+        grpDetails.Controls.Add(txtName)
+        grpDetails.Controls.Add(lblName)
+        grpDetails.Dock = DockStyle.Top
+        grpDetails.Location = New Point(4, 74)
+        grpDetails.Margin = New Padding(3, 2, 3, 2)
+        grpDetails.Name = "grpDetails"
+        grpDetails.Size = New Size(948, 96)
+        grpDetails.TabIndex = 1
+        grpDetails.Text = " DETAILS"
+        ' 
+        ' lblStatus
+        ' 
+        lblStatus.Location = New Point(820, 50)
+        lblStatus.Appearance.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        lblStatus.Appearance.Options.UseFont = True
+        lblStatus.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
+        lblStatus.Name = "lblStatus"
+        lblStatus.Text = "Status: Active"
+        lblStatus.Size = New Size(130, 20)
+        lblStatus.TabIndex = 6
+        ' 
+        ' chkRequired
+        ' 
+        chkRequired.Location = New Point(560, 50)
+        chkRequired.Margin = New Padding(3, 2, 3, 2)
+        chkRequired.Name = "chkRequired"
+        chkRequired.Properties.Caption = "Required (counted in Profile %)"
+        chkRequired.Size = New Size(240, 20)
+        chkRequired.TabIndex = 5
+        ' 
+        ' spnSortOrder
+        ' 
+        spnSortOrder.EditValue = New Decimal(New Integer() {0, 0, 0, 0})
+        spnSortOrder.Location = New Point(440, 50)
+        spnSortOrder.Margin = New Padding(3, 2, 3, 2)
+        spnSortOrder.Name = "spnSortOrder"
+        spnSortOrder.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        spnSortOrder.Properties.DisplayFormat.FormatString = "n0"
+        spnSortOrder.Properties.DisplayFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnSortOrder.Properties.EditFormat.FormatString = "n0"
+        spnSortOrder.Properties.EditFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnSortOrder.Properties.Increment = New Decimal(New Integer() {10, 0, 0, 0})
+        spnSortOrder.Properties.IsFloatValue = False
+        spnSortOrder.Properties.MaxValue = New Decimal(New Integer() {9999, 0, 0, 0})
+        spnSortOrder.Properties.MinValue = New Decimal(New Integer() {0, 0, 0, 0})
+        spnSortOrder.Size = New Size(100, 20)
+        spnSortOrder.TabIndex = 3
+        spnSortOrder.ToolTip = "0 = put at the end of the list"
+        ' 
+        ' lblSortOrder
+        ' 
+        lblSortOrder.Location = New Point(440, 32)
+        lblSortOrder.Margin = New Padding(3, 2, 3, 2)
+        lblSortOrder.Name = "lblSortOrder"
+        lblSortOrder.Size = New Size(52, 13)
+        lblSortOrder.TabIndex = 2
+        lblSortOrder.Text = "Sort Order"
+        ' 
+        ' txtName
+        ' 
+        txtName.Location = New Point(24, 50)
+        txtName.Margin = New Padding(3, 2, 3, 2)
+        txtName.Name = "txtName"
+        txtName.Properties.MaxLength = 100
+        txtName.Properties.NullValuePrompt = "e.g. Birth Certificate"
+        txtName.Size = New Size(390, 20)
+        txtName.TabIndex = 1
+        ' 
+        ' lblName
+        ' 
+        lblName.Location = New Point(24, 32)
+        lblName.Margin = New Padding(3, 2, 3, 2)
+        lblName.Name = "lblName"
+        lblName.Size = New Size(76, 13)
+        lblName.TabIndex = 0
+        lblName.Text = "Category Name"
+        ' 
+        ' gridconDocCategoryList
+        ' 
+        gridconDocCategoryList.Dock = DockStyle.Fill
+        gridconDocCategoryList.Location = New Point(4, 170)
+        gridconDocCategoryList.MainView = gridviewDocCategoryList
+        gridconDocCategoryList.Margin = New Padding(3, 2, 3, 2)
+        gridconDocCategoryList.Name = "gridconDocCategoryList"
+        gridconDocCategoryList.Size = New Size(948, 360)
+        gridconDocCategoryList.TabIndex = 2
+        gridconDocCategoryList.ViewCollection.AddRange(New DevExpress.XtraGrid.Views.Base.BaseView() {gridviewDocCategoryList})
+        ' 
+        ' gridviewDocCategoryList
+        ' 
+        gridviewDocCategoryList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colSortOrder, colName, colRequired, colFiles, colActive})
+        gridviewDocCategoryList.GridControl = gridconDocCategoryList
+        gridviewDocCategoryList.Name = "gridviewDocCategoryList"
+        gridviewDocCategoryList.OptionsPrint.PrintFilterInfo = True
+        gridviewDocCategoryList.OptionsView.NewItemRowPosition = DevExpress.XtraGrid.Views.Grid.NewItemRowPosition.Top
+        gridviewDocCategoryList.OptionsView.ShowGroupPanel = False
+        ' 
+        ' colSortOrder
+        ' 
+        colSortOrder.Caption = "Sort Order"
+        colSortOrder.FieldName = "SortOrder"
+        colSortOrder.Name = "colSortOrder"
+        colSortOrder.Visible = True
+        colSortOrder.VisibleIndex = 0
+        colSortOrder.Width = 80
+        ' 
+        ' colName
+        ' 
+        colName.Caption = "Category Name"
+        colName.FieldName = "Name"
+        colName.Name = "colName"
+        colName.Visible = True
+        colName.VisibleIndex = 1
+        colName.Width = 320
+        ' 
+        ' colRequired
+        ' 
+        colRequired.Caption = "Required"
+        colRequired.FieldName = "IsRequired"
+        colRequired.Name = "colRequired"
+        colRequired.Visible = True
+        colRequired.VisibleIndex = 2
+        colRequired.Width = 80
+        ' 
+        ' colFiles
+        ' 
+        colFiles.Caption = "Files"
+        colFiles.FieldName = "FileCount"
+        colFiles.Name = "colFiles"
+        colFiles.Visible = True
+        colFiles.VisibleIndex = 3
+        colFiles.Width = 70
+        ' 
+        ' colActive
+        ' 
+        colActive.Caption = "Active"
+        colActive.FieldName = "IsActive"
+        colActive.Name = "colActive"
+        colActive.Visible = True
+        colActive.VisibleIndex = 4
+        colActive.Width = 70
+        ' 
+        ' ucDocumentCategory
+        ' 
+        Appearance.Font = New Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Appearance.Options.UseFont = True
+        AutoScaleDimensions = New SizeF(6F, 13F)
+        AutoScaleMode = AutoScaleMode.Font
+        Controls.Add(gridconDocCategoryList)
+        Controls.Add(grpDetails)
+        Controls.Add(PanelControl1)
+        Name = "ucDocumentCategory"
+        Padding = New Padding(4)
+        Size = New Size(956, 534)
+        CType(PanelControl1, ComponentModel.ISupportInitialize).EndInit()
+        PanelControl1.ResumeLayout(False)
+        PanelControl1.PerformLayout()
+        CType(grpDetails, ComponentModel.ISupportInitialize).EndInit()
+        grpDetails.ResumeLayout(False)
+        grpDetails.PerformLayout()
+        CType(chkRequired.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(spnSortOrder.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(txtName.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(gridconDocCategoryList, ComponentModel.ISupportInitialize).EndInit()
+        CType(gridviewDocCategoryList, ComponentModel.ISupportInitialize).EndInit()
+        ResumeLayout(False)
+    End Sub
+
+    Friend WithEvents PanelControl1 As DevExpress.XtraEditors.PanelControl
+    Friend WithEvents wbpMainCommands As DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel
+    Friend WithEvents grpDetails As DevExpress.XtraEditors.GroupControl
+    Friend WithEvents lblStatus As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents chkRequired As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents spnSortOrder As DevExpress.XtraEditors.SpinEdit
+    Friend WithEvents lblSortOrder As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents txtName As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lblName As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents gridconDocCategoryList As DevExpress.XtraGrid.GridControl
+    Friend WithEvents gridviewDocCategoryList As DevExpress.XtraGrid.Views.Grid.GridView
+    Friend WithEvents colName As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents colRequired As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents colSortOrder As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents colFiles As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents colActive As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents lblTabPageTitle As DevExpress.XtraEditors.LabelControl
+
+End Class

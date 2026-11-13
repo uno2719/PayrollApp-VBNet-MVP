@@ -121,6 +121,12 @@
             If request Is Nothing Then Throw New ArgumentNullException(NameOf(request))
             If request.RecordId <= 0 Then Throw New InvalidOperationException("No employee selected.")
 
+            ' Salary adjustment: kailangan ng DAGDAG na "Employee Salary" (Can Edit) - Admin laging meron.
+            If Models.MovementTypes.IsSalary(request.MovementType) AndAlso
+               Not GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary) Then
+                Throw New UnauthorizedAccessException("You are not allowed to adjust an employee's salary.")
+            End If
+
             request.Remarks = If(String.IsNullOrWhiteSpace(request.Remarks), Nothing, request.Remarks.Trim())
             request.CreatedBy = AppSession.CurrentUser
 
@@ -131,7 +137,20 @@
 
         Public Async Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel)) _
             Implements IEmployeeService.GetMovementHistoryAsync
-            Return Await _repo.GetMovementHistoryAsync(recordId)
+            Dim rows = Await _repo.GetMovementHistoryAsync(recordId)
+
+            ' Itinatago sa SERVICE (hindi lang sa grid) ang halaga ng sahod kung walang "Employee Salary" na View,
+            ' para hindi man lang makarating sa screen. Nakikita pa rin na may nangyaring adjustment at kailan.
+            If Not GlobalShared.Security.PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary) Then
+                For Each row In rows
+                    If Models.MovementTypes.IsSalary(row.MovementType) Then
+                        row.FromValue = "(hidden)"
+                        row.ToValue = "(hidden)"
+                    End If
+                Next
+            End If
+
+            Return rows
         End Function
 
         ' =============================================
@@ -168,6 +187,9 @@
             End If
             If model.DateTerminated.HasValue AndAlso model.DateTerminated.Value.Date < joined Then
                 Throw New Exception("Date Terminated can't be earlier than Date Joined.")
+            End If
+            If model.DateEndOfContract.HasValue AndAlso model.DateEndOfContract.Value.Date < joined Then
+                Throw New Exception("Date End of Contract can't be earlier than Date Joined.")
             End If
 
             ' Set audit fields. Ang EmploymentId ay hindi kailanman nata-tag ng presenter (laging 0), kaya dati

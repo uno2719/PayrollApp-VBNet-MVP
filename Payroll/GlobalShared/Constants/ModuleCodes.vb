@@ -38,6 +38,9 @@ Namespace GlobalShared.Constants
         ' (may password), at palitan/alisin ang photo. Admin laging may access; ang HR ay bibigyan sa Users Account.
         ' Ang module ay nire-register ng SQL/2026-11-11_Employee_Phase3_Files.sql.
         Public Const Main_Employees_Documents As String = "main_Employees_Documents"
+        ' Sub-permission: Salary adjustment (Employee > Actions). View = makikita ang halaga ng sahod sa History;
+        ' Can Edit = makakapag-adjust ng sahod. Admin laging may access. Nire-register ng SQL/2026-11-13_Employee_EndOfContract_Salary.sql.
+        Public Const Main_Employees_Salary As String = "main_Employees_Salary"
         Public Const Main_Payroll As String = "main_Payroll"
         Public Const Main_Loan As String = "main_Loan"
         Public Const Main_Leave As String = "main_Leave"

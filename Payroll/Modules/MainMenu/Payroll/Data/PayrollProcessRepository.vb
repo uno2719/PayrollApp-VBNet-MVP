@@ -21,7 +21,7 @@ Namespace PayrollProcessing.Data
                     ee.PayCycle, ee.BasicSalary, ee.DailyRate, ee.HourlyRate, ee.DaysInYear, ee.WorkHourPer,
                     CAST(ISNULL(ee.MinimumWage, 0) AS BIT) AS MinimumWage,
                     es.PagIBIGVoluntary, es.FixTax,
-                    em.DateJoined, em.DateResigned, em.DateRetired, em.DateTerminated
+                    em.DateJoined, em.DateResigned, em.DateRetired, em.DateTerminated, em.DateEndOfContract
              FROM tblEmployee e
                   INNER JOIN tblEmployeeEarnings ee ON ee.RecordId = e.RecordId
                   LEFT JOIN tblEmployeeStatutory es ON es.RecordId = e.RecordId

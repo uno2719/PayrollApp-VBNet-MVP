@@ -71,6 +71,7 @@ Namespace Employee.Presenters
                 _view.DateResigned = emp.DateResigned
                 _view.DateRetired = emp.DateRetired
                 _view.DateTerminated = emp.DateTerminated
+                _view.DateEndOfContract = emp.DateEndOfContract
                 _view.TimekeepingControlNo = If(emp.TimekeepingControlNo, String.Empty)
 
             Catch ex As Exception
@@ -103,6 +104,7 @@ Namespace Employee.Presenters
             _view.DateResigned = Nothing
             _view.DateRetired = Nothing
             _view.DateTerminated = Nothing
+            _view.DateEndOfContract = Nothing
             _view.TimekeepingControlNo = String.Empty
         End Sub
 
@@ -131,6 +133,7 @@ Namespace Employee.Presenters
                     .DateResigned = _view.DateResigned,
                     .DateRetired = _view.DateRetired,
                     .DateTerminated = _view.DateTerminated,
+                    .DateEndOfContract = _view.DateEndOfContract,
                     .TimekeepingControlNo = _view.TimekeepingControlNo
                 }
 

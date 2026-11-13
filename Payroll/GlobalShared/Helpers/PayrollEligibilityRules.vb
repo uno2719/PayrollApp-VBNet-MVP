@@ -22,10 +22,10 @@ Namespace GlobalShared.Helpers
     ''' </summary>
     Public Module PayrollEligibilityRules
 
-        ''' <summary>Ang pinakamaagang petsa ng pag-alis (Resigned, Retired, o Terminated); Nothing kung wala.</summary>
+        ''' <summary>Ang pinakamaagang petsa ng pag-alis (Resigned, Retired, Terminated, o End of Contract); Nothing kung wala.</summary>
         Public Function SeparationDate(c As EligibilityCandidate) As Date?
             Dim result As Date? = Nothing
-            For Each d In {c.DateResigned, c.DateRetired, c.DateTerminated}
+            For Each d In {c.DateResigned, c.DateRetired, c.DateTerminated, c.DateEndOfContract}
                 If d.HasValue AndAlso (Not result.HasValue OrElse d.Value.Date < result.Value) Then
                     result = d.Value.Date
                 End If

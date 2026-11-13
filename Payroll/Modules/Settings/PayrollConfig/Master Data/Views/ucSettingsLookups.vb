@@ -5,7 +5,7 @@ Public Class ucSettingsLookups
 
     Private _currentTab As String = "Branch"
 
-    ' 8 injected instances - IISANG class lang (ucLookupMaintenance),
+    ' 8 injected na ucLookupMaintenance (IISANG class lang) + ang Document Categories (sariling view),
     ' pero magkakahiwalay na object, bawat isa may sariling grid/data/
     ' Presenter (naka-configure na sa ibang tableName bago pa rito
     ' dumating - tingnan ang AppComposition.BuildSettingsLookupsView).
@@ -17,6 +17,7 @@ Public Class ucSettingsLookups
     Private ReadOnly _ucHolidayGroup As ucLookupMaintenance
     Private ReadOnly _ucScheduleGroup As ucLookupMaintenance
     Private ReadOnly _ucBank As ucLookupMaintenance
+    Private ReadOnly _ucDocCategory As ucDocumentCategory
 
     Public Sub New(
         branchView As ucLookupMaintenance,
@@ -26,7 +27,8 @@ Public Class ucSettingsLookups
         jobClassView As ucLookupMaintenance,
         holidayGroupView As ucLookupMaintenance,
         scheduleGroupView As ucLookupMaintenance,
-        bankView As ucLookupMaintenance)
+        bankView As ucLookupMaintenance,
+        docCategoryView As ucDocumentCategory)
 
         InitializeComponent()
 
@@ -38,6 +40,7 @@ Public Class ucSettingsLookups
         _ucHolidayGroup = holidayGroupView
         _ucScheduleGroup = scheduleGroupView
         _ucBank = bankView
+        _ucDocCategory = docCategoryView
 
         DockAllViews()
     End Sub
@@ -66,6 +69,9 @@ Public Class ucSettingsLookups
 
         _ucBank.Dock = DockStyle.Fill
         tabpageBank.Controls.Add(_ucBank)
+
+        _ucDocCategory.Dock = DockStyle.Fill
+        tabpageDocCategory.Controls.Add(_ucDocCategory)
     End Sub
 
     ' =============================================

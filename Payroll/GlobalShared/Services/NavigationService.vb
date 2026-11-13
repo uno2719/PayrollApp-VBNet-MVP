@@ -140,6 +140,13 @@ Public Class NavigationService
 
     End Sub
 
+    ''' <summary>Ang view na nasa cache na (nabuksan na dati), o Nothing. Ginagamit para mag-hand-off ng pagpili sa ibang module.</summary>
+    Public Function TryGetView(Of T As GlobalShared.Base.ucBase)() As T
+        Dim view As GlobalShared.Base.ucBase = Nothing
+        If _modules.TryGetValue(GetType(T), view) Then Return TryCast(view, T)
+        Return Nothing
+    End Function
+
     Public Sub GoBack()
 
         If _history.Count = 0 Then

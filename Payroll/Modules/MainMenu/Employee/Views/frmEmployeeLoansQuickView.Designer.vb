@@ -24,6 +24,7 @@ Partial Class frmEmployeeLoansQuickView
         gridLoans = New DevExpress.XtraGrid.GridControl()
         gridviewLoans = New DevExpress.XtraGrid.Views.Grid.GridView()
         btnClose = New DevExpress.XtraEditors.SimpleButton()
+        btnOpenLoans = New DevExpress.XtraEditors.SimpleButton()
         CType(cboShow.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridLoans, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridviewLoans, ComponentModel.ISupportInitialize).BeginInit()
@@ -91,12 +92,23 @@ Partial Class frmEmployeeLoansQuickView
         btnClose.TabIndex = 5
         btnClose.Text = "Close"
         ' 
+        ' btnOpenLoans
+        ' 
+        btnOpenLoans.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
+        btnOpenLoans.Location = New Point(468, 372)
+        btnOpenLoans.Name = "btnOpenLoans"
+        btnOpenLoans.Size = New Size(170, 28)
+        btnOpenLoans.TabIndex = 6
+        btnOpenLoans.Text = "Open in Loans module"
+        btnOpenLoans.ToolTip = "Close this window and go to the Loans module with this employee selected (add or edit loans there)."
+        ' 
         ' frmEmployeeLoansQuickView
         ' 
         AutoScaleDimensions = New SizeF(6F, 13F)
         AutoScaleMode = AutoScaleMode.Font
         CancelButton = btnClose
         ClientSize = New Size(760, 416)
+        Controls.Add(btnOpenLoans)
         Controls.Add(btnClose)
         Controls.Add(gridLoans)
         Controls.Add(lblSummary)
@@ -124,5 +136,6 @@ Partial Class frmEmployeeLoansQuickView
     Friend WithEvents gridLoans As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridviewLoans As DevExpress.XtraGrid.Views.Grid.GridView
     Friend WithEvents btnClose As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnOpenLoans As DevExpress.XtraEditors.SimpleButton
 
 End Class

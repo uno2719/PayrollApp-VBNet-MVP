@@ -107,6 +107,7 @@ Namespace Employee.Views
             If h.DateTerminated.HasValue Then Return New SeparationInfo With {.Label = "Terminated", .OnDate = h.DateTerminated}
             If h.DateResigned.HasValue Then Return New SeparationInfo With {.Label = "Resigned", .OnDate = h.DateResigned}
             If h.DateRetired.HasValue Then Return New SeparationInfo With {.Label = "Retired", .OnDate = h.DateRetired}
+            If h.DateEndOfContract.HasValue Then Return New SeparationInfo With {.Label = "End of Contract", .OnDate = h.DateEndOfContract}
 
             Return Nothing
         End Function

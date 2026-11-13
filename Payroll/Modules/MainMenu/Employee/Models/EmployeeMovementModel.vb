@@ -20,11 +20,19 @@ Namespace Employee.Models
         Public Const SetInactive As String = "Set inactive"
         Public Const Reactivate As String = "Reactivate"
         Public Const Rehire As String = "Rehire"
+        Public Const EndOfContract As String = "End of Contract"
+        Public Const SalaryAdjustment As String = "Salary adjustment"
 
         Public Shared Function IsSeparation(movementType As String) As Boolean
             Return String.Equals(movementType, Resign, StringComparison.OrdinalIgnoreCase) OrElse
                    String.Equals(movementType, Terminate, StringComparison.OrdinalIgnoreCase) OrElse
-                   String.Equals(movementType, Retire, StringComparison.OrdinalIgnoreCase)
+                   String.Equals(movementType, Retire, StringComparison.OrdinalIgnoreCase) OrElse
+                   String.Equals(movementType, EndOfContract, StringComparison.OrdinalIgnoreCase)
+        End Function
+
+        ''' <summary>Ang mga movement na may halaga ng sahod (itinatago sa History kung walang Salary permission).</summary>
+        Public Shared Function IsSalary(movementType As String) As Boolean
+            Return String.Equals(movementType, SalaryAdjustment, StringComparison.OrdinalIgnoreCase)
         End Function
 
         ''' <summary>Pangalan ng action sa History (past tense).</summary>
@@ -39,6 +47,8 @@ Namespace Employee.Models
                 Case SetInactive : Return "Set inactive"
                 Case Reactivate : Return "Reactivated"
                 Case Rehire : Return "Rehired"
+                Case EndOfContract : Return "Contract ended"
+                Case SalaryAdjustment : Return "Salary adjusted"
                 Case Else : Return If(movementType, String.Empty)
             End Select
         End Function
@@ -80,6 +90,11 @@ Namespace Employee.Models
         ' Rehire: ang Employment Type ng bagong panahon ng serbisyo (pinipili ng HR; walang default)
         Public Property NewEmploymentType As String
 
+        ' Salary adjustment: ang bagong halaga ng INPUT ng pay basis ng empleyado (Basic Salary para sa Basic cycle,
+        ' Daily Rate para sa Daily Rate cycle). Ang Daily/Hourly ay kinukuwenta ng repository sa loob ng transaction.
+        Public Property NewBasicSalary As Decimal?
+        Public Property NewDailyRate As Decimal?
+
         ''' <summary>Itinatakda ng Service (AppSession.CurrentUser), hindi ng dialog.</summary>
         Public Property CreatedBy As String
     End Class
@@ -95,6 +110,13 @@ Namespace Employee.Models
         Public Property DateResigned As Date?
         Public Property DateRetired As Date?
         Public Property DateTerminated As Date?
+        Public Property DateEndOfContract As Date?
+
+        ' Para sa Salary adjustment lang (galing sa Earnings): meron na bang rate, at alin ang input.
+        Public Property HasPayRate As Boolean
+        Public Property UsesDailyRate As Boolean
+        Public Property CurrentBasicSalary As Decimal?
+        Public Property CurrentDailyRate As Decimal?
 
         Public Property PositionId As Integer?
         Public Property CategoryId As Integer?
@@ -110,7 +132,9 @@ Namespace Employee.Models
                 .DateJoined = h.DateJoined,
                 .DateResigned = h.DateResigned,
                 .DateRetired = h.DateRetired,
-                .DateTerminated = h.DateTerminated
+                .DateTerminated = h.DateTerminated,
+                .DateEndOfContract = h.DateEndOfContract,
+                .HasPayRate = h.HasPayRate
             }
         End Function
 
@@ -123,6 +147,7 @@ Namespace Employee.Models
                 .DateResigned = emp.DateResigned,
                 .DateRetired = emp.DateRetired,
                 .DateTerminated = emp.DateTerminated,
+                .DateEndOfContract = emp.DateEndOfContract,
                 .PositionId = emp.PositionId,
                 .CategoryId = emp.CategoryId,
                 .JobClassId = emp.JobClassId,
@@ -139,6 +164,9 @@ Namespace Employee.Models
     Public Module EmployeeMovementRules
 
         Public Const MaxRemarksLength As Integer = 500
+
+        ''' <summary>Pinakamalaking tinatanggap na Basic Salary / Daily Rate sa isang adjustment (proteksyon sa typo).</summary>
+        Public Const MaxSalaryAmount As Decimal = 9999999.99D
 
         ''' <summary>Mga halagang tinatanggap bilang Employment Type (kapareho ng combo sa Employment tab).</summary>
         Public ReadOnly EmploymentTypes As String() =
@@ -157,7 +185,8 @@ Namespace Employee.Models
 
         ''' <summary>May petsa ng pag-alis (Resigned/Retired/Terminated), o lumang status na ganoon ang nakasulat.</summary>
         Public Function IsSeparated(c As MovementContext) As Boolean
-            If c.DateResigned.HasValue OrElse c.DateRetired.HasValue OrElse c.DateTerminated.HasValue Then Return True
+            If c.DateResigned.HasValue OrElse c.DateRetired.HasValue OrElse c.DateTerminated.HasValue OrElse
+               c.DateEndOfContract.HasValue Then Return True
             Dim t As String = Clean(c.EmploymentType)
             Return SeparationStatuses.Any(Function(s) s.Equals(t, StringComparison.OrdinalIgnoreCase))
         End Function
@@ -176,7 +205,7 @@ Namespace Employee.Models
         ''' <summary>Pinakahuling petsa ng pag-alis (Resigned/Retired/Terminated). Nothing kung walang petsa.</summary>
         Public Function LastSeparationDate(c As MovementContext) As Date?
             Dim result As Date? = Nothing
-            For Each d In {c.DateResigned, c.DateRetired, c.DateTerminated}
+            For Each d In {c.DateResigned, c.DateRetired, c.DateTerminated, c.DateEndOfContract}
                 If d.HasValue AndAlso (Not result.HasValue OrElse d.Value.Date > result.Value.Date) Then result = d.Value.Date
             Next
             Return result
@@ -188,6 +217,7 @@ Namespace Employee.Models
             If last.HasValue Then
                 If c.DateTerminated.HasValue AndAlso c.DateTerminated.Value.Date = last.Value Then Return "Terminated"
                 If c.DateResigned.HasValue AndAlso c.DateResigned.Value.Date = last.Value Then Return "Resigned"
+                If c.DateEndOfContract.HasValue AndAlso c.DateEndOfContract.Value.Date = last.Value Then Return "End of Contract"
                 Return "Retired"
             End If
 
@@ -208,7 +238,7 @@ Namespace Employee.Models
         ''' </summary>
         Public Function ReactivateBlockedReason(c As MovementContext) As String
             If IsSeparated(c) Then
-                Return "This employee has a separation (Resigned, Retired, or Terminated). Use Actions > Rehire instead of Reactivate."
+                Return "This employee has a separation (Resigned, Retired, Terminated, or End of Contract). Use Actions > Rehire instead of Reactivate."
             End If
             Return String.Empty
         End Function
@@ -232,9 +262,22 @@ Namespace Employee.Models
                 Case MovementTypes.Resign, MovementTypes.Terminate, MovementTypes.Retire
                     If IsSeparated(c) Then Return SeparatedMessage()
 
+                Case MovementTypes.EndOfContract
+                    If IsSeparated(c) Then Return SeparatedMessage()
+                    ' HULA (hindi pa kumpirmado ng HR): hindi para sa Regular/Permanent. Palitan dito kung iba ang patakaran.
+                    If IsRegularType(c.EmploymentType) Then
+                        Return "End of Contract is not for Regular employees. Use Resign, Terminate, or Retire instead."
+                    End If
+
+                Case MovementTypes.SalaryAdjustment
+                    ' Ang UNANG Basic Salary / Daily Rate ay itinatakda sa Earnings tab; ang Actions na ito ay para sa pagbabago.
+                    If Not c.HasPayRate Then
+                        Return "This employee has no Basic Salary or Daily Rate yet. Set the starting rate in the Earnings tab first."
+                    End If
+
                 Case MovementTypes.Rehire
                     If Not IsSeparated(c) Then
-                        Return "Only an employee who has resigned, retired, or been terminated can be rehired."
+                        Return "Only an employee who has resigned, retired, been terminated, or whose contract ended can be rehired."
                     End If
 
                 Case MovementTypes.SetInactive, MovementTypes.Reactivate
@@ -248,7 +291,7 @@ Namespace Employee.Models
         End Function
 
         Private Function SeparatedMessage() As String
-            Return "This employee already has a separation (Resigned, Retired, or Terminated), so this action is not available. " &
+            Return "This employee already has a separation (Resigned, Retired, Terminated, or End of Contract), so this action is not available. " &
                    "If the employee is returning, use Actions > Rehire."
         End Function
 
@@ -319,6 +362,25 @@ Namespace Employee.Models
                 Case MovementTypes.Resign, MovementTypes.Terminate
                     If remarks.Length = 0 Then Return "Remarks is required for this action (state the reason)."
 
+                ' End of Contract: optional ang Remarks (walang dagdag na patakaran maliban sa petsa sa itaas).
+
+                Case MovementTypes.SalaryAdjustment
+                    If remarks.Length = 0 Then Return "Remarks is required for a salary adjustment (state the reason, e.g. increase, wage order, correction)."
+
+                    Dim current As Decimal? = If(c.UsesDailyRate, c.CurrentDailyRate, c.CurrentBasicSalary)
+                    Dim proposed As Decimal? = If(c.UsesDailyRate, req.NewDailyRate, req.NewBasicSalary)
+                    Dim label As String = If(c.UsesDailyRate, "Daily Rate", "Basic Salary")
+
+                    If Not proposed.HasValue OrElse proposed.Value <= 0D Then
+                        Return $"The new {label} must be greater than zero."
+                    End If
+                    If proposed.Value > MaxSalaryAmount Then
+                        Return $"The new {label} is too large. Please check the amount."
+                    End If
+                    If current.HasValue AndAlso Math.Round(current.Value, 2) = Math.Round(proposed.Value, 2) Then
+                        Return $"Nothing to adjust: the new {label} is the same as the current one."
+                    End If
+
                 Case MovementTypes.Promote
                     If Not req.NewPositionId.HasValue Then Return "Position is required."
                     If c.CategoryId.HasValue AndAlso Not req.NewCategoryId.HasValue Then Return "Category can't be blank."
@@ -343,6 +405,57 @@ Namespace Employee.Models
             Return String.Empty
         End Function
 
+        ''' <summary>
+        ''' Ang mga rate pagkatapos ng adjustment, KAPAREHONG pormula ng Earnings tab:
+        '''   Basic cycle: Daily = Basic x 12 / DaysInYear, Hourly = Daily / WorkHourPer
+        '''   Daily cycle: Hourly = Daily / WorkHourPer (ang Basic ay hindi ginagamit)
+        ''' Kapag kulang ang DaysInYear / WorkHourPer, mananatili ang dating Daily / Hourly.
+        ''' </summary>
+        Public Function ComputeAdjustedRates(usesDailyRate As Boolean,
+                                             newInput As Decimal,
+                                             daysInYear As Integer?,
+                                             workHourPer As Decimal?,
+                                             currentBasic As Decimal?,
+                                             currentDaily As Decimal?,
+                                             currentHourly As Decimal?) As SalaryRates
+            Dim r As New SalaryRates()
+
+            If usesDailyRate Then
+                r.BasicSalary = currentBasic
+                r.DailyRate = Math.Round(newInput, 2)
+                r.HourlyRate = currentHourly
+                If workHourPer.HasValue AndAlso workHourPer.Value > 0D Then
+                    r.HourlyRate = Math.Round(r.DailyRate.Value / workHourPer.Value, 2)
+                End If
+            Else
+                r.BasicSalary = Math.Round(newInput, 2)
+                r.DailyRate = currentDaily
+                r.HourlyRate = currentHourly
+                If daysInYear.HasValue AndAlso daysInYear.Value > 0 Then
+                    r.DailyRate = Math.Round(r.BasicSalary.Value * 12D / daysInYear.Value, 2)
+                    If workHourPer.HasValue AndAlso workHourPer.Value > 0D Then
+                        r.HourlyRate = Math.Round(r.DailyRate.Value / workHourPer.Value, 2)
+                    End If
+                End If
+            End If
+
+            Return r
+        End Function
+
+        ''' <summary>Hal. "Basic Salary: 20,000.00" (para sa From/To ng History).</summary>
+        Public Function SalaryText(usesDailyRate As Boolean, amount As Decimal?) As String
+            Dim label As String = If(usesDailyRate, "Daily Rate", "Basic Salary")
+            If Not amount.HasValue Then Return label & ": (none)"
+            Return label & ": " & amount.Value.ToString("N2", CultureInfo.InvariantCulture)
+        End Function
+
     End Module
+
+    ''' <summary>Resulta ng ComputeAdjustedRates.</summary>
+    Public Class SalaryRates
+        Public Property BasicSalary As Decimal?
+        Public Property DailyRate As Decimal?
+        Public Property HourlyRate As Decimal?
+    End Class
 
 End Namespace

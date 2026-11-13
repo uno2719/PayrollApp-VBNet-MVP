@@ -177,7 +177,7 @@ Namespace PayrollProcessing.Data
                     ee.PayCycle,
                     CAST(ISNULL(ee.PayrollFlag, 0) AS BIT) AS PayrollFlag,
                     ee.BasicSalary, ee.DailyRate,
-                    em.DateJoined, em.DateResigned, em.DateRetired, em.DateTerminated
+                    em.DateJoined, em.DateResigned, em.DateRetired, em.DateTerminated, em.DateEndOfContract
              FROM tblEmployee e
                   LEFT JOIN tblEmployeeEarnings ee ON ee.RecordId = e.RecordId
                   LEFT JOIN tblEmployeeEmployment em ON em.RecordId = e.RecordId

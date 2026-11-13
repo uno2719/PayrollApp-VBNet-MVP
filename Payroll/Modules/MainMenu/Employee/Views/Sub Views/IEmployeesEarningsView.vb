@@ -30,6 +30,9 @@
         ''' </summary>
         Sub ConfigureRateInputs(bases As Dictionary(Of String, GlobalShared.Models.PayRateBasis), dailyRateMonthlyFactor As Decimal)
 
+        ''' <summary>True = naka-lock ang Basic/Daily/Hourly (may naka-save nang rate); ang pagbabago ay sa Actions > Salary adjustment.</summary>
+        Sub SetRateLock(isLocked As Boolean)
+
         ' --- Clear Fields ---
         Sub ClearFields()
 

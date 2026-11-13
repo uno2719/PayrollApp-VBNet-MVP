@@ -20,6 +20,10 @@ Public Class frmEmployeeAction
     Private _employment As Employee.Models.EmployeeEmploymentModel
     Private _context As Employee.Models.MovementContext
 
+    ' Salary adjustment lang: kasalukuyang Earnings at kung Daily Rate o Basic Salary ang input ng pay cycle niya.
+    Private _earnings As Employee.Models.EmployeeEarningsModel
+    Private _usesDailyRate As Boolean
+
     Public Sub New(service As Employee.Services.IEmployeeService,
                    header As Employee.Models.EmployeeHeaderModel,
                    movementType As String,
@@ -59,6 +63,11 @@ Public Class frmEmployeeAction
             End If
 
             _context = Employee.Models.MovementContext.FromEmployment(_employment, _header.IsActive)
+
+            If Employee.Models.MovementTypes.IsSalary(_movementType) Then
+                Await LoadSalaryContextAsync()
+            End If
+
             lblRemarks.Text = If(RemarksRequired(), "Remarks *", "Remarks")
 
             ' Nagbago na ba ang kalagayan mula nang buksan ang menu? (hal. ibang user ang nag-resign sa kanya)
@@ -111,6 +120,35 @@ Public Class frmEmployeeAction
         End Try
     End Sub
 
+    ' Binabasa ang kasalukuyang Earnings at ang rate basis ng Pay Cycle (parehong paraan ng Earnings tab).
+    Private Async Function LoadSalaryContextAsync() As Task
+        _earnings = Await _service.GetEarningsAsync(_header.RecordId)
+
+        _usesDailyRate = False
+        If _earnings IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(_earnings.PayCycle) Then
+            Dim bases = Await _service.GetPayCycleRateBasesAsync()
+            Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
+            If bases.TryGetValue(GlobalShared.Models.PayCycleChoices.Normalize(_earnings.PayCycle), basis) Then
+                _usesDailyRate = (basis = GlobalShared.Models.PayRateBasis.DailyRate)
+            End If
+        End If
+
+        If _earnings IsNot Nothing Then
+            _context.UsesDailyRate = _usesDailyRate
+            _context.CurrentBasicSalary = _earnings.BasicSalary
+            _context.CurrentDailyRate = _earnings.DailyRate
+            _context.HasPayRate = (_earnings.BasicSalary.HasValue AndAlso _earnings.BasicSalary.Value > 0D) OrElse
+                                  (_earnings.DailyRate.HasValue AndAlso _earnings.DailyRate.Value > 0D)
+        End If
+
+        Dim rateName As String = If(_usesDailyRate, "Daily Rate", "Basic Salary")
+        Dim current As Decimal? = If(_usesDailyRate, _context.CurrentDailyRate, _context.CurrentBasicSalary)
+        lblCurrentRate.Text = "Current " & rateName
+        lblCurrentRateValue.Text = If(current.HasValue, "₱" & current.Value.ToString("N2"), "(none)")
+        lblNewRate.Text = "New " & rateName & " *"
+        spnNewRate.EditValue = Nothing
+    End Function
+
     ' =============================================
     ' TEXTS (ayon sa action)
     ' =============================================
@@ -123,6 +161,8 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Terminate : Return "Record Termination"
             Case Employee.Models.MovementTypes.Retire : Return "Record Retirement"
             Case Employee.Models.MovementTypes.Rehire : Return "Rehire Employee"
+            Case Employee.Models.MovementTypes.EndOfContract : Return "Record End of Contract"
+            Case Employee.Models.MovementTypes.SalaryAdjustment : Return "Salary Adjustment"
             Case Else : Return "Employee Action"
         End Select
     End Function
@@ -136,6 +176,8 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Terminate : Return "Terminate"
             Case Employee.Models.MovementTypes.Retire : Return "Retire"
             Case Employee.Models.MovementTypes.Rehire : Return "Rehire"
+            Case Employee.Models.MovementTypes.EndOfContract : Return "End Contract"
+            Case Employee.Models.MovementTypes.SalaryAdjustment : Return "Adjust Salary"
             Case Else : Return "Apply"
         End Select
     End Function
@@ -145,8 +187,10 @@ Public Class frmEmployeeAction
             ' Required lang kapag na-terminate ang huling pag-alis (hula: para may dahilan/approval na nakatala)
             Return _context IsNot Nothing AndAlso Employee.Models.EmployeeMovementRules.LastSeparationKind(_context) = "Terminated"
         End If
+        ' End of Contract: optional ang Remarks. Salary adjustment: required (dahilan ng pagbabago ng sahod).
         Return _movementType = Employee.Models.MovementTypes.Resign OrElse
-               _movementType = Employee.Models.MovementTypes.Terminate
+               _movementType = Employee.Models.MovementTypes.Terminate OrElse
+               _movementType = Employee.Models.MovementTypes.SalaryAdjustment
     End Function
 
     Private Function InfoText() As String
@@ -170,6 +214,15 @@ Public Class frmEmployeeAction
 
             Case Employee.Models.MovementTypes.Retire
                 Return "Sets Date Retired and marks the employee Inactive. The Employment Type is kept on record."
+
+            Case Employee.Models.MovementTypes.EndOfContract
+                Return "Sets Date End of Contract and marks the employee Inactive. The Employment Type is kept on record. " &
+                       "If the employee is renewed or returns later, use Actions > Rehire."
+
+            Case Employee.Models.MovementTypes.SalaryAdjustment
+                Return "Changes the " & If(_usesDailyRate, "Daily Rate", "Basic Salary") & " in the Earnings tab and recomputes the " &
+                       "Daily and Hourly rates. The old amount stays in History. The new rate is used by payroll that is " &
+                       "processed from now on - cutoffs already processed are not recomputed, and no retro pay is computed."
 
             Case Employee.Models.MovementTypes.Rehire
                 Return "Starts a new service period: the rehire date becomes the new Date Joined (the first Date Joined is " &
@@ -219,6 +272,10 @@ Public Class frmEmployeeAction
 
             Case Employee.Models.MovementTypes.Rehire
                 PlaceRow(y, lblEmploymentType, cboEmploymentType, 20)
+
+            Case Employee.Models.MovementTypes.SalaryAdjustment
+                PlaceRow(y, lblCurrentRate, lblCurrentRateValue, 20)
+                PlaceRow(y, lblNewRate, spnNewRate, 20)
         End Select
 
         PlaceRow(y, lblRemarks, memoRemarks, 70)
@@ -298,6 +355,17 @@ Public Class frmEmployeeAction
 
             Case Employee.Models.MovementTypes.Rehire
                 req.NewEmploymentType = cboEmploymentType.Text.Trim()
+
+            Case Employee.Models.MovementTypes.SalaryAdjustment
+                Dim entered As Decimal? = Nothing
+                If spnNewRate.EditValue IsNot Nothing AndAlso spnNewRate.EditValue IsNot DBNull.Value Then
+                    entered = Convert.ToDecimal(spnNewRate.EditValue)
+                End If
+                If _usesDailyRate Then
+                    req.NewDailyRate = entered
+                Else
+                    req.NewBasicSalary = entered
+                End If
         End Select
 
         Return req
@@ -329,11 +397,27 @@ Public Class frmEmployeeAction
 
         If Employee.Models.MovementTypes.IsSeparation(_movementType) Then
             Dim who = If(String.IsNullOrWhiteSpace(_header.FullName), "this employee", _header.FullName)
-            Dim prompt = $"{ApplyCaption()} {who} effective {req.EffectiveDate:MM/dd/yyyy}?" & vbCrLf & vbCrLf &
+            Dim verb As String = If(_movementType = Employee.Models.MovementTypes.EndOfContract,
+                                    "Record End of Contract for", ApplyCaption())
+            Dim prompt = $"{verb} {who} effective {req.EffectiveDate:MM/dd/yyyy}?" & vbCrLf & vbCrLf &
                          "The employee will be set to Inactive and removed from the Active list. " &
                          "Payroll still includes cutoffs that start on or before the effective date." & vbCrLf & vbCrLf &
                          "Actions > Reactivate can make the employee Active again, but the separation date stays " &
                          "on record until it is changed in the Employment tab."
+
+            Dim answer = XtraMessageBox.Show(Me, prompt, Text,
+                                             MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                                             MessageBoxDefaultButton.Button2)
+            If answer <> DialogResult.Yes Then Return
+        End If
+
+        If Employee.Models.MovementTypes.IsSalary(_movementType) Then
+            Dim who = If(String.IsNullOrWhiteSpace(_header.FullName), "this employee", _header.FullName)
+            Dim rateName As String = If(_usesDailyRate, "Daily Rate", "Basic Salary")
+            Dim newValue As Decimal = If(_usesDailyRate, req.NewDailyRate.GetValueOrDefault(), req.NewBasicSalary.GetValueOrDefault())
+            Dim prompt = $"Change the {rateName} of {who} from {lblCurrentRateValue.Text} to ₱{newValue:N2} " &
+                         $"(effective {req.EffectiveDate:MM/dd/yyyy})?" & vbCrLf & vbCrLf &
+                         "The Daily and Hourly rates will be recomputed. This is recorded in History."
 
             Dim answer = XtraMessageBox.Show(Me, prompt, Text,
                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question,
