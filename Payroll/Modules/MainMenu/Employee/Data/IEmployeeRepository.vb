@@ -23,6 +23,9 @@
         ''' Nagbabato ng InvalidOperationException (mensahe para sa user) kapag hindi na valid ang request.
         ''' </summary>
         Function ApplyMovementAsync(request As Models.EmployeeMovementRequest) As Task(Of Boolean)
+
+        ''' <summary>Actions > Correct record (itinatama ang maling nailagay). Isang transaction.</summary>
+        Function ApplyCorrectionAsync(request As Models.EmploymentCorrectionRequest) As Task(Of Boolean)
         Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel))
 
         ' --- Employment ---

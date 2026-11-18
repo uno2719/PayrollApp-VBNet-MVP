@@ -726,7 +726,10 @@ Namespace Employee.Data
         Public Async Function SaveEmploymentAsync(model As Models.EmployeeEmploymentModel) As Task(Of Boolean) _
             Implements IEmployeeRepository.SaveEmploymentAsync
 
-            ' UPSERT — Insert if not exists, Update if exists
+            ' UPSERT sa loob ng isang transaction. Ang isusulat ay HINDI diretso ang laman ng screen: dumadaan muna sa
+            ' EmployeeEmploymentLockRules.MergeForTabSave (kasalukuyang row ang batayan, nakalock), kaya kahit lusutan
+            ' ng UI o lumang screen ang lock, hindi mababago ng tab ang mga petsa/field na Actions lang ang dapat
+            ' sumulat, at hindi na nabubura ang DateLastIncremented / DateLastTransferred / HolidayGroupId.
             Dim sql = "
                 IF EXISTS (SELECT 1 FROM tblEmployeeEmployment WHERE RecordId = @RecordId)
                     UPDATE tblEmployeeEmployment SET
@@ -775,9 +778,106 @@ Namespace Employee.Data
                         @TimekeepingControlNo, GETDATE(), @CreatedBy
                     )"
 
-            Dim rows = Await ExecuteAsync(sql, model)
-            Return rows > 0
+            Using conn = GetConnection()
+                Using tran = conn.BeginTransaction()
+                    Try
+                        Dim cur = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
+                            EmploymentSelectSql("WITH (UPDLOCK, ROWLOCK)"),
+                            New With {.RecordId = model.RecordId}, tran)
 
+                        Dim merged = Models.EmployeeEmploymentLockRules.MergeForTabSave(cur, model, model.IsInitialSetup)
+                        Dim rows = Await conn.ExecuteAsync(sql, merged, tran)
+
+                        ' Pagbabago sa naka-save nang empleyado (hindi initial setup) = may bakas sa History.
+                        If cur IsNot Nothing AndAlso Not model.IsInitialSetup Then
+                            Dim after = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
+                                EmploymentSelectSql(String.Empty), New With {.RecordId = model.RecordId}, tran)
+
+                            For Each ch In Models.EmployeeEmploymentLockRules.DescribeChanges(cur, after)
+                                Await InsertMovementAsync(conn, tran, model.RecordId, Models.MovementTypes.DetailsChanged,
+                                                          Date.Today, ch.FromText, ch.ToText, Nothing, model.UpdatedBy)
+                            Next
+                        End If
+
+                        tran.Commit()
+                        Return rows > 0
+                    Catch
+                        tran.Rollback()
+                        Throw
+                    End Try
+                End Using
+            End Using
+
+        End Function
+
+        ''' <summary>Actions > Correct record: itinatama ang maling nailagay (Admin). Isang transaction, isang History row bawat field.</summary>
+        Public Async Function ApplyCorrectionAsync(request As Models.EmploymentCorrectionRequest) As Task(Of Boolean) _
+            Implements IEmployeeRepository.ApplyCorrectionAsync
+
+            Using conn = GetConnection()
+                Using tran = conn.BeginTransaction()
+                    Try
+                        Dim cur = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
+                            EmploymentSelectSql("WITH (UPDLOCK, ROWLOCK)"),
+                            New With {.RecordId = request.RecordId}, tran)
+
+                        Dim problem = Models.EmployeeEmploymentLockRules.ValidateCorrection(request, cur, Date.Today)
+                        If problem.Length > 0 Then Throw New InvalidOperationException(problem)
+
+                        Dim sql = "
+                            UPDATE tblEmployeeEmployment SET
+                                EmployeeStatus     = @EmployeeStatus,
+                                DateJoined         = @DateJoined,
+                                DateRegularization = @DateRegularization,
+                                DateLastPromoted   = @DateLastPromoted,
+                                DateResigned       = @DateResigned,
+                                DateRetired        = @DateRetired,
+                                DateTerminated     = @DateTerminated,
+                                DateEndOfContract  = @DateEndOfContract,
+                                PositionId         = @PositionId,
+                                CategoryId         = @CategoryId,
+                                JobClassId         = @JobClassId,
+                                BranchId           = @BranchId,
+                                DepartmentId       = @DepartmentId,
+                                UpdatedAt          = GETDATE(),
+                                UpdatedBy          = @CreatedBy
+                            WHERE RecordId = @RecordId"
+
+                        Await conn.ExecuteAsync(sql, New With {
+                            .RecordId = request.RecordId,
+                            .EmployeeStatus = Models.EmployeeMovementRules.CanonicalEmploymentType(request.EmployeeStatus),
+                            .DateJoined = request.DateJoined,
+                            .DateRegularization = request.DateRegularization,
+                            .DateLastPromoted = request.DateLastPromoted,
+                            .DateResigned = request.DateResigned,
+                            .DateRetired = request.DateRetired,
+                            .DateTerminated = request.DateTerminated,
+                            .DateEndOfContract = request.DateEndOfContract,
+                            .PositionId = request.PositionId,
+                            .CategoryId = request.CategoryId,
+                            .JobClassId = request.JobClassId,
+                            .BranchId = request.BranchId,
+                            .DepartmentId = request.DepartmentId,
+                            .CreatedBy = request.CreatedBy
+                        }, tran)
+
+                        Dim after = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEmploymentModel)(
+                            EmploymentSelectSql(String.Empty), New With {.RecordId = request.RecordId}, tran)
+
+                        Dim remarks As String = request.Remarks.Trim()
+                        For Each ch In Models.EmployeeEmploymentLockRules.DescribeChanges(cur, after)
+                            Await InsertMovementAsync(conn, tran, request.RecordId, Models.MovementTypes.Correction,
+                                                      Date.Today, ch.FromText, ch.ToText, remarks, request.CreatedBy)
+                        Next
+
+                        tran.Commit()
+                        Return True
+                    Catch
+                        tran.Rollback()
+                        Throw
+                    End Try
+                End Using
+            End Using
         End Function
 
         ' =============================================

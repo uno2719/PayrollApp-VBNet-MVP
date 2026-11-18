@@ -77,6 +77,9 @@ Namespace Employee.Presenters
             Catch ex As Exception
                 _view.ShowError(ex.Message)
             Finally
+                ' Naka-lock ang mga field na may laman na: i-apply pagkatapos mapuno ang screen
+                ' (kasama kapag walang Employment record pa).
+                _view.RefreshLocks()
                 _view.HideLoading()
             End Try
         End Sub
@@ -134,7 +137,8 @@ Namespace Employee.Presenters
                     .DateRetired = _view.DateRetired,
                     .DateTerminated = _view.DateTerminated,
                     .DateEndOfContract = _view.DateEndOfContract,
-                    .TimekeepingControlNo = _view.TimekeepingControlNo
+                    .TimekeepingControlNo = _view.TimekeepingControlNo,
+                    .IsInitialSetup = _view.IsInitialSetup
                 }
 
                 Await _service.SaveEmploymentAsync(emp)

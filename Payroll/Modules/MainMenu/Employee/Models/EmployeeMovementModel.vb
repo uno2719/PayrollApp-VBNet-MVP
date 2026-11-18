@@ -23,6 +23,12 @@ Namespace Employee.Models
         Public Const EndOfContract As String = "End of Contract"
         Public Const SalaryAdjustment As String = "Salary adjustment"
 
+        ''' <summary>Pagbabago sa Employment tab na walang sariling Action (Superior, Leave Group, Schedule Group, o pag-fill ng blangko).</summary>
+        Public Const DetailsChanged As String = "Details changed"
+
+        ''' <summary>Actions > Correct record (Admin lang): pag-ayos ng maling nailagay.</summary>
+        Public Const Correction As String = "Correction"
+
         Public Shared Function IsSeparation(movementType As String) As Boolean
             Return String.Equals(movementType, Resign, StringComparison.OrdinalIgnoreCase) OrElse
                    String.Equals(movementType, Terminate, StringComparison.OrdinalIgnoreCase) OrElse
@@ -49,6 +55,8 @@ Namespace Employee.Models
                 Case Rehire : Return "Rehired"
                 Case EndOfContract : Return "Contract ended"
                 Case SalaryAdjustment : Return "Salary adjusted"
+                Case DetailsChanged : Return "Details changed"
+                Case Correction : Return "Corrected"
                 Case Else : Return If(movementType, String.Empty)
             End Select
         End Function

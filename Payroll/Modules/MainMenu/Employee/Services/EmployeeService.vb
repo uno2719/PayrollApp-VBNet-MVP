@@ -135,6 +135,25 @@
             Return Await _repo.ApplyMovementAsync(request)
         End Function
 
+        Public Async Function ApplyCorrectionAsync(request As Models.EmploymentCorrectionRequest) As Task(Of Boolean) _
+            Implements IEmployeeService.ApplyCorrectionAsync
+
+            ' Huling harang kahit lusutan ang UI: Admin lang (parehong rule ng Delete).
+            If Not GlobalShared.Constants.AppSession.IsAdmin Then
+                Throw New UnauthorizedAccessException("Only administrators can correct an employee record.")
+            End If
+
+            If request Is Nothing Then Throw New ArgumentNullException(NameOf(request))
+            If request.RecordId <= 0 Then Throw New InvalidOperationException("No employee selected.")
+
+            request.Remarks = If(String.IsNullOrWhiteSpace(request.Remarks), Nothing, request.Remarks.Trim())
+            request.CreatedBy = AppSession.CurrentUser
+
+            ' Ang buong validation ay nasa EmployeeEmploymentLockRules.ValidateCorrection at tinatawag ng
+            ' repository sa loob ng transaction.
+            Return Await _repo.ApplyCorrectionAsync(request)
+        End Function
+
         Public Async Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel)) _
             Implements IEmployeeService.GetMovementHistoryAsync
             Dim rows = Await _repo.GetMovementHistoryAsync(recordId)

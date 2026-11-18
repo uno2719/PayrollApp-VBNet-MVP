@@ -69,6 +69,7 @@ Public Class ucEmployees
     Private _miTransfer As DXMenuItem
     Private _miSalary As DXMenuItem
     Private _miEndOfContract As DXMenuItem
+    Private _miCorrect As DXMenuItem
     Private _miResign As DXMenuItem
     Private _miTerminate As DXMenuItem
     Private _miRetire As DXMenuItem
@@ -420,6 +421,11 @@ Public Class ucEmployees
         _actionsMenu.Items.Add(_miEndOfContract)
         _actionsMenu.Items.Add(_miRehire)
         _actionsMenu.Items.Add(_miToggleActive)
+
+        ' Correct record: pag-ayos ng maling nailagay sa naka-lock na fields. Admin lang.
+        _miCorrect = New DXMenuItem("Correct record... (Admin)", AddressOf OnCorrectRecordClick)
+        _miCorrect.BeginGroup = True
+        _actionsMenu.Items.Add(_miCorrect)
         btnHdr_Actions.DropDownControl = _actionsMenu
 
         ' Photo: right-click sa larawan = Change / Remove (Can Edit sa "Employee Documents"). Ang built-in na menu
@@ -503,6 +509,10 @@ Public Class ucEmployees
         _miSalary.Enabled = canAdjustSalary AndAlso
             Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.SalaryAdjustment, ctx)
         _miRehire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Rehire, ctx)
+
+        ' Correct record: Admin lang (nakatago sa iba).
+        _miCorrect.Visible = GlobalShared.Constants.AppSession.IsAdmin
+        _miCorrect.Enabled = GlobalShared.Constants.AppSession.IsAdmin
 
         ' Ang Reactivate ay hindi para sa may separation: Rehire ang daan.
         If Employee.Models.EmployeeMovementRules.ReactivateBlockedReason(ctx).Length > 0 Then
@@ -616,6 +626,30 @@ Public Class ucEmployees
             ShowLoading()
             Await RefreshAfterMovementAsync(movementType)
             ShowMessage($"Employee {Employee.Models.MovementTypes.HistoryLabel(movementType).ToLowerInvariant()}. Recorded in History.")
+        Catch ex As Exception
+            ShowError(ex.Message)
+        Finally
+            HideLoading()
+        End Try
+    End Sub
+
+    ' Actions > Correct record (Admin): bubuksan ang dialog; ang dialog ang nagsusulat (isang transaction).
+    Private Async Sub OnCorrectRecordClick(sender As Object, e As EventArgs)
+        If Not GlobalShared.Constants.AppSession.IsAdmin Then Return
+        If _headerModel Is Nothing OrElse _selectedRecordId = 0 OrElse
+           _headerModel.RecordId <> _selectedRecordId Then Return
+
+        Dim saved As Boolean
+        Using dlg As New frmEmployeeCorrection(_service, _headerModel)
+            saved = (dlg.ShowDialog(Me) = DialogResult.OK)
+        End Using
+
+        If Not saved Then Return
+
+        Try
+            ShowLoading()
+            Await RefreshAfterMovementAsync(Employee.Models.MovementTypes.Correction)
+            ShowMessage("Employee record corrected. Recorded in History.")
         Catch ex As Exception
             ShowError(ex.Message)
         Finally
@@ -782,7 +816,7 @@ Public Class ucEmployees
 
                 ' Load SubView
                 LoadSubView_Employment()
-                _ucEmployment?.SetEditMode(True)
+                _ucEmployment?.SetEditMode(True, True)   ' initial setup: bukas ang mga field habang ginagawa pa
                 _ucEmployment?.RaiseNew(_selectedRecordId)
 
             Case FormState.New_Earnings

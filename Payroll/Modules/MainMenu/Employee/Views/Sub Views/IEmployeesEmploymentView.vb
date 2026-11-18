@@ -48,6 +48,13 @@
         ' --- Clear Fields ---
         Sub ClearFields()
 
+        ' --- Locks ---
+        ''' <summary>True habang ginagawa pa ang bagong empleyado: bukas ang mga field (maliban sa mga petsang Actions lang ang sumusulat).</summary>
+        ReadOnly Property IsInitialSetup As Boolean
+
+        ''' <summary>I-apply ulit ang lock ayon sa laman ng screen (tinatawag pagkatapos mag-load ng record).</summary>
+        Sub RefreshLocks()
+
         ' --- Events ---
         Event OnSave As EventHandler
         Event OnNew As EventHandler

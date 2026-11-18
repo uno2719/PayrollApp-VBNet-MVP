@@ -41,6 +41,10 @@
         ' Timekeeping
         Public Property TimekeepingControlNo As String
 
+        ' Hindi column: galing sa screen. True = ginagawa pa lang ang bagong empleyado (bukas ang lahat maliban sa
+        ' mga petsang Actions lang ang nagsusulat). Tingnan ang EmployeeEmploymentLockRules.
+        Public Property IsInitialSetup As Boolean
+
         ' Audit
         Public Property CreatedAt As DateTime
         Public Property CreatedBy As String

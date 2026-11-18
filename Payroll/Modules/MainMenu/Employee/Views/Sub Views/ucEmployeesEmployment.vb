@@ -42,25 +42,70 @@ Public Class ucEmployeesEmployment
         RaiseEvent OnSave(Me, EventArgs.Empty)
     End Sub
 
-    Public Sub SetEditMode(enabled As Boolean)
-        cboEmployeeStatus.Properties.ReadOnly = Not enabled
-        cboEmploymentType.Properties.ReadOnly = Not enabled
-        sleBranch.Properties.ReadOnly = Not enabled
-        sleCategoryCode.Properties.ReadOnly = Not enabled
-        sleDepartment.Properties.ReadOnly = Not enabled
-        sleJobClass.Properties.ReadOnly = Not enabled
-        sleLeaveGroup.Properties.ReadOnly = Not enabled
-        slePosition.Properties.ReadOnly = Not enabled
-        sleScheduleGroup.Properties.ReadOnly = Not enabled
-        sleSuperior.Properties.ReadOnly = Not enabled
-        txtControlNo.Properties.ReadOnly = Not enabled
-        dtpDateJoined.Properties.ReadOnly = Not enabled
-        dtpDateRegularization.Properties.ReadOnly = Not enabled
-        dtpDateLastPromoted.Properties.ReadOnly = Not enabled
-        dtpDateResigned.Properties.ReadOnly = Not enabled
-        dtpDateRetired.Properties.ReadOnly = Not enabled
-        dtpDateTerminated.Properties.ReadOnly = Not enabled
-        dtpDateEndOfContract.Properties.ReadOnly = Not enabled
+    ' =============================================
+    ' LOCKS
+    ' =============================================
+    ' A. LAGING naka-lock (Actions lang ang sumusulat): Date Regularization, Date Last Promoted, at ang mga petsa ng pag-alis.
+    ' B. Naka-lock KAPAG MAY LAMAN NA: Employment Type, Date Joined, Position, Category, Job Class, Branch, Department.
+    '    Bukas habang gumagawa pa ng bagong empleyado (initial setup) o kapag blangko pa (lumang record).
+    ' C. Bukas: Work Schedule, Superior, Leave Group, Schedule Group, Control No. (may "Details changed" sa History).
+    ' Ang tunay na harang ay nasa repository (EmployeeEmploymentLockRules); ito ay para makita agad ng user.
+    Private _editEnabled As Boolean = False
+    Private _initialSetup As Boolean = False
+    Private Const ActionHint As String = "Locked. Use Actions > {0} (it is recorded in History). Wrong entry? An administrator can use Actions > Correct record."
+
+    Public Sub SetEditMode(enabled As Boolean, Optional initialSetup As Boolean = False)
+        _editEnabled = enabled
+        _initialSetup = enabled AndAlso initialSetup
+        ApplyLocks()
+    End Sub
+
+    Public ReadOnly Property IsInitialSetup As Boolean _
+        Implements Employee.Views.IEmployeesEmploymentView.IsInitialSetup
+        Get
+            Return _initialSetup
+        End Get
+    End Property
+
+    Public Sub RefreshLocks() Implements Employee.Views.IEmployeesEmploymentView.RefreshLocks
+        ApplyLocks()
+    End Sub
+
+    Private Sub ApplyLocks()
+        ' C. Bukas kapag nasa edit mode
+        cboEmploymentType.Properties.ReadOnly = Not _editEnabled
+        sleLeaveGroup.Properties.ReadOnly = Not _editEnabled
+        sleScheduleGroup.Properties.ReadOnly = Not _editEnabled
+        sleSuperior.Properties.ReadOnly = Not _editEnabled
+        txtControlNo.Properties.ReadOnly = Not _editEnabled
+
+        ' B. Naka-lock kapag may laman na
+        LockWhenFilled(cboEmployeeStatus, Employee.Models.EmployeeMovementRules.IsKnownEmploymentType(cboEmployeeStatus.Text), "Regularize or Rehire")
+        LockWhenFilled(dtpDateJoined, DateJoined.HasValue, "Rehire")
+        LockWhenFilled(slePosition, PositionId.HasValue, "Promote")
+        LockWhenFilled(sleCategoryCode, CategoryId.HasValue, "Promote")
+        LockWhenFilled(sleJobClass, JobClassId.HasValue, "Promote")
+        LockWhenFilled(sleBranch, BranchId.HasValue, "Transfer")
+        LockWhenFilled(sleDepartment, DepartmentId.HasValue, "Transfer")
+
+        ' A. Laging naka-lock
+        AlwaysLocked(dtpDateRegularization, "Regularize")
+        AlwaysLocked(dtpDateLastPromoted, "Promote")
+        AlwaysLocked(dtpDateResigned, "Resign")
+        AlwaysLocked(dtpDateRetired, "Retire")
+        AlwaysLocked(dtpDateTerminated, "Terminate")
+        AlwaysLocked(dtpDateEndOfContract, "End of Contract")
+    End Sub
+
+    Private Sub LockWhenFilled(edit As DevExpress.XtraEditors.BaseEdit, filled As Boolean, actionName As String)
+        Dim locked As Boolean = _editEnabled AndAlso Not _initialSetup AndAlso filled
+        edit.Properties.ReadOnly = (Not _editEnabled) OrElse locked
+        edit.ToolTip = If(locked, String.Format(ActionHint, actionName), String.Empty)
+    End Sub
+
+    Private Sub AlwaysLocked(edit As DevExpress.XtraEditors.BaseEdit, actionName As String)
+        edit.Properties.ReadOnly = True
+        edit.ToolTip = If(_editEnabled, String.Format(ActionHint, actionName), String.Empty)
     End Sub
 
     ' =============================================

@@ -22,6 +22,9 @@
         ''' </summary>
         Function ApplyMovementAsync(request As Models.EmployeeMovementRequest) As Task(Of Boolean)
 
+        ''' <summary>Actions > Correct record: Admin lang. Itinatama ang maling nailagay; nasa History bawat pagbabago.</summary>
+        Function ApplyCorrectionAsync(request As Models.EmploymentCorrectionRequest) As Task(Of Boolean)
+
         ''' <summary>Movement log ng isang empleyado, pinakabago muna.</summary>
         Function GetMovementHistoryAsync(recordId As Integer) As Task(Of List(Of Models.EmployeeMovementModel))
 
