@@ -24,6 +24,11 @@ Public Class frmEmployeeAction
     Private _earnings As Employee.Models.EmployeeEarningsModel
     Private _usesDailyRate As Boolean
 
+    ' Pay cycle change (Actions > Change pay cycle, o ang opsyonal na bahagi ng Regularize): Rate Basis ng bawat cycle,
+    ' at kung ihahandog ba ang pagpalit (may rate na, may Employee Salary, may ibang active cycle na mapagpipilian).
+    Private _cycleBases As Dictionary(Of String, GlobalShared.Models.PayRateBasis)
+    Private _cycleOffered As Boolean
+
     Public Sub New(service As Employee.Services.IEmployeeService,
                    header As Employee.Models.EmployeeHeaderModel,
                    movementType As String,
@@ -66,6 +71,11 @@ Public Class frmEmployeeAction
 
             If Employee.Models.MovementTypes.IsSalary(_movementType) Then
                 Await LoadSalaryContextAsync()
+            End If
+
+            If _movementType = Employee.Models.MovementTypes.PayCycleChange OrElse
+               _movementType = Employee.Models.MovementTypes.Regularize Then
+                Await LoadPayCycleContextAsync()
             End If
 
             lblRemarks.Text = If(RemarksRequired(), "Remarks *", "Remarks")
@@ -149,6 +159,95 @@ Public Class frmEmployeeAction
         spnNewRate.EditValue = Nothing
     End Function
 
+    ' Pay cycle change: binabasa ang kasalukuyang Earnings, ang Rate Basis ng bawat cycle at ang mga Active na cycle na
+    ' mapagpipilian (hindi kasama ang kasalukuyan). Sa Regularize, ihahandog lang ang pagpalit kung may rate na (naka-lock na
+    ' ang Earnings; kung wala pa, bukas pa ang Pay Cycle sa Earnings tab) at may "Employee Salary" (Can Edit).
+    Private Async Function LoadPayCycleContextAsync() As Task
+        _cycleOffered = False
+        _earnings = Await _service.GetEarningsAsync(_header.RecordId)
+        If _earnings Is Nothing Then Return   ' walang Earnings: Change pay cycle ay haharangin ng rules; Regularize ay walang opsyon
+
+        _cycleBases = Await _service.GetPayCycleRateBasesAsync()
+        Dim activeCycles = Await _service.GetActivePayCyclesAsync()
+
+        Dim currentName As String = GlobalShared.Models.PayCycleChoices.Normalize(_earnings.PayCycle)
+        Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
+        If currentName.Length > 0 Then _cycleBases.TryGetValue(currentName, basis)
+        Dim currentDaily As Boolean = (basis = GlobalShared.Models.PayRateBasis.DailyRate)
+
+        _context.PayCycle = _earnings.PayCycle
+        _context.UsesDailyRate = currentDaily
+        _context.CurrentBasicSalary = _earnings.BasicSalary
+        _context.CurrentDailyRate = _earnings.DailyRate
+        _context.HasPayRate = (_earnings.BasicSalary.HasValue AndAlso _earnings.BasicSalary.Value > 0D) OrElse
+                              (_earnings.DailyRate.HasValue AndAlso _earnings.DailyRate.Value > 0D)
+
+        cboNewCycle.Properties.Items.Clear()
+        For Each cycle In activeCycles
+            If Not Employee.Models.EmployeeMovementRules.SamePayCycle(cycle, _earnings.PayCycle) Then
+                cboNewCycle.Properties.Items.Add(cycle)
+            End If
+        Next
+        cboNewCycle.SelectedIndex = -1
+
+        Dim canEditSalary As Boolean =
+            GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary)
+        _cycleOffered = _context.HasPayRate AndAlso canEditSalary AndAlso cboNewCycle.Properties.Items.Count > 0
+
+        Dim currentRate As Decimal? = If(currentDaily, _earnings.DailyRate, _earnings.BasicSalary)
+        Dim rateName As String = If(currentDaily, "Daily Rate", "Basic Salary")
+        lblCurrentRate.Text = "Current Pay Cycle"
+        lblCurrentRateValue.Text = If(currentName.Length = 0, "(none)", currentName) & " - " & rateName & " " &
+                                   If(currentRate.HasValue, "₱" & currentRate.Value.ToString("N2"), "(none)")
+        lblNewRate.Text = "New rate *"
+        spnNewRate.EditValue = Nothing
+    End Function
+
+    ' Daily Rate ba ang pay basis ng napiling BAGONG cycle? (Basic Salary kung hindi pa napili / hindi kilala)
+    Private Function SelectedCycleUsesDaily() As Boolean
+        Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
+        Dim cycleName As String = GlobalShared.Models.PayCycleChoices.Normalize(cboNewCycle.Text)
+        If _cycleBases IsNot Nothing AndAlso cycleName.Length > 0 Then _cycleBases.TryGetValue(cycleName, basis)
+        Return basis = GlobalShared.Models.PayRateBasis.DailyRate
+    End Function
+
+    ' Magpapalit ba ng Pay Cycle ang request na ito? (Change pay cycle: laging; Regularize: kung naka-tick)
+    Private Function WantsCycleChange() As Boolean
+        If _movementType = Employee.Models.MovementTypes.PayCycleChange Then Return True
+        Return _movementType = Employee.Models.MovementTypes.Regularize AndAlso _cycleOffered AndAlso chkChangePayCycle.Checked
+    End Function
+
+    Private Sub cboNewCycle_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboNewCycle.SelectedIndexChanged
+        ' Ang rate na hihingin ay ayon sa pay basis ng BAGONG cycle (Basic Salary o Daily Rate); burahin ang naunang halaga.
+        If String.IsNullOrWhiteSpace(cboNewCycle.Text) Then
+            lblNewRate.Text = "New rate *"
+        Else
+            lblNewRate.Text = "New " & If(SelectedCycleUsesDaily(), "Daily Rate", "Basic Salary") & " *"
+        End If
+        spnNewRate.EditValue = Nothing
+    End Sub
+
+    Private Sub chkChangePayCycle_CheckedChanged(sender As Object, e As EventArgs) Handles chkChangePayCycle.CheckedChanged
+        LayoutRows()
+    End Sub
+
+    ' Ang BAGONG cycle ay galing sa listahan ng mga Active (nasa combo lang ang mga iyon); inuulit ng repository ang pagsusuri
+    ' sa loob ng transaction laban sa tblPayCycle.
+    Private Sub FillNewCycleContext()
+        Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
+        Dim cycleName As String = GlobalShared.Models.PayCycleChoices.Normalize(cboNewCycle.Text)
+        Dim found As Boolean = _cycleBases IsNot Nothing AndAlso cycleName.Length > 0 AndAlso _cycleBases.TryGetValue(cycleName, basis)
+
+        _context.NewCycleFound = found
+        _context.NewCycleActive = found
+        _context.NewCycleUsesDailyRate = found AndAlso (basis = GlobalShared.Models.PayRateBasis.DailyRate)
+    End Sub
+
+    Private Function ReadNewRate() As Decimal?
+        If spnNewRate.EditValue Is Nothing OrElse spnNewRate.EditValue Is DBNull.Value Then Return Nothing
+        Return Convert.ToDecimal(spnNewRate.EditValue)
+    End Function
+
     ' =============================================
     ' TEXTS (ayon sa action)
     ' =============================================
@@ -163,6 +262,7 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Rehire : Return "Rehire Employee"
             Case Employee.Models.MovementTypes.EndOfContract : Return "Record End of Contract"
             Case Employee.Models.MovementTypes.SalaryAdjustment : Return "Salary Adjustment"
+            Case Employee.Models.MovementTypes.PayCycleChange : Return "Change Pay Cycle"
             Case Else : Return "Employee Action"
         End Select
     End Function
@@ -178,6 +278,7 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Rehire : Return "Rehire"
             Case Employee.Models.MovementTypes.EndOfContract : Return "End Contract"
             Case Employee.Models.MovementTypes.SalaryAdjustment : Return "Adjust Salary"
+            Case Employee.Models.MovementTypes.PayCycleChange : Return "Change Cycle"
             Case Else : Return "Apply"
         End Select
     End Function
@@ -190,14 +291,26 @@ Public Class frmEmployeeAction
         ' End of Contract: optional ang Remarks. Salary adjustment: required (dahilan ng pagbabago ng sahod).
         Return _movementType = Employee.Models.MovementTypes.Resign OrElse
                _movementType = Employee.Models.MovementTypes.Terminate OrElse
-               _movementType = Employee.Models.MovementTypes.SalaryAdjustment
+               _movementType = Employee.Models.MovementTypes.SalaryAdjustment OrElse
+               _movementType = Employee.Models.MovementTypes.PayCycleChange
     End Function
 
     Private Function InfoText() As String
         Select Case _movementType
             Case Employee.Models.MovementTypes.Regularize
                 Dim current = If(String.IsNullOrWhiteSpace(_employment.EmployeeStatus), "not set", _employment.EmployeeStatus.Trim())
-                Return $"Changes Employment Type from {current} to Regular and sets Date Regularization to the effective date."
+                Dim info = $"Changes Employment Type from {current} to Regular and sets Date Regularization to the effective date."
+                If _cycleOffered Then
+                    info &= " To move the employee to another Pay Cycle in the same step (for example Daily to SemiMonthly), " &
+                            "tick ""Also change Pay Cycle"" and enter the rate of the new cycle."
+                End If
+                Return info
+
+            Case Employee.Models.MovementTypes.PayCycleChange
+                Return "Changes the Pay Cycle in the Earnings tab and sets the Basic Salary or Daily Rate of the new cycle; the " &
+                       "Daily and Hourly rates are recomputed. The old cycle and rate stay in History. It applies to payroll that is " &
+                       "processed from now on - cutoffs already processed are not recomputed. Not allowed while the employee still " &
+                       "has input or results in a Draft or Processed cutoff of the current Pay Cycle."
 
             Case Employee.Models.MovementTypes.Promote
                 Return "Changes Position (and Category / Job Class if needed) and sets Date Last Promoted. " &
@@ -258,9 +371,27 @@ Public Class frmEmployeeAction
 
         Dim y As Integer = lblInfo.Top + infoHeight + If(infoHeight > 0, 14, 0)
 
+        ' Itago muna ang mga hilera ng Pay cycle; ang PlaceRow ang magpapakita ng kailangan.
+        For Each ctl As Control In New Control() {chkChangePayCycle, lblCurrentRate, lblCurrentRateValue,
+                                                  lblNewCycle, cboNewCycle, lblNewRate, spnNewRate}
+            ctl.Visible = False
+        Next
+
         PlaceRow(y, lblEffective, dtpEffective, 20)
 
         Select Case _movementType
+            Case Employee.Models.MovementTypes.Regularize
+                If _cycleOffered Then
+                    chkChangePayCycle.Visible = True
+                    chkChangePayCycle.Location = New Point(20, y)
+                    chkChangePayCycle.Size = New Size(430, 20)
+                    y += 30
+                    If chkChangePayCycle.Checked Then PlaceCycleRows(y)
+                End If
+
+            Case Employee.Models.MovementTypes.PayCycleChange
+                PlaceCycleRows(y)
+
             Case Employee.Models.MovementTypes.Promote
                 PlaceRow(y, lblPosition, lookPosition, 20)
                 PlaceRow(y, lblCategory, lookCategory, 20)
@@ -296,6 +427,13 @@ Public Class frmEmployeeAction
         btnApply.Top = y + 6
         btnCancel.Top = y + 6
         ClientSize = New Size(ClientSize.Width, btnApply.Bottom + 16)
+    End Sub
+
+    ' Kasalukuyang Pay Cycle at rate (basa lang), ang bagong Pay Cycle, at ang bagong rate.
+    Private Sub PlaceCycleRows(ByRef y As Integer)
+        PlaceRow(y, lblCurrentRate, lblCurrentRateValue, 20)
+        PlaceRow(y, lblNewCycle, cboNewCycle, 20)
+        PlaceRow(y, lblNewRate, spnNewRate, 20)
     End Sub
 
     Private Shared Sub PlaceRow(ByRef y As Integer, lbl As Control, editor As Control, editorHeight As Integer)
@@ -368,6 +506,16 @@ Public Class frmEmployeeAction
                 End If
         End Select
 
+        ' Pay cycle change (o Regularize na naka-tick): ang rate ay ayon sa pay basis ng BAGONG cycle.
+        If WantsCycleChange() Then
+            req.NewPayCycle = cboNewCycle.Text.Trim()
+            If SelectedCycleUsesDaily() Then
+                req.NewDailyRate = ReadNewRate()
+            Else
+                req.NewBasicSalary = ReadNewRate()
+            End If
+        End If
+
         Return req
     End Function
 
@@ -386,7 +534,18 @@ Public Class frmEmployeeAction
             Return
         End If
 
+        ' Naka-tick ang "Also change Pay Cycle" pero walang napili: huwag hayaang mag-Regularize nang walang pagpalit ng cycle.
+        If WantsCycleChange() AndAlso String.IsNullOrWhiteSpace(cboNewCycle.Text) Then
+            XtraMessageBox.Show(Me, "Choose the new Pay Cycle" &
+                                If(_movementType = Employee.Models.MovementTypes.Regularize,
+                                   ", or untick ""Also change Pay Cycle"".", "."),
+                                Text, MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            cboNewCycle.Focus()
+            Return
+        End If
+
         Dim req = BuildRequest()
+        If WantsCycleChange() Then FillNewCycleContext()
 
         ' Parehong patakaran ng repository (na uulit-ulitin sa loob ng transaction): mabilis na mensahe bago magsulat.
         Dim problem = Employee.Models.EmployeeMovementRules.Validate(req, _context, Date.Today)
@@ -418,6 +577,29 @@ Public Class frmEmployeeAction
             Dim prompt = $"Change the {rateName} of {who} from {lblCurrentRateValue.Text} to ₱{newValue:N2} " &
                          $"(effective {req.EffectiveDate:MM/dd/yyyy})?" & vbCrLf & vbCrLf &
                          "The Daily and Hourly rates will be recomputed. This is recorded in History."
+
+            Dim answer = XtraMessageBox.Show(Me, prompt, Text,
+                                             MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                                             MessageBoxDefaultButton.Button2)
+            If answer <> DialogResult.Yes Then Return
+        End If
+
+        If WantsCycleChange() Then
+            Dim who = If(String.IsNullOrWhiteSpace(_header.FullName), "this employee", _header.FullName)
+            Dim usesDaily As Boolean = SelectedCycleUsesDaily()
+            Dim rateName As String = If(usesDaily, "Daily Rate", "Basic Salary")
+            Dim newValue As Decimal = If(usesDaily, req.NewDailyRate.GetValueOrDefault(), req.NewBasicSalary.GetValueOrDefault())
+            Dim oldCycle As String = GlobalShared.Models.PayCycleChoices.Normalize(If(_earnings Is Nothing, "", _earnings.PayCycle))
+            If oldCycle.Length = 0 Then oldCycle = "(none)"
+
+            Dim lead As String = If(_movementType = Employee.Models.MovementTypes.Regularize,
+                                    $"Regularize {who} and change the Pay Cycle", $"Change the Pay Cycle of {who}")
+            Dim recorded As String = If(_movementType = Employee.Models.MovementTypes.Regularize,
+                                        "Both changes are recorded in History (Regularized and Pay cycle changed).",
+                                        "This is recorded in History.")
+            Dim prompt = $"{lead} from {oldCycle} to {req.NewPayCycle} (effective {req.EffectiveDate:MM/dd/yyyy}), " &
+                         $"with a new {rateName} of ₱{newValue:N2}?" & vbCrLf & vbCrLf &
+                         "The Daily and Hourly rates will be recomputed. " & recorded
 
             Dim answer = XtraMessageBox.Show(Me, prompt, Text,
                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question,

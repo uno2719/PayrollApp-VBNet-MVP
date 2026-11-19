@@ -68,6 +68,7 @@ Public Class ucEmployees
     Private _miPromote As DXMenuItem
     Private _miTransfer As DXMenuItem
     Private _miSalary As DXMenuItem
+    Private _miPayCycle As DXMenuItem
     Private _miEndOfContract As DXMenuItem
     Private _miCorrect As DXMenuItem
     Private _miResign As DXMenuItem
@@ -401,6 +402,7 @@ Public Class ucEmployees
         _miPromote = NewMovementItem("Promote...", Employee.Models.MovementTypes.Promote, False)
         _miTransfer = NewMovementItem("Transfer...", Employee.Models.MovementTypes.Transfer, False)
         _miSalary = NewMovementItem("Salary adjustment...", Employee.Models.MovementTypes.SalaryAdjustment, False)
+        _miPayCycle = NewMovementItem("Change pay cycle...", Employee.Models.MovementTypes.PayCycleChange, False)
         _miResign = NewMovementItem("Resign...", Employee.Models.MovementTypes.Resign, True)
         _miTerminate = NewMovementItem("Terminate...", Employee.Models.MovementTypes.Terminate, False)
         _miRetire = NewMovementItem("Retire...", Employee.Models.MovementTypes.Retire, False)
@@ -415,6 +417,7 @@ Public Class ucEmployees
         _actionsMenu.Items.Add(_miPromote)
         _actionsMenu.Items.Add(_miTransfer)
         _actionsMenu.Items.Add(_miSalary)
+        _actionsMenu.Items.Add(_miPayCycle)
         _actionsMenu.Items.Add(_miResign)
         _actionsMenu.Items.Add(_miTerminate)
         _actionsMenu.Items.Add(_miRetire)
@@ -508,6 +511,11 @@ Public Class ucEmployees
             GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary)
         _miSalary.Enabled = canAdjustSalary AndAlso
             Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.SalaryAdjustment, ctx)
+
+        ' Change pay cycle: parehong "Employee Salary" (Can Edit) dahil may kasamang bagong rate; valid sa rules
+        ' (may rate na, hindi separated, Active).
+        _miPayCycle.Enabled = canAdjustSalary AndAlso
+            Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.PayCycleChange, ctx)
         _miRehire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Rehire, ctx)
 
         ' Correct record: Admin lang (nakatago sa iba).

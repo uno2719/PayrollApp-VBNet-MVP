@@ -35,6 +35,9 @@ Partial Class frmEmployeeAction
         cboEmploymentType = New DevExpress.XtraEditors.ComboBoxEdit()
         lblCurrentRate = New DevExpress.XtraEditors.LabelControl()
         lblCurrentRateValue = New DevExpress.XtraEditors.LabelControl()
+        chkChangePayCycle = New DevExpress.XtraEditors.CheckEdit()
+        lblNewCycle = New DevExpress.XtraEditors.LabelControl()
+        cboNewCycle = New DevExpress.XtraEditors.ComboBoxEdit()
         lblNewRate = New DevExpress.XtraEditors.LabelControl()
         spnNewRate = New DevExpress.XtraEditors.SpinEdit()
         lblRemarks = New DevExpress.XtraEditors.LabelControl()
@@ -50,6 +53,8 @@ Partial Class frmEmployeeAction
         CType(lookBranch.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookDepartment.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboEmploymentType.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkChangePayCycle.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboNewCycle.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnNewRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
@@ -224,6 +229,34 @@ Partial Class frmEmployeeAction
         lblCurrentRateValue.Text = "-"
         lblCurrentRateValue.Visible = False
         ' 
+        ' chkChangePayCycle
+        ' 
+        chkChangePayCycle.Location = New Point(20, 280)
+        chkChangePayCycle.Name = "chkChangePayCycle"
+        chkChangePayCycle.Properties.Caption = "Also change Pay Cycle (e.g. Daily to SemiMonthly)"
+        chkChangePayCycle.Size = New Size(430, 20)
+        chkChangePayCycle.TabIndex = 25
+        chkChangePayCycle.Visible = False
+        ' 
+        ' lblNewCycle
+        ' 
+        lblNewCycle.Location = New Point(20, 280)
+        lblNewCycle.Name = "lblNewCycle"
+        lblNewCycle.Size = New Size(76, 13)
+        lblNewCycle.TabIndex = 26
+        lblNewCycle.Text = "New Pay Cycle *"
+        lblNewCycle.Visible = False
+        ' 
+        ' cboNewCycle
+        ' 
+        cboNewCycle.Location = New Point(150, 276)
+        cboNewCycle.Name = "cboNewCycle"
+        cboNewCycle.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        cboNewCycle.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboNewCycle.Size = New Size(300, 20)
+        cboNewCycle.TabIndex = 27
+        cboNewCycle.Visible = False
+        ' 
         ' lblNewRate
         ' 
         lblNewRate.Location = New Point(20, 280)
@@ -313,6 +346,9 @@ Partial Class frmEmployeeAction
         Controls.Add(memoRemarks)
         Controls.Add(spnNewRate)
         Controls.Add(lblNewRate)
+        Controls.Add(cboNewCycle)
+        Controls.Add(lblNewCycle)
+        Controls.Add(chkChangePayCycle)
         Controls.Add(lblCurrentRateValue)
         Controls.Add(lblCurrentRate)
         Controls.Add(cboEmploymentType)
@@ -347,6 +383,8 @@ Partial Class frmEmployeeAction
         CType(lookBranch.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookDepartment.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboEmploymentType.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkChangePayCycle.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboNewCycle.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnNewRate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
@@ -371,6 +409,9 @@ Partial Class frmEmployeeAction
     Friend WithEvents cboEmploymentType As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents lblCurrentRate As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblCurrentRateValue As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents chkChangePayCycle As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents lblNewCycle As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboNewCycle As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents lblNewRate As DevExpress.XtraEditors.LabelControl
     Friend WithEvents spnNewRate As DevExpress.XtraEditors.SpinEdit
     Friend WithEvents lblRemarks As DevExpress.XtraEditors.LabelControl

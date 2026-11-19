@@ -396,9 +396,14 @@ Namespace Employee.Data
 
                         Dim ctx = Models.MovementContext.FromEmployment(cur, activeFlag.Value)
 
-                        ' Salary adjustment: basahin (may lock) ang kasalukuyang Earnings at ang pay basis ng cycle niya.
+                        ' Pay cycle change: Actions > Change pay cycle, o Regularize na may bagong Pay Cycle (opsyonal).
+                        Dim wantsCycleChange As Boolean =
+                            (type = Models.MovementTypes.PayCycleChange) OrElse
+                            (type = Models.MovementTypes.Regularize AndAlso Not String.IsNullOrWhiteSpace(request.NewPayCycle))
+
+                        ' Salary adjustment / Pay cycle change: basahin (may lock) ang kasalukuyang Earnings at ang pay basis ng cycle niya.
                         Dim earningsRow As Models.EmployeeEarningsModel = Nothing
-                        If Models.MovementTypes.IsSalary(type) Then
+                        If Models.MovementTypes.IsSalary(type) OrElse wantsCycleChange Then
                             earningsRow = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEarningsModel)(
                                 "SELECT * FROM tblEmployeeEarnings WITH (UPDLOCK, ROWLOCK) WHERE RecordId = @RecordId",
                                 New With {.RecordId = request.RecordId}, tran)
@@ -407,9 +412,30 @@ Namespace Employee.Data
                                 ctx.UsesDailyRate = Await UsesDailyRateAsync(conn, tran, earningsRow.PayCycle)
                                 ctx.CurrentBasicSalary = earningsRow.BasicSalary
                                 ctx.CurrentDailyRate = earningsRow.DailyRate
+                                ctx.PayCycle = earningsRow.PayCycle
                                 ctx.HasPayRate = (earningsRow.BasicSalary.HasValue AndAlso earningsRow.BasicSalary.Value > 0D) OrElse
                                                  (earningsRow.DailyRate.HasValue AndAlso earningsRow.DailyRate.Value > 0D)
                             End If
+                        End If
+
+                        ' Ang BAGONG pay cycle: nasa tblPayCycle ba, Active ba, at Daily Rate ba ang pay basis.
+                        ' Ang pangalang itatabi sa Earnings ay ang eksaktong PayCycleType ng tblPayCycle (kapareho ng ginagamit ng combo).
+                        Dim newCycleName As String = Nothing
+                        If wantsCycleChange Then
+                            Dim cycleInfos = Await conn.QueryAsync(Of Models.PayCycleInfoModel)(
+                                "SELECT PayCycleType, RateBasis, IsActive FROM tblPayCycle", Nothing, tran)
+
+                            Dim wantedCycle = GlobalShared.Models.PayCycleChoices.Normalize(request.NewPayCycle)
+                            For Each info In cycleInfos
+                                If String.Equals(GlobalShared.Models.PayCycleChoices.Normalize(info.PayCycleType), wantedCycle,
+                                                 StringComparison.OrdinalIgnoreCase) Then
+                                    newCycleName = info.PayCycleType
+                                    ctx.NewCycleFound = True
+                                    ctx.NewCycleActive = info.IsActive
+                                    ctx.NewCycleUsesDailyRate = (info.RateBasis = CByte(GlobalShared.Models.PayRateBasis.DailyRate))
+                                    Exit For
+                                End If
+                            Next
                         End If
 
                         Dim problem = Models.EmployeeMovementRules.Validate(request, ctx, Date.Today)
@@ -574,6 +600,12 @@ Namespace Employee.Data
                                                   .RecordId = request.RecordId}, tran)
                                 End If
 
+                            Case Models.MovementTypes.PayCycleChange
+                                ' Pinapalitan ang Pay Cycle sa Earnings kasama ang rate ng bagong pay basis (isang UPDATE).
+                                Dim change = Await ApplyPayCycleChangeAsync(conn, tran, request, ctx, earningsRow, newCycleName, userName)
+                                fromText = change.FromText
+                                toText = change.ToText
+
                             Case Models.MovementTypes.Rehire
                                 ' Bagong panahon ng serbisyo: ang rehire date ang bagong Date Joined (batayan ng retirement),
                                 ' ang UNANG Date Joined ay itinatabi sa OriginalDateJoined (isang beses lang), nabubura ang
@@ -620,6 +652,13 @@ Namespace Employee.Data
                         Await InsertMovementAsync(conn, tran, request.RecordId, type, effective,
                                                   fromText, toText, remarks, userName)
 
+                        ' Regularize + bagong Pay Cycle: sa parehong transaction, sariling History row (Pay cycle changed).
+                        If type = Models.MovementTypes.Regularize AndAlso wantsCycleChange Then
+                            Dim cycleChange = Await ApplyPayCycleChangeAsync(conn, tran, request, ctx, earningsRow, newCycleName, userName)
+                            Await InsertMovementAsync(conn, tran, request.RecordId, Models.MovementTypes.PayCycleChange, effective,
+                                                      cycleChange.FromText, cycleChange.ToText, remarks, userName)
+                        End If
+
                         tran.Commit()
                         Return True
 
@@ -649,6 +688,90 @@ Namespace Employee.Data
                 End If
             Next
             Return False
+        End Function
+
+        ' Isang row ng cutoff na hindi pa Posted at may input/resulta ang empleyado (para sa Pay cycle change guard).
+        Public Class OpenCutoffRow
+            Public Property CutoffStart As Date
+            Public Property CutoffEnd As Date
+            Public Property Status As Byte
+        End Class
+
+        ' Hindi pwedeng palitan ang Pay Cycle habang may input o resulta ang empleyado sa Draft/Processed na cutoff ng DATING
+        ' cycle: mawawala siya sa cutoff na iyon (ang payroll ay kumukuha ng cycle mula sa Earnings) at lilitaw sa cutoff ng bago.
+        ' Posted at Closed na cutoff ay hindi binibilang.
+        Private Shared Async Function EnsureNoOpenCutoffWorkAsync(conn As SqlConnection, tran As IDbTransaction,
+                                                                  recordId As Integer, oldPayCycle As String) As Task
+            Dim cycle = GlobalShared.Models.PayCycleChoices.Normalize(oldPayCycle)
+            If cycle.Length = 0 Then Return
+
+            Dim sql = "
+                SELECT TOP 1 c.CutoffStart, c.CutoffEnd, c.Status
+                FROM tblCutoff c
+                WHERE REPLACE(REPLACE(REPLACE(c.CycleType, '-', ''), ' ', ''), '_', '') = @Cycle
+                  AND c.Status IN (@Draft, @Processed)
+                  AND (EXISTS (SELECT 1 FROM tblPayrollInputTxn t WHERE t.CutoffID = c.CutoffID AND t.RecordId = @RecordId)
+                       OR EXISTS (SELECT 1 FROM tblPayrollResult r WHERE r.CutoffID = c.CutoffID AND r.RecordId = @RecordId))
+                ORDER BY c.CutoffStart DESC"
+
+            Dim hit = Await conn.QueryFirstOrDefaultAsync(Of OpenCutoffRow)(sql, New With {
+                .Cycle = cycle,
+                .RecordId = recordId,
+                .Draft = CByte(GlobalShared.Models.CutoffStatus.Draft),
+                .Processed = CByte(GlobalShared.Models.CutoffStatus.Processed)
+            }, tran)
+
+            If hit IsNot Nothing Then
+                Dim statusText As String = If(hit.Status = CByte(GlobalShared.Models.CutoffStatus.Draft), "Draft", "Processed")
+                Throw New InvalidOperationException(
+                    $"This employee still has payroll input or results in the {statusText} {cycle} cutoff " &
+                    $"{FmtDate(hit.CutoffStart)} - {FmtDate(hit.CutoffEnd)}. Changing the Pay Cycle now would remove the employee from that cutoff. " &
+                    "Post that cutoff (or clear this employee's input in it) first, then change the Pay Cycle.")
+            End If
+        End Function
+
+        ' Pay cycle change: isang UPDATE ng Earnings (PayCycle + ang rate ng pay basis ng BAGONG cycle; ang Daily/Hourly/Basic
+        ' ay kinukuwenta ng parehong pormula ng Salary adjustment). Ibinabalik ang From/To text para sa History.
+        ' Hindi ginagalaw ang Date Last Incremented: magkaiba ang pay basis kaya hindi masasabing "tumaas" ang sahod.
+        Private Shared Async Function ApplyPayCycleChangeAsync(conn As SqlConnection, tran As IDbTransaction,
+                                                               request As Models.EmployeeMovementRequest,
+                                                               ctx As Models.MovementContext,
+                                                               earningsRow As Models.EmployeeEarningsModel,
+                                                               newCycleName As String,
+                                                               userName As String) As Task(Of (FromText As String, ToText As String))
+
+            If earningsRow Is Nothing OrElse String.IsNullOrWhiteSpace(newCycleName) Then
+                Throw New InvalidOperationException("This employee has no Earnings record yet. Set it in the Earnings tab first.")
+            End If
+
+            Await EnsureNoOpenCutoffWorkAsync(conn, tran, request.RecordId, earningsRow.PayCycle)
+
+            Dim oldUsesDaily As Boolean = ctx.UsesDailyRate
+            Dim newUsesDaily As Boolean = ctx.NewCycleUsesDailyRate
+            Dim newInput As Decimal = If(newUsesDaily, request.NewDailyRate.Value, request.NewBasicSalary.Value)
+            Dim oldInput As Decimal? = If(oldUsesDaily, earningsRow.DailyRate, earningsRow.BasicSalary)
+
+            Dim rates = Models.EmployeeMovementRules.ComputeAdjustedRates(
+                newUsesDaily, newInput, earningsRow.DaysInYear, earningsRow.WorkHourPer,
+                earningsRow.BasicSalary, earningsRow.DailyRate, earningsRow.HourlyRate)
+
+            Await conn.ExecuteAsync("
+                UPDATE tblEmployeeEarnings SET
+                    PayCycle    = @PayCycle,
+                    BasicSalary = @BasicSalary,
+                    DailyRate   = @DailyRate,
+                    HourlyRate  = @HourlyRate,
+                    UpdatedAt   = GETDATE(),
+                    UpdatedBy   = @UserName
+                WHERE RecordId = @RecordId",
+                New With {.PayCycle = newCycleName, .BasicSalary = rates.BasicSalary, .DailyRate = rates.DailyRate,
+                          .HourlyRate = rates.HourlyRate, .UserName = userName, .RecordId = request.RecordId}, tran)
+
+            Dim fromText = Models.EmployeeMovementRules.PayCycleText(
+                GlobalShared.Models.PayCycleChoices.Normalize(earningsRow.PayCycle), oldUsesDaily, oldInput)
+            Dim toText = Models.EmployeeMovementRules.PayCycleText(newCycleName, newUsesDaily, Math.Round(newInput, 2))
+
+            Return (fromText, toText)
         End Function
 
         ' Mga pangalan ng BAGONG Position/Category/JobClass/Branch/Department para sa snapshot ng History.

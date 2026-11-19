@@ -23,6 +23,12 @@ Namespace Employee.Models
         Public Const EndOfContract As String = "End of Contract"
         Public Const SalaryAdjustment As String = "Salary adjustment"
 
+        ''' <summary>
+        ''' Pagpalit ng Pay Cycle (hal. Daily -> SemiMonthly) kasama ang bagong rate. Galing sa Actions > Change pay cycle,
+        ''' o sa Regularize dialog (opsyonal; sariling History row). MovementType ay varchar(30): kasya.
+        ''' </summary>
+        Public Const PayCycleChange As String = "Pay cycle change"
+
         ''' <summary>Pagbabago sa Employment tab na walang sariling Action (Superior, Leave Group, Schedule Group, o pag-fill ng blangko).</summary>
         Public Const DetailsChanged As String = "Details changed"
 
@@ -41,6 +47,15 @@ Namespace Employee.Models
             Return String.Equals(movementType, SalaryAdjustment, StringComparison.OrdinalIgnoreCase)
         End Function
 
+        ''' <summary>
+        ''' Ang mga History row na may halaga ng sahod sa From/To (itinatago kung walang View sa "Employee Salary"):
+        ''' Salary adjustment at Pay cycle change (kasama sa text ang rate).
+        ''' </summary>
+        Public Shared Function IsSalarySensitive(movementType As String) As Boolean
+            Return IsSalary(movementType) OrElse
+                   String.Equals(movementType, PayCycleChange, StringComparison.OrdinalIgnoreCase)
+        End Function
+
         ''' <summary>Pangalan ng action sa History (past tense).</summary>
         Public Shared Function HistoryLabel(movementType As String) As String
             Select Case movementType
@@ -55,6 +70,7 @@ Namespace Employee.Models
                 Case Rehire : Return "Rehired"
                 Case EndOfContract : Return "Contract ended"
                 Case SalaryAdjustment : Return "Salary adjusted"
+                Case PayCycleChange : Return "Pay cycle changed"
                 Case DetailsChanged : Return "Details changed"
                 Case Correction : Return "Corrected"
                 Case Else : Return If(movementType, String.Empty)
@@ -103,6 +119,11 @@ Namespace Employee.Models
         Public Property NewBasicSalary As Decimal?
         Public Property NewDailyRate As Decimal?
 
+        ' Pay cycle change (Actions > Change pay cycle, o opsyonal sa Regularize): ang bagong Pay Cycle at ang rate ng
+        ' PAY BASIS NG BAGONG CYCLE (NewBasicSalary kung Basic Salary cycle, NewDailyRate kung Daily Rate cycle).
+        ' Blangko ang NewPayCycle sa Regularize = walang pagpalit ng cycle.
+        Public Property NewPayCycle As String
+
         ''' <summary>Itinatakda ng Service (AppSession.CurrentUser), hindi ng dialog.</summary>
         Public Property CreatedBy As String
     End Class
@@ -125,6 +146,13 @@ Namespace Employee.Models
         Public Property UsesDailyRate As Boolean
         Public Property CurrentBasicSalary As Decimal?
         Public Property CurrentDailyRate As Decimal?
+
+        ' Para sa Pay cycle change: ang kasalukuyang Pay Cycle (galing sa Earnings) at ang katangian ng BAGONG cycle
+        ' (galing sa tblPayCycle: nakita ba, Active ba, Daily Rate ba ang pay basis).
+        Public Property PayCycle As String
+        Public Property NewCycleFound As Boolean
+        Public Property NewCycleActive As Boolean
+        Public Property NewCycleUsesDailyRate As Boolean
 
         Public Property PositionId As Integer?
         Public Property CategoryId As Integer?
@@ -283,6 +311,15 @@ Namespace Employee.Models
                         Return "This employee has no Basic Salary or Daily Rate yet. Set the starting rate in the Earnings tab first."
                     End If
 
+                Case MovementTypes.PayCycleChange
+                    ' Kahit anong Employment Type. Ang UNANG Pay Cycle at rate ay itinatakda sa Earnings tab (bukas pa ito
+                    ' hangga't walang rate); ang Action na ito ay para sa pagpalit kapag naka-lock na.
+                    If IsSeparated(c) Then Return SeparatedMessage()
+                    If Not c.IsActive Then Return "This employee is Inactive. Reactivate the employee first."
+                    If Not c.HasPayRate Then
+                        Return "This employee has no Basic Salary or Daily Rate yet. Set the Pay Cycle and starting rate in the Earnings tab first."
+                    End If
+
                 Case MovementTypes.Rehire
                     If Not IsSeparated(c) Then
                         Return "Only an employee who has resigned, retired, been terminated, or whose contract ended can be rehired."
@@ -305,6 +342,44 @@ Namespace Employee.Models
 
         Private Function FormatDate(d As Date) As String
             Return d.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture)
+        End Function
+
+        ''' <summary>Pareho ba ang dalawang pay cycle (hindi pinapansin ang gitling/espasyo/laki ng titik: "Semi-Monthly" = "SemiMonthly").</summary>
+        Public Function SamePayCycle(a As String, b As String) As Boolean
+            Return String.Equals(GlobalShared.Models.PayCycleChoices.Normalize(a),
+                                 GlobalShared.Models.PayCycleChoices.Normalize(b),
+                                 StringComparison.OrdinalIgnoreCase)
+        End Function
+
+        ' Ang bahaging Pay cycle ng request (Change pay cycle, o Regularize na may tick). Empty = valid.
+        Private Function ValidateNewPayCycle(req As EmployeeMovementRequest, c As MovementContext) As String
+            Dim newCycle As String = Clean(req.NewPayCycle)
+            If newCycle.Length = 0 Then Return "Choose the new Pay Cycle."
+
+            If Not c.HasPayRate Then
+                Return "The Pay Cycle can be changed here only after the first Basic Salary or Daily Rate is saved. " &
+                       "Set the Pay Cycle and rate in the Earnings tab."
+            End If
+            If Not c.NewCycleFound Then
+                Return $"Pay Cycle '{newCycle}' was not found in Payroll Settings > Pay Cycle."
+            End If
+            If Not c.NewCycleActive Then
+                Return $"Pay Cycle '{newCycle}' is not active. Activate it in Payroll Settings > Pay Cycle, or choose another."
+            End If
+            If SamePayCycle(c.PayCycle, newCycle) Then
+                Return $"Nothing to change: the employee is already on the {newCycle} pay cycle."
+            End If
+
+            Dim label As String = If(c.NewCycleUsesDailyRate, "Daily Rate", "Basic Salary")
+            Dim proposed As Decimal? = If(c.NewCycleUsesDailyRate, req.NewDailyRate, req.NewBasicSalary)
+            If Not proposed.HasValue OrElse proposed.Value <= 0D Then
+                Return $"Enter the new {label} for the {newCycle} pay cycle (it must be greater than zero)."
+            End If
+            If proposed.Value > MaxSalaryAmount Then
+                Return $"The new {label} is too large. Please check the amount."
+            End If
+
+            Return String.Empty
         End Function
 
         ' Rehire: ang petsa ay dapat MAS HULI sa huling pag-alis (hindi ang Date Joined ang batayan, dahil ito
@@ -367,6 +442,17 @@ Namespace Employee.Models
             End If
 
             Select Case req.MovementType
+                Case MovementTypes.Regularize
+                    ' Opsyonal na pagpalit ng Pay Cycle (Daily -> SemiMonthly) kasabay ng pag-regular.
+                    If Clean(req.NewPayCycle).Length > 0 Then
+                        Dim cycleProblem = ValidateNewPayCycle(req, c)
+                        If cycleProblem.Length > 0 Then Return cycleProblem
+                    End If
+
+                Case MovementTypes.PayCycleChange
+                    If remarks.Length = 0 Then Return "Remarks is required for a pay cycle change (state the reason)."
+                    Return ValidateNewPayCycle(req, c)
+
                 Case MovementTypes.Resign, MovementTypes.Terminate
                     If remarks.Length = 0 Then Return "Remarks is required for this action (state the reason)."
 
@@ -448,6 +534,12 @@ Namespace Employee.Models
             End If
 
             Return r
+        End Function
+
+        ''' <summary>Hal. "Pay Cycle: Daily; Daily Rate: 500.00" (para sa From/To ng Pay cycle change sa History).</summary>
+        Public Function PayCycleText(payCycle As String, usesDailyRate As Boolean, amount As Decimal?) As String
+            Dim cycle As String = If(String.IsNullOrWhiteSpace(payCycle), "(none)", payCycle.Trim())
+            Return "Pay Cycle: " & cycle & "; " & SalaryText(usesDailyRate, amount)
         End Function
 
         ''' <summary>Hal. "Basic Salary: 20,000.00" (para sa From/To ng History).</summary>

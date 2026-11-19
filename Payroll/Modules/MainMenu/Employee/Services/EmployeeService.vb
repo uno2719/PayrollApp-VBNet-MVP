@@ -127,6 +127,19 @@
                 Throw New UnauthorizedAccessException("You are not allowed to adjust an employee's salary.")
             End If
 
+            ' Pay cycle change (Actions > Change pay cycle, o Regularize na may bagong Pay Cycle): may kasamang bagong rate,
+            ' kaya "Employee Salary" (Can Edit) din ang kailangan. Ang NewPayCycle ay para lang sa dalawang action na ito.
+            If request.MovementType <> Models.MovementTypes.PayCycleChange AndAlso
+               request.MovementType <> Models.MovementTypes.Regularize Then
+                request.NewPayCycle = Nothing
+            End If
+            request.NewPayCycle = If(String.IsNullOrWhiteSpace(request.NewPayCycle), Nothing, request.NewPayCycle.Trim())
+
+            If (request.MovementType = Models.MovementTypes.PayCycleChange OrElse request.NewPayCycle IsNot Nothing) AndAlso
+               Not GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary) Then
+                Throw New UnauthorizedAccessException("You are not allowed to change an employee's pay cycle.")
+            End If
+
             request.Remarks = If(String.IsNullOrWhiteSpace(request.Remarks), Nothing, request.Remarks.Trim())
             request.CreatedBy = AppSession.CurrentUser
 
@@ -162,7 +175,7 @@
             ' para hindi man lang makarating sa screen. Nakikita pa rin na may nangyaring adjustment at kailan.
             If Not GlobalShared.Security.PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary) Then
                 For Each row In rows
-                    If Models.MovementTypes.IsSalary(row.MovementType) Then
+                    If Models.MovementTypes.IsSalarySensitive(row.MovementType) Then
                         row.FromValue = "(hidden)"
                         row.ToValue = "(hidden)"
                     End If
@@ -259,6 +272,21 @@
 
             ValidateActivePayCycle("Pay Cycle", model.PayCycle,
                                    If(stored Is Nothing, "", GlobalShared.Models.PayCycleChoices.Normalize(stored.PayCycle)), activeCycles)
+
+            ' Naka-lock ang Pay Cycle kapag may naka-save nang rate (hindi lang sa screen): ang pagpalit ay dumadaan sa
+            ' Actions > Change pay cycle o sa Regularize, kasama ang bagong rate at may History. Bukas pa rin ito kung wala
+            ' pang rate o wala pang naka-save na cycle.
+            If stored IsNot Nothing Then
+                Dim storedCycle = GlobalShared.Models.PayCycleChoices.Normalize(stored.PayCycle)
+                Dim storedHasRate As Boolean = (stored.BasicSalary.HasValue AndAlso stored.BasicSalary.Value > 0D) OrElse
+                                               (stored.DailyRate.HasValue AndAlso stored.DailyRate.Value > 0D)
+
+                If storedHasRate AndAlso storedCycle.Length > 0 AndAlso
+                   Not String.Equals(storedCycle, model.PayCycle, StringComparison.OrdinalIgnoreCase) Then
+                    Throw New Exception("The Pay Cycle is locked because this employee already has a rate. " &
+                                        "Use Actions > Change pay cycle (or Regularize) so the new rate is set and recorded in History.")
+                End If
+            End If
 
             ' Set audit fields
             If model.EarningsId = 0 Then

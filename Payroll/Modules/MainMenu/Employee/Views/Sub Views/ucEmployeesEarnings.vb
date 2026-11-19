@@ -45,6 +45,7 @@ Public Class ucEmployeesEarnings
     Private _editEnabled As Boolean = False
     Private _rateLocked As Boolean = False
     Private Const RateLockHint As String = "Locked. Use Actions > Salary adjustment to change the rate (it is recorded in History)."
+    Private Const PayCycleLockHint As String = "Locked. Use Actions > Change pay cycle (or Regularize) to move the employee to another Pay Cycle with the new rate (it is recorded in History)."
 
     Public Sub SetRateLock(isLocked As Boolean) Implements Employee.Views.IEmployeesEarningsView.SetRateLock
         _rateLocked = isLocked
@@ -61,6 +62,13 @@ Public Class ucEmployeesEarnings
         txtBasicSalary.ToolTip = hint
         txtDailyRate.ToolTip = hint
         txtHourlyRate.ToolTip = hint
+
+        ' Pay Cycle: naka-lock din kapag may rate na AT may naka-save nang cycle. Kung papalitan ito dito, walang paglalagyan
+        ' ng rate ng bagong cycle (naka-lock ang Basic/Daily) at walang History - kaya Actions > Change pay cycle / Regularize.
+        ' (Ang View lang ang nagla-lock nito; ang EmployeeService.SaveEarningsAsync ay tumatanggi rin.)
+        Dim lockCycle As Boolean = _rateLocked AndAlso Not String.IsNullOrWhiteSpace(cboPayCycle.Text)
+        cboPayCycle.Properties.ReadOnly = (Not _editEnabled) OrElse lockCycle
+        cboPayCycle.ToolTip = If(lockCycle, PayCycleLockHint, String.Empty)
     End Sub
 
     Public Sub SetEditMode(enabled As Boolean)
@@ -70,7 +78,7 @@ Public Class ucEmployeesEarnings
         txtWorkHourPer.Properties.ReadOnly = Not enabled
         chkPayrollFlag.Properties.ReadOnly = Not enabled
         chkMinimumWage.Properties.ReadOnly = Not enabled
-        cboPayCycle.Properties.ReadOnly = Not enabled
+        ' cboPayCycle.Properties.ReadOnly: hawak na ng ApplyRateReadOnly (Edit mode AT hindi naka-lock ang rate).
         cboPayBy.Properties.ReadOnly = Not enabled
         sleBank.Properties.ReadOnly = Not enabled
         txtBankAccount.Properties.ReadOnly = Not enabled
