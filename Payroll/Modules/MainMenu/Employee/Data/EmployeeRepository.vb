@@ -399,7 +399,8 @@ Namespace Employee.Data
                         ' Pay cycle change: Actions > Change pay cycle, o Regularize na may bagong Pay Cycle (opsyonal).
                         Dim wantsCycleChange As Boolean =
                             (type = Models.MovementTypes.PayCycleChange) OrElse
-                            (type = Models.MovementTypes.Regularize AndAlso Not String.IsNullOrWhiteSpace(request.NewPayCycle))
+                            ((type = Models.MovementTypes.Regularize OrElse type = Models.MovementTypes.Promote) AndAlso
+                             Not String.IsNullOrWhiteSpace(request.NewPayCycle))
 
                         ' Salary adjustment / Pay cycle change: basahin (may lock) ang kasalukuyang Earnings at ang pay basis ng cycle niya.
                         Dim earningsRow As Models.EmployeeEarningsModel = Nothing
@@ -652,8 +653,8 @@ Namespace Employee.Data
                         Await InsertMovementAsync(conn, tran, request.RecordId, type, effective,
                                                   fromText, toText, remarks, userName)
 
-                        ' Regularize + bagong Pay Cycle: sa parehong transaction, sariling History row (Pay cycle changed).
-                        If type = Models.MovementTypes.Regularize AndAlso wantsCycleChange Then
+                        ' Regularize / Promote + bagong Pay Cycle: sa parehong transaction, sariling History row (Pay cycle changed).
+                        If type <> Models.MovementTypes.PayCycleChange AndAlso wantsCycleChange Then
                             Dim cycleChange = Await ApplyPayCycleChangeAsync(conn, tran, request, ctx, earningsRow, newCycleName, userName)
                             Await InsertMovementAsync(conn, tran, request.RecordId, Models.MovementTypes.PayCycleChange, effective,
                                                       cycleChange.FromText, cycleChange.ToText, remarks, userName)

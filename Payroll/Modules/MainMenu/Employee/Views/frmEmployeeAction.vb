@@ -24,7 +24,7 @@ Public Class frmEmployeeAction
     Private _earnings As Employee.Models.EmployeeEarningsModel
     Private _usesDailyRate As Boolean
 
-    ' Pay cycle change (Actions > Change pay cycle, o ang opsyonal na bahagi ng Regularize): Rate Basis ng bawat cycle,
+    ' Pay cycle change (Actions > Change pay cycle, o ang opsyonal na bahagi ng Regularize / Promote): Rate Basis ng bawat cycle,
     ' at kung ihahandog ba ang pagpalit (may rate na, may Employee Salary, may ibang active cycle na mapagpipilian).
     Private _cycleBases As Dictionary(Of String, GlobalShared.Models.PayRateBasis)
     Private _cycleOffered As Boolean
@@ -74,7 +74,7 @@ Public Class frmEmployeeAction
             End If
 
             If _movementType = Employee.Models.MovementTypes.PayCycleChange OrElse
-               _movementType = Employee.Models.MovementTypes.Regularize Then
+               SupportsCycleOption() Then
                 Await LoadPayCycleContextAsync()
             End If
 
@@ -160,7 +160,7 @@ Public Class frmEmployeeAction
     End Function
 
     ' Pay cycle change: binabasa ang kasalukuyang Earnings, ang Rate Basis ng bawat cycle at ang mga Active na cycle na
-    ' mapagpipilian (hindi kasama ang kasalukuyan). Sa Regularize, ihahandog lang ang pagpalit kung may rate na (naka-lock na
+    ' mapagpipilian (hindi kasama ang kasalukuyan). Sa Regularize / Promote, ihahandog lang ang pagpalit kung may rate na (naka-lock na
     ' ang Earnings; kung wala pa, bukas pa ang Pay Cycle sa Earnings tab) at may "Employee Salary" (Can Edit).
     Private Async Function LoadPayCycleContextAsync() As Task
         _cycleOffered = False
@@ -214,7 +214,13 @@ Public Class frmEmployeeAction
     ' Magpapalit ba ng Pay Cycle ang request na ito? (Change pay cycle: laging; Regularize: kung naka-tick)
     Private Function WantsCycleChange() As Boolean
         If _movementType = Employee.Models.MovementTypes.PayCycleChange Then Return True
-        Return _movementType = Employee.Models.MovementTypes.Regularize AndAlso _cycleOffered AndAlso chkChangePayCycle.Checked
+        Return SupportsCycleOption() AndAlso _cycleOffered AndAlso chkChangePayCycle.Checked
+    End Function
+
+    ' Mga action na may opsyonal na "Also change Pay Cycle": Regularize at Promote (ang Change pay cycle ay laging mayroon).
+    Private Function SupportsCycleOption() As Boolean
+        Return _movementType = Employee.Models.MovementTypes.Regularize OrElse
+               _movementType = Employee.Models.MovementTypes.Promote
     End Function
 
     Private Sub cboNewCycle_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboNewCycle.SelectedIndexChanged
@@ -313,6 +319,11 @@ Public Class frmEmployeeAction
                        "has input or results in a Draft or Processed cutoff of the current Pay Cycle."
 
             Case Employee.Models.MovementTypes.Promote
+                If _cycleOffered Then
+                    Return "Changes Position (and Category / Job Class if needed) and sets Date Last Promoted. " &
+                           "Salary is not changed here (use Actions > Salary adjustment), unless you tick ""Also change Pay Cycle"" " &
+                           "and enter the rate of the new cycle."
+                End If
                 Return "Changes Position (and Category / Job Class if needed) and sets Date Last Promoted. " &
                        "Salary is not changed here."
 
@@ -381,13 +392,7 @@ Public Class frmEmployeeAction
 
         Select Case _movementType
             Case Employee.Models.MovementTypes.Regularize
-                If _cycleOffered Then
-                    chkChangePayCycle.Visible = True
-                    chkChangePayCycle.Location = New Point(20, y)
-                    chkChangePayCycle.Size = New Size(430, 20)
-                    y += 30
-                    If chkChangePayCycle.Checked Then PlaceCycleRows(y)
-                End If
+                PlaceCycleOption(y)
 
             Case Employee.Models.MovementTypes.PayCycleChange
                 PlaceCycleRows(y)
@@ -396,6 +401,7 @@ Public Class frmEmployeeAction
                 PlaceRow(y, lblPosition, lookPosition, 20)
                 PlaceRow(y, lblCategory, lookCategory, 20)
                 PlaceRow(y, lblJobClass, lookJobClass, 20)
+                PlaceCycleOption(y)
 
             Case Employee.Models.MovementTypes.Transfer
                 PlaceRow(y, lblBranch, lookBranch, 20)
@@ -427,6 +433,17 @@ Public Class frmEmployeeAction
         btnApply.Top = y + 6
         btnCancel.Top = y + 6
         ClientSize = New Size(ClientSize.Width, btnApply.Bottom + 16)
+    End Sub
+
+    ' Ang checkbox na "Also change Pay Cycle" (Regularize / Promote), at ang mga hilera ng cycle kapag naka-tick.
+    Private Sub PlaceCycleOption(ByRef y As Integer)
+        If Not _cycleOffered Then Return
+
+        chkChangePayCycle.Visible = True
+        chkChangePayCycle.Location = New Point(20, y)
+        chkChangePayCycle.Size = New Size(430, 20)
+        y += 30
+        If chkChangePayCycle.Checked Then PlaceCycleRows(y)
     End Sub
 
     ' Kasalukuyang Pay Cycle at rate (basa lang), ang bagong Pay Cycle, at ang bagong rate.
@@ -506,7 +523,7 @@ Public Class frmEmployeeAction
                 End If
         End Select
 
-        ' Pay cycle change (o Regularize na naka-tick): ang rate ay ayon sa pay basis ng BAGONG cycle.
+        ' Pay cycle change (o Regularize / Promote na naka-tick): ang rate ay ayon sa pay basis ng BAGONG cycle.
         If WantsCycleChange() Then
             req.NewPayCycle = cboNewCycle.Text.Trim()
             If SelectedCycleUsesDaily() Then
@@ -537,7 +554,7 @@ Public Class frmEmployeeAction
         ' Naka-tick ang "Also change Pay Cycle" pero walang napili: huwag hayaang mag-Regularize nang walang pagpalit ng cycle.
         If WantsCycleChange() AndAlso String.IsNullOrWhiteSpace(cboNewCycle.Text) Then
             XtraMessageBox.Show(Me, "Choose the new Pay Cycle" &
-                                If(_movementType = Employee.Models.MovementTypes.Regularize,
+                                If(_movementType <> Employee.Models.MovementTypes.PayCycleChange,
                                    ", or untick ""Also change Pay Cycle"".", "."),
                                 Text, MessageBoxButtons.OK, MessageBoxIcon.Warning)
             cboNewCycle.Focus()
@@ -592,11 +609,20 @@ Public Class frmEmployeeAction
             Dim oldCycle As String = GlobalShared.Models.PayCycleChoices.Normalize(If(_earnings Is Nothing, "", _earnings.PayCycle))
             If oldCycle.Length = 0 Then oldCycle = "(none)"
 
-            Dim lead As String = If(_movementType = Employee.Models.MovementTypes.Regularize,
-                                    $"Regularize {who} and change the Pay Cycle", $"Change the Pay Cycle of {who}")
-            Dim recorded As String = If(_movementType = Employee.Models.MovementTypes.Regularize,
-                                        "Both changes are recorded in History (Regularized and Pay cycle changed).",
-                                        "This is recorded in History.")
+            Dim lead As String
+            Select Case _movementType
+                Case Employee.Models.MovementTypes.Regularize
+                    lead = $"Regularize {who} and change the Pay Cycle"
+                Case Employee.Models.MovementTypes.Promote
+                    lead = $"Promote {who} and change the Pay Cycle"
+                Case Else
+                    lead = $"Change the Pay Cycle of {who}"
+            End Select
+            Dim recorded As String = If(_movementType = Employee.Models.MovementTypes.PayCycleChange,
+                                        "This is recorded in History.",
+                                        "Both changes are recorded in History (the " &
+                                        Employee.Models.MovementTypes.HistoryLabel(_movementType).ToLowerInvariant() &
+                                        " and the pay cycle change).")
             Dim prompt = $"{lead} from {oldCycle} to {req.NewPayCycle} (effective {req.EffectiveDate:MM/dd/yyyy}), " &
                          $"with a new {rateName} of ₱{newValue:N2}?" & vbCrLf & vbCrLf &
                          "The Daily and Hourly rates will be recomputed. " & recorded

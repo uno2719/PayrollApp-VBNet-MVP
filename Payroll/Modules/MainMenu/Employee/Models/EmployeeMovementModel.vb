@@ -485,6 +485,12 @@ Namespace Employee.Models
                         Return "Nothing to promote: choose a different Position, Category, or Job Class."
                     End If
 
+                    ' Opsyonal na pagpalit ng Pay Cycle kasabay ng promotion (kung may bagong sahod/cycle ang bagong posisyon).
+                    If Clean(req.NewPayCycle).Length > 0 Then
+                        Dim promoCycleProblem = ValidateNewPayCycle(req, c)
+                        If promoCycleProblem.Length > 0 Then Return promoCycleProblem
+                    End If
+
                 Case MovementTypes.Transfer
                     If c.BranchId.HasValue AndAlso Not req.NewBranchId.HasValue Then Return "Branch can't be blank."
                     If c.DepartmentId.HasValue AndAlso Not req.NewDepartmentId.HasValue Then Return "Department can't be blank."

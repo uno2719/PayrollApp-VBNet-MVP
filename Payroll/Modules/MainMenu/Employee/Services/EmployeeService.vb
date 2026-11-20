@@ -127,10 +127,11 @@
                 Throw New UnauthorizedAccessException("You are not allowed to adjust an employee's salary.")
             End If
 
-            ' Pay cycle change (Actions > Change pay cycle, o Regularize na may bagong Pay Cycle): may kasamang bagong rate,
-            ' kaya "Employee Salary" (Can Edit) din ang kailangan. Ang NewPayCycle ay para lang sa dalawang action na ito.
+            ' Pay cycle change (Actions > Change pay cycle, o Regularize / Promote na may bagong Pay Cycle): may kasamang
+            ' bagong rate, kaya "Employee Salary" (Can Edit) din ang kailangan. Ang NewPayCycle ay para lang sa tatlong action na ito.
             If request.MovementType <> Models.MovementTypes.PayCycleChange AndAlso
-               request.MovementType <> Models.MovementTypes.Regularize Then
+               request.MovementType <> Models.MovementTypes.Regularize AndAlso
+               request.MovementType <> Models.MovementTypes.Promote Then
                 request.NewPayCycle = Nothing
             End If
             request.NewPayCycle = If(String.IsNullOrWhiteSpace(request.NewPayCycle), Nothing, request.NewPayCycle.Trim())
