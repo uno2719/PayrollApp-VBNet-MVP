@@ -92,6 +92,69 @@ Namespace PayrollProcessing.Data
                  @EEShare, @EEContriType, @ERShare, @ERContriType, @ECCAmount, @EEMPF, @ERMPF,
                  @TaxPercentage, @FixTaxAmount, @MonthlyEE, @MonthlyER, @SharePercent)"
 
+        ' ---- Export at Post ----
+        Private Const PayoutSql As String =
+            "SELECT r.ResultId, r.CutoffID, r.RecordId, r.EmployeeNo, r.EmployeeName, r.NetPay,
+                    ee.PayBy, ee.BankId, b.BankCode, ISNULL(b.BankName, ee.BankName) AS BankName, ee.BankAccount
+             FROM tblPayrollResult r
+                  LEFT JOIN tblEmployeeEarnings ee ON ee.RecordId = r.RecordId
+                  LEFT JOIN tblBank b ON b.BankId = ee.BankId
+             WHERE r.CutoffID IN @ids
+             ORDER BY r.EmployeeName, r.EmployeeNo"
+
+        Private Const InsertExportLogSql As String =
+            "INSERT INTO tblPayrollExportLog
+                (CutoffID, BatchId, ListGroup, Format, FileName, FilePath, EmployeeCount, TotalAmount, IsCombined, ProcessedStamp, ExportedBy)
+             SELECT @CutoffID, @BatchId, @ListGroup, @Format, @FileName, @FilePath, @EmployeeCount, @TotalAmount, @IsCombined,
+                    c.LastProcessedDate, @ExportedBy
+             FROM tblCutoff c
+             WHERE c.CutoffID = @CutoffID"
+
+        ' Mga listahang na-export para sa KASALUKUYANG processing (hindi na valid kapag na-re-process ang cutoff).
+        Private Const ValidGroupsSql As String =
+            "SELECT DISTINCT e.ListGroup
+             FROM tblPayrollExportLog e
+                  INNER JOIN tblCutoff c ON c.CutoffID = e.CutoffID
+             WHERE e.CutoffID = @cutoffId AND e.ProcessedStamp = c.LastProcessedDate"
+
+        Private Const LoanCheckSql As String =
+            "SELECT r.EmployeeName, l.Description, l.Amount AS LineAmount,
+                    s.ScheduleId AS FoundScheduleId, s.AmountDue, s.AmountPaid, s.IsPaid, ln.Status AS LoanStatus
+             FROM tblPayrollResultLine l
+                  INNER JOIN tblPayrollResult r ON r.ResultId = l.ResultId
+                  LEFT JOIN tblEmployeeLoanSchedule s ON s.ScheduleId = l.RefId
+                  LEFT JOIN tblEmployeeLoan ln ON ln.EmployeeLoanId = s.EmployeeLoanId
+             WHERE l.CutoffID = @cutoffId AND l.Category = @loan"
+
+        ' AmountPaid = dating bayad + ang kinaltas ngayon (laging buong BalanceDue ang LOAN line, kaya = AmountDue).
+        Private Const MarkLoansPaidSql As String =
+            "UPDATE s
+             SET    s.AmountPaid   = s.AmountPaid + l.Amount,
+                    s.PaidDate     = @paidDate,
+                    s.IsPaid       = CASE WHEN s.AmountPaid + l.Amount >= s.AmountDue THEN 1 ELSE 0 END,
+                    s.PayrollRefNo = @payrollRefNo,
+                    s.UpdatedAt    = GETDATE(),
+                    s.UpdatedBy    = @userName
+             FROM   tblEmployeeLoanSchedule s
+                    INNER JOIN tblPayrollResultLine l ON l.RefId = s.ScheduleId
+             WHERE  l.CutoffID = @cutoffId AND l.Category = @loan"
+
+        ' Kumpleto na ang loan kapag wala nang hindi bayad na installment (kapareho ng IsFullyPaid sa Loans module).
+        Private Const CompleteLoansSql As String =
+            "UPDATE ln
+             SET    ln.Status      = @completed,
+                    ln.CompletedAt = ISNULL(ln.CompletedAt, GETDATE()),
+                    ln.UpdatedAt   = GETDATE(),
+                    ln.UpdatedBy   = @userName
+             FROM   tblEmployeeLoan ln
+             WHERE  ln.Status = @active
+               AND  ln.EmployeeLoanId IN (SELECT s.EmployeeLoanId
+                                          FROM tblEmployeeLoanSchedule s
+                                               INNER JOIN tblPayrollResultLine l ON l.RefId = s.ScheduleId
+                                          WHERE l.CutoffID = @cutoffId AND l.Category = @loan)
+               AND  NOT EXISTS (SELECT 1 FROM tblEmployeeLoanSchedule x
+                                WHERE x.EmployeeLoanId = ln.EmployeeLoanId AND x.IsPaid = 0)"
+
         ' =============================================
         ' LOAD
         ' =============================================
@@ -229,6 +292,130 @@ Namespace PayrollProcessing.Data
             End Using
 
             Return sheet
+        End Function
+
+        ' =============================================
+        ' EXPORT LOG AT POST
+        ' =============================================
+
+        Public Async Function GetPayoutRowsAsync(cutoffIds As IList(Of Integer)) As Task(Of List(Of PayrollPayoutRow)) _
+            Implements IPayrollProcessRepository.GetPayoutRowsAsync
+
+            If cutoffIds Is Nothing OrElse cutoffIds.Count = 0 Then Return New List(Of PayrollPayoutRow)()
+
+            Using conn = GetConnection()
+                Dim rows = Await conn.QueryAsync(Of PayrollPayoutRow)(PayoutSql, New With {.ids = cutoffIds})
+                Return rows.ToList()
+            End Using
+        End Function
+
+        Public Async Function InsertExportLogAsync(entries As List(Of PayrollExportLogEntry)) As Task _
+            Implements IPayrollProcessRepository.InsertExportLogAsync
+
+            If entries Is Nothing OrElse entries.Count = 0 Then Return
+
+            Using conn = GetConnection()
+                Using tx = conn.BeginTransaction()
+                    Await conn.ExecuteAsync(InsertExportLogSql, entries, tx)
+                    tx.Commit()
+                End Using
+            End Using
+        End Function
+
+        Public Async Function GetPostFactsAsync(cutoffId As Integer) As Task(Of PayrollPostFacts) _
+            Implements IPayrollProcessRepository.GetPostFactsAsync
+
+            Dim facts As New PayrollPostFacts()
+
+            Using conn = GetConnection()
+                facts.WarningCount = Await conn.ExecuteScalarAsync(Of Integer)(
+                    "SELECT COUNT(*) FROM tblPayrollResult WHERE CutoffID = @cutoffId AND HasWarnings = 1", New With {cutoffId})
+
+                facts.LoanInstallments = Await conn.ExecuteScalarAsync(Of Integer)(
+                    "SELECT COUNT(*) FROM tblPayrollResultLine WHERE CutoffID = @cutoffId AND Category = @loan AND RefId IS NOT NULL",
+                    New With {cutoffId, .loan = ResultCategory.Loan})
+
+                facts.ValidGroups = (Await conn.QueryAsync(Of String)(ValidGroupsSql, New With {cutoffId})).ToList()
+            End Using
+
+            Return facts
+        End Function
+
+        Public Async Function PostCutoffAsync(cutoffId As Integer, userName As String, requiredGroups As IList(Of String)) As Task(Of PayrollPostResult) _
+            Implements IPayrollProcessRepository.PostCutoffAsync
+
+            Dim result As New PayrollPostResult With {.PayrollRefNo = "PR-" & cutoffId.ToString()}
+
+            Using conn = GetConnection()
+                Using tx = conn.BeginTransaction()
+
+                    ' I-lock ang cutoff row habang nagpo-post.
+                    Dim status = Await conn.ExecuteScalarAsync(Of Byte?)(
+                        "SELECT Status FROM tblCutoff WITH (UPDLOCK, ROWLOCK) WHERE CutoffID = @cutoffId", New With {cutoffId}, tx)
+
+                    If Not status.HasValue Then Throw New InvalidOperationException("Selected Cutoff no longer exists.")
+                    If status.Value = CByte(CutoffStatus.Posted) Then Throw New InvalidOperationException("This Cutoff is already Posted.")
+                    If status.Value <> CByte(CutoffStatus.Processed) Then Throw New InvalidOperationException("Only a Processed Cutoff can be posted.")
+
+                    ' May babala pa?
+                    Dim warnings = Await conn.ExecuteScalarAsync(Of Integer)(
+                        "SELECT COUNT(*) FROM tblPayrollResult WHERE CutoffID = @cutoffId AND HasWarnings = 1", New With {cutoffId}, tx)
+                    If warnings > 0 Then
+                        Throw New InvalidOperationException($"{warnings} employee(s) still have warnings. Fix them and re-process the cutoff first.")
+                    End If
+
+                    ' Na-export na ba ang lahat ng kailangang listahan para sa KASALUKUYANG processing?
+                    Dim exported = (Await conn.QueryAsync(Of String)(ValidGroupsSql, New With {cutoffId}, tx)).ToList()
+                    Dim missing = If(requiredGroups, New List(Of String)()).Where(Function(g) Not exported.Contains(g)).ToList()
+                    If missing.Count > 0 Then
+                        Throw New InvalidOperationException("Export these lists first (the cutoff was re-processed or never exported): " &
+                                                            String.Join(", ", missing.Select(Function(g) PayoutGroup.DisplayName(g))))
+                    End If
+
+                    ' Stale check: hindi dapat nagbago ang loan installments mula nang i-process.
+                    Dim loanRows = (Await conn.QueryAsync(Of PayrollLoanCheckRow)(LoanCheckSql, New With {cutoffId, .loan = ResultCategory.Loan}, tx)).ToList()
+                    Dim problems As New List(Of String)()
+                    For Each lr In loanRows
+                        Dim who = lr.EmployeeName & " - " & lr.Description
+                        If Not lr.FoundScheduleId.HasValue Then
+                            problems.Add(who & ": installment no longer exists")
+                        ElseIf lr.IsPaid.GetValueOrDefault() Then
+                            problems.Add(who & ": installment is already paid")
+                        ElseIf Not String.Equals(lr.LoanStatus, LoanStatus.Active, StringComparison.OrdinalIgnoreCase) Then
+                            problems.Add(who & ": loan is no longer Active (" & lr.LoanStatus & ")")
+                        ElseIf Math.Abs((lr.AmountDue.GetValueOrDefault() - lr.AmountPaid.GetValueOrDefault()) - lr.LineAmount) > 0.005D Then
+                            problems.Add(who & ": balance changed")
+                        End If
+                    Next
+                    If problems.Count > 0 Then
+                        Throw New InvalidOperationException("Loan installments changed after this cutoff was processed. Re-process the cutoff and export again:" &
+                                                            Environment.NewLine & String.Join(Environment.NewLine, problems.Take(8).Select(Function(x) "- " & x)) &
+                                                            If(problems.Count > 8, Environment.NewLine & "... and " & (problems.Count - 8) & " more", ""))
+                    End If
+
+                    ' Loans: markahang bayad
+                    Dim paidDate = Await conn.ExecuteScalarAsync(Of DateTime)(
+                        "SELECT ISNULL(PayDate, CutoffEnd) FROM tblCutoff WHERE CutoffID = @cutoffId", New With {cutoffId}, tx)
+
+                    result.LoanInstallmentsPaid = Await conn.ExecuteAsync(MarkLoansPaidSql, New With {
+                        cutoffId, .loan = ResultCategory.Loan, paidDate, .payrollRefNo = result.PayrollRefNo, userName}, tx)
+
+                    result.LoansCompleted = Await conn.ExecuteAsync(CompleteLoansSql, New With {
+                        cutoffId, .loan = ResultCategory.Loan, .completed = LoanStatus.Completed, .active = LoanStatus.Active, userName}, tx)
+
+                    ' I-lock ang cutoff
+                    Await conn.ExecuteAsync(
+                        "UPDATE tblCutoff
+                         SET Status = @posted, PostedBy = @userName, PostedDate = SYSDATETIME(),
+                             ModifiedBy = @userName, ModifiedDate = SYSDATETIME()
+                         WHERE CutoffID = @cutoffId",
+                        New With {.posted = CByte(CutoffStatus.Posted), userName, cutoffId}, tx)
+
+                    tx.Commit()
+                End Using
+            End Using
+
+            Return result
         End Function
 
     End Class

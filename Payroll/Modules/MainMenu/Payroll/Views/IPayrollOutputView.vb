@@ -14,6 +14,15 @@ Namespace PayrollProcessing.Views
 
         Function GetSelectedCutoffId() As Integer?
 
+        ''' <summary>Naka-check ba ang "Combine same pay date"?</summary>
+        Function GetCombineSamePayDate() As Boolean
+
+        ''' <summary>OK / Cancel (default ay Cancel). True kapag OK.</summary>
+        Function AskConfirm(message As String, title As String) As Boolean
+
+        ''' <summary>Save dialog. Nothing kapag kinansela.</summary>
+        Function AskSaveFile(defaultFileName As String, filter As String, defaultExt As String) As String
+
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
 

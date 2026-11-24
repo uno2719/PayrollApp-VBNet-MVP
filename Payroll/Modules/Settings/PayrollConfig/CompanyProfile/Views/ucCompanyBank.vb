@@ -300,28 +300,34 @@ Public Class ucCompanyBank
         txtPersonInCharge2Position.Properties.ReadOnly = True
     End Sub
 
+    ''' <summary>
+    ''' Position ng napiling empleyado. Blanko kapag walang napili (hal. na-clear ang lookup pagkatapos mag-save).
+    ''' Dati: "emp.RecordId = selectedId" ay Boolean? kapag Nothing ang selectedId, kaya nag-throw ang FirstOrDefault
+    ''' ng "Nullable object must have a value".
+    ''' </summary>
+    Private Function PositionOf(selectedId As Integer?) As String
+        If Not selectedId.HasValue OrElse _employees Is Nothing Then Return ""
+        Dim id = selectedId.Value
+        Dim matched = _employees.FirstOrDefault(Function(emp) emp.RecordId = id)
+        Return If(matched?.PositionName, "")
+    End Function
+
     Private Sub lookupContactPerson_EditValueChanged(sender As Object, e As EventArgs) _
         Handles lookupContactPerson.EditValueChanged
 
-        Dim selectedId = ToNullableInt(lookupContactPerson.EditValue)
-        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
-        txtContactPersonPosition.Text = If(matched?.PositionName, "")
+        txtContactPersonPosition.Text = PositionOf(ToNullableInt(lookupContactPerson.EditValue))
     End Sub
 
     Private Sub lookupPersonInCharge1_EditValueChanged(sender As Object, e As EventArgs) _
         Handles lookupPersonInCharge1.EditValueChanged
 
-        Dim selectedId = ToNullableInt(lookupPersonInCharge1.EditValue)
-        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
-        txtPersonInCharge1Position.Text = If(matched?.PositionName, "")
+        txtPersonInCharge1Position.Text = PositionOf(ToNullableInt(lookupPersonInCharge1.EditValue))
     End Sub
 
     Private Sub lookupPersonInCharge2_EditValueChanged(sender As Object, e As EventArgs) _
         Handles lookupPersonInCharge2.EditValueChanged
 
-        Dim selectedId = ToNullableInt(lookupPersonInCharge2.EditValue)
-        Dim matched = _employees?.FirstOrDefault(Function(emp) emp.RecordId = selectedId)
-        txtPersonInCharge2Position.Text = If(matched?.PositionName, "")
+        txtPersonInCharge2Position.Text = PositionOf(ToNullableInt(lookupPersonInCharge2.EditValue))
     End Sub
 
     ' === GRID ===

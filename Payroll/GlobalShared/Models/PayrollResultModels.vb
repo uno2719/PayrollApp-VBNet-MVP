@@ -92,6 +92,13 @@ Namespace GlobalShared.Models
                 Return SSSEE + SSSMPFEE + PhilHealthEE + PagIbigEE
             End Get
         End Property
+
+        ''' <summary>SSS na kinaltas sa empleyado (EE + MPF). Ito ang "SSS" column sa Output grid at sa mga report.</summary>
+        Public ReadOnly Property SSSTotalEE As Decimal
+            Get
+                Return SSSEE + SSSMPFEE
+            End Get
+        End Property
     End Class
 
     ''' <summary>Isang row ng tblPayrollResultLine.</summary>

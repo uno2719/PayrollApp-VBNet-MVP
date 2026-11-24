@@ -13,6 +13,13 @@ Public Class ucPayrollOutput
     Private _lines As New List(Of PayrollResultLineModel)()
     Private _columnsBuilt As Boolean = False
     Private _loadingCutoffs As Boolean = False
+    Private _cutoffs As New List(Of CutoffModel)()
+
+    ''' <summary>
+    ''' Para sa Reports button: itatakda ng Shell kapag nagawa na ang Reports module (parameter = napiling CutoffID).
+    ''' Hangga't Nothing, magpapakita lang ng "coming soon".
+    ''' </summary>
+    Public Property OpenReportsAction As Action(Of Integer?)
 
     Public Sub New()
         InitializeComponent()
@@ -51,6 +58,7 @@ Public Class ucPayrollOutput
 
     Public Sub DisplayCutoffs(cutoffs As List(Of CutoffModel)) Implements IPayrollOutputView.DisplayCutoffs
         Dim previous = GetSelectedCutoffId()
+        _cutoffs = If(cutoffs, New List(Of CutoffModel)())
 
         _loadingCutoffs = True
         Try
@@ -98,6 +106,7 @@ Public Class ucPayrollOutput
                           If(withWarnings > 0, $"    With warnings: {withWarnings}", "")
 
         ShowLinesOfFocusedRow()
+        UpdateActionState()
     End Sub
 
     Public Sub ClearResults() Implements IPayrollOutputView.ClearResults
@@ -106,11 +115,34 @@ Public Class ucPayrollOutput
         gridControl.DataSource = _headers
         gridControlLines.DataSource = New List(Of PayrollResultLineModel)()
         lblSummary.Text = "No processed results yet. Use Process in the Input tab."
+        UpdateActionState()
     End Sub
 
     Public Function GetSelectedCutoffId() As Integer? Implements IPayrollOutputView.GetSelectedCutoffId
         If cboCutoff.EditValue Is Nothing OrElse cboCutoff.EditValue Is DBNull.Value Then Return Nothing
         Return CInt(cboCutoff.EditValue)
+    End Function
+
+    Public Function GetCombineSamePayDate() As Boolean Implements IPayrollOutputView.GetCombineSamePayDate
+        Return chkCombine.Checked
+    End Function
+
+    Public Function AskConfirm(message As String, title As String) As Boolean Implements IPayrollOutputView.AskConfirm
+        Return DevExpress.XtraEditors.XtraMessageBox.Show(message, title, MessageBoxButtons.OKCancel,
+                                                          MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) = DialogResult.OK
+    End Function
+
+    Public Function AskSaveFile(defaultFileName As String, filter As String, defaultExt As String) As String Implements IPayrollOutputView.AskSaveFile
+        Using dlg As New SaveFileDialog With {
+            .Title = "Save export file",
+            .Filter = filter,
+            .FileName = defaultFileName,
+            .DefaultExt = defaultExt,
+            .AddExtension = True,
+            .OverwritePrompt = True
+        }
+            Return If(dlg.ShowDialog() = DialogResult.OK, dlg.FileName, Nothing)
+        End Using
     End Function
 
     ' Pinalitan ang pangalan para hindi sumalungat sa ShowMessage/ShowError ng ucBase (parehong pattern ng Input Entry)
@@ -137,7 +169,7 @@ Public Class ucPayrollOutput
         AddColumn(gridView, NameOf(PayrollResultModel.BasicPay), "Basic Pay", 2, True)
         AddColumn(gridView, NameOf(PayrollResultModel.GrossPay), "Gross Pay", 3, True)
         AddColumn(gridView, NameOf(PayrollResultModel.OtherDeduction), "Other Deductions", 4, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.SSSEE), "SSS", 5, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.SSSTotalEE), "SSS", 5, True)       ' EE + MPF
         AddColumn(gridView, NameOf(PayrollResultModel.PhilHealthEE), "PhilHealth", 6, True)
         AddColumn(gridView, NameOf(PayrollResultModel.PagIbigEE), "Pag-IBIG", 7, True)
         AddColumn(gridView, NameOf(PayrollResultModel.TaxableIncome), "Taxable Income", 8, True)
@@ -148,6 +180,7 @@ Public Class ucPayrollOutput
         AddColumn(gridView, NameOf(PayrollResultModel.WarningText), "Warnings", 13, False)
 
         ' Mga nakatagong detalye (nasa Column Chooser): bases at employer share
+        AddHiddenColumn(gridView, NameOf(PayrollResultModel.SSSEE), "SSS (EE only)")
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.SSSMPFEE), "SSS MPF (EE)")
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.TaxGross), "Tax Gross")
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.SSSBase), "SSS Base (this cutoff)")
@@ -235,12 +268,59 @@ Public Class ucPayrollOutput
         End Try
     End Function
 
-    Private Sub btnExportConverter_Click(sender As Object, e As EventArgs) Handles btnExportConverter.Click
-        ShowMessage("Export format para sa BDO converter - pending pa ang format mula sa gagamit ng system.")
+    ' Naka-enable lang ang mga button kapag may napiling cutoff na may results; ang Post ay Admin lang at Processed lang.
+    Private Function SelectedCutoff() As CutoffModel
+        Dim id = GetSelectedCutoffId()
+        If Not id.HasValue Then Return Nothing
+        Return _cutoffs.FirstOrDefault(Function(c) c.CutoffID = id.Value)
+    End Function
+
+    Private Sub UpdateActionState()
+        Dim c = SelectedCutoff()
+        Dim hasRows = c IsNot Nothing AndAlso _headers.Count > 0
+
+        btnExportConverter.Enabled = hasRows
+        btnExportDirect.Enabled = hasRows
+        btnExportOther.Enabled = hasRows
+        chkCombine.Enabled = hasRows
+        btnPost.Enabled = hasRows AndAlso HasEditAccess AndAlso AppSession.IsAdmin AndAlso c.Status = CutoffStatus.Processed
+        btnReports.Enabled = c IsNot Nothing
+
+        If c Is Nothing Then
+            lblStatus.Text = String.Empty
+        ElseIf c.Status = CutoffStatus.Posted Then
+            lblStatus.Text = "Status: POSTED" &
+                             If(String.IsNullOrWhiteSpace(c.PostedBy), "", " by " & c.PostedBy) &
+                             If(c.PostedDate.HasValue, " on " & c.PostedDate.Value.ToString("MMM d, yyyy h:mm tt"), "")
+            lblStatus.Appearance.ForeColor = System.Drawing.Color.SeaGreen
+        Else
+            lblStatus.Text = "Status: " & c.Status.ToString() & If(c.Status = CutoffStatus.Processed, " (not yet posted)", "")
+            lblStatus.Appearance.ForeColor = System.Drawing.Color.Empty
+        End If
     End Sub
 
-    Private Sub btnExportDirect_Click(sender As Object, e As EventArgs) Handles btnExportDirect.Click
-        ShowMessage("Direct-to-BDO export format - pending pa ang format mula sa gagamit ng system.")
+    Private Async Sub btnExportConverter_Click(sender As Object, e As EventArgs) Handles btnExportConverter.Click
+        Await _presenter.ExportAsync(ExportFormat.BdoConverter)
+    End Sub
+
+    Private Async Sub btnExportDirect_Click(sender As Object, e As EventArgs) Handles btnExportDirect.Click
+        Await _presenter.ExportAsync(ExportFormat.BdoDirect)
+    End Sub
+
+    Private Async Sub btnExportOther_Click(sender As Object, e As EventArgs) Handles btnExportOther.Click
+        Await _presenter.ExportAsync(ExportFormat.OtherLists)
+    End Sub
+
+    Private Async Sub btnPost_Click(sender As Object, e As EventArgs) Handles btnPost.Click
+        Await _presenter.PostAsync()
+    End Sub
+
+    Private Sub btnReports_Click(sender As Object, e As EventArgs) Handles btnReports.Click
+        If OpenReportsAction Is Nothing Then
+            ShowMessage("The Reports module is not available yet. Reports will be generated from Posted cutoffs.")
+        Else
+            OpenReportsAction.Invoke(GetSelectedCutoffId())
+        End If
     End Sub
 
 End Class

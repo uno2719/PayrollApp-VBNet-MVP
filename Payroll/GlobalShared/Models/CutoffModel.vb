@@ -5,7 +5,7 @@ Namespace GlobalShared.Models
     Public Enum CutoffStatus As Byte
         Draft = 0
         Processed = 1
-        Posted = 2     ' locked — future feature, not enforced yet
+        Posted = 2     ' FINAL at naka-lock: walang Unpost (Payroll > Output > Post). Hindi na pwedeng i-edit ang Input o i-re-process.
 
         ''' <summary>
         ''' Hindi ipo-process sa app na ito, hal. ang mga cutoff bago nagsimulang gamitin ang Payroll App.
@@ -42,6 +42,14 @@ Namespace GlobalShared.Models
         Public Property CreatedDate As DateTime
         Public Property ModifiedBy As String
         Public Property ModifiedDate As DateTime?
+
+        ''' <summary>Huling Process (tblCutoff.LastProcessedBy/Date). Ginagamit ng Post para malaman kung valid pa ang export.</summary>
+        Public Property LastProcessedBy As String
+        Public Property LastProcessedDate As DateTime?
+
+        ''' <summary>Sino at kailan nag-Post (Status = Posted).</summary>
+        Public Property PostedBy As String
+        Public Property PostedDate As DateTime?
 
         Public ReadOnly Property DisplayLabel As String
             Get

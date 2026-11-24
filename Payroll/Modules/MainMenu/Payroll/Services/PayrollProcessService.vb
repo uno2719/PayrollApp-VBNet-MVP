@@ -1,3 +1,4 @@
+Imports System.IO
 Imports Payroll.GeneralSettings.Data
 Imports Payroll.GlobalShared.Base
 Imports Payroll.GlobalShared.Constants
@@ -225,6 +226,156 @@ Namespace PayrollProcessing.Services
         Public Function GetResultsAsync(cutoffId As Integer) As Task(Of PayrollResultSheet) _
             Implements IPayrollProcessService.GetResultsAsync
             Return _processRepo.GetResultsAsync(cutoffId)
+        End Function
+
+        ' =============================================
+        ' EXPORT (Output tab)
+        ' =============================================
+
+        Public Async Function BuildExportPlanAsync(cutoffId As Integer, combineSamePayDate As Boolean, kind As String) As Task(Of PayrollExportPlan) _
+            Implements IPayrollProcessService.BuildExportPlanAsync
+
+            Dim withResults = Await _processRepo.GetCutoffsWithResultsAsync()
+            Dim selected = withResults.FirstOrDefault(Function(c) c.CutoffID = cutoffId)
+            If selected Is Nothing Then Throw New PayrollInputValidationException("Selected Cutoff has no results yet.")
+
+            Dim cutoffs As New List(Of CutoffModel) From {selected}
+            If combineSamePayDate Then
+                Dim payDate = PayrollExportBuilder.EffectivePayDate(selected)
+                cutoffs = withResults.Where(Function(c) PayrollExportBuilder.EffectivePayDate(c) = payDate).
+                                      OrderBy(Function(c) c.CutoffStart).ThenBy(Function(c) c.CycleType).ToList()
+            End If
+
+            Dim payouts = Await _processRepo.GetPayoutRowsAsync(cutoffs.Select(Function(c) c.CutoffID).ToList())
+            Return PayrollExportBuilder.BuildPlan(kind, cutoffs, payouts)
+        End Function
+
+        Public Async Function WriteExportAsync(plan As PayrollExportPlan, filePath As String, userName As String) As Task _
+            Implements IPayrollProcessService.WriteExportAsync
+
+            ' Ang pagsulat ng file ay sa background para hindi mag-freeze ang screen.
+            Await Task.Run(Sub()
+                               Select Case plan.Kind
+                                   Case ExportFormat.BdoConverter
+                                       PayrollExportBuilder.WriteBdoConverter(filePath, plan.Rows)
+                                   Case ExportFormat.BdoDirect
+                                       PayrollExportBuilder.WriteBdoDirect(filePath, plan.Rows)
+                                   Case Else
+                                       PayrollExportBuilder.WriteOtherLists(filePath, plan)
+                               End Select
+                           End Sub)
+
+            ' Log: isang row kada cutoff kada listahan (pareho ang BatchId kapag combined).
+            Dim batchId = Guid.NewGuid()
+            Dim fileName = Path.GetFileName(filePath)
+            Dim entries As New List(Of PayrollExportLogEntry)()
+
+            For Each cutoff In plan.Cutoffs
+                Dim cid = cutoff.CutoffID
+                Dim groups = plan.Rows.Where(Function(r) r.CutoffID = cid).Select(Function(r) r.ListGroup).Distinct().ToList()
+                For Each grp In groups
+                    Dim g = grp
+                    Dim part = plan.Rows.Where(Function(r) r.CutoffID = cid AndAlso r.ListGroup = g).ToList()
+                    entries.Add(New PayrollExportLogEntry With {
+                        .CutoffID = cid,
+                        .BatchId = batchId,
+                        .ListGroup = g,
+                        .Format = plan.Kind,
+                        .FileName = fileName,
+                        .FilePath = filePath,
+                        .EmployeeCount = part.Count,
+                        .TotalAmount = part.Sum(Function(r) r.NetPay),
+                        .IsCombined = plan.IsCombined,
+                        .ExportedBy = userName})
+                Next
+            Next
+
+            Await _processRepo.InsertExportLogAsync(entries)
+        End Function
+
+        ' =============================================
+        ' POST (FINAL - walang Unpost)
+        ' =============================================
+
+        Public Async Function GetPostStateAsync(cutoffId As Integer) As Task(Of PayrollPostState) _
+            Implements IPayrollProcessService.GetPostStateAsync
+
+            Dim allCutoffs = Await _cutoffRepo.GetAllAsync()
+            Dim cutoff = allCutoffs.FirstOrDefault(Function(c) c.CutoffID = cutoffId)
+            If cutoff Is Nothing Then Throw New PayrollInputValidationException("Selected Cutoff no longer exists.")
+
+            Dim state As New PayrollPostState With {
+                .CutoffID = cutoffId,
+                .CutoffLabel = cutoff.DisplayLabel,
+                .IsPosted = (cutoff.Status = CutoffStatus.Posted)
+            }
+            If state.IsPosted Then Return state
+
+            If Not AppSession.IsAdmin Then state.BlockReasons.Add("Only an Admin can post a cutoff.")
+            If cutoff.Status <> CutoffStatus.Processed Then
+                state.BlockReasons.Add($"Only a Processed cutoff can be posted (this one is {cutoff.Status}).")
+            End If
+
+            ' Dapat Posted (o Closed) na ang naunang cutoff(s) ng parehong pay cycle at pay month.
+            If cutoff.PeriodInMonth.HasValue Then
+                Dim cycleKey = PayCycleChoices.Normalize(cutoff.CycleType)
+                Dim monthKey = PayrollComputationRules.PayMonthKey(cutoff)
+                Dim notPosted = allCutoffs.Where(Function(c) c.CutoffID <> cutoff.CutoffID AndAlso
+                                                             String.Equals(PayCycleChoices.Normalize(c.CycleType), cycleKey, StringComparison.OrdinalIgnoreCase) AndAlso
+                                                             PayrollComputationRules.PayMonthKey(c) = monthKey AndAlso
+                                                             c.PeriodInMonth.HasValue AndAlso
+                                                             c.PeriodInMonth.Value < cutoff.PeriodInMonth.Value AndAlso
+                                                             (c.Status = CutoffStatus.Draft OrElse c.Status = CutoffStatus.Processed)).
+                                          OrderBy(Function(c) c.CutoffStart).ToList()
+                If notPosted.Count > 0 Then
+                    state.BlockReasons.Add("Post the earlier cutoff(s) of this pay month first: " &
+                                           String.Join(", ", notPosted.Select(Function(c) c.CutoffLabel)) &
+                                           ". (If they are not handled in this app, set them to Closed in Payroll Settings > Cut-Off.)")
+                End If
+            End If
+
+            Dim facts = Await _processRepo.GetPostFactsAsync(cutoffId)
+            Dim payouts = Await _processRepo.GetPayoutRowsAsync(New List(Of Integer) From {cutoffId})
+            For Each p In payouts
+                p.ListGroup = PayrollExportBuilder.Classify(p)
+            Next
+
+            state.EmployeeCount = payouts.Count
+            state.TotalNet = payouts.Sum(Function(p) p.NetPay)
+            state.LoanInstallments = facts.LoanInstallments
+
+            If facts.WarningCount > 0 Then
+                state.BlockReasons.Add($"{facts.WarningCount} employee(s) still have warnings. Fix them and re-process the cutoff.")
+            End If
+
+            Dim unassigned = payouts.Where(Function(p) p.ListGroup = PayoutGroup.Unassigned AndAlso p.NetPay > 0D).ToList()
+            If unassigned.Count > 0 Then
+                state.BlockReasons.Add($"{unassigned.Count} employee(s) have no payout method or bank (Employee > Earnings): " &
+                                       String.Join(", ", unassigned.Take(5).Select(Function(p) p.EmployeeName)) &
+                                       If(unassigned.Count > 5, ", ...", ""))
+            End If
+
+            ' Dapat na-export na ang bawat listahang may babayaran (para sa kasalukuyang processing).
+            state.RequiredGroups = PayoutGroup.Exportable.
+                Where(Function(g) payouts.Any(Function(p) p.ListGroup = g AndAlso p.NetPay > 0D)).ToList()
+            Dim missing = state.RequiredGroups.Where(Function(g) Not facts.ValidGroups.Contains(g)).ToList()
+            If missing.Count > 0 Then
+                state.BlockReasons.Add("Not yet exported (or exported before the last Process): " &
+                                       String.Join(", ", missing.Select(Function(g) PayoutGroup.DisplayName(g))))
+            End If
+
+            state.CanPost = (state.BlockReasons.Count = 0)
+            Return state
+        End Function
+
+        Public Async Function PostAsync(cutoffId As Integer, userName As String) As Task(Of PayrollPostResult) _
+            Implements IPayrollProcessService.PostAsync
+
+            Dim state = Await GetPostStateAsync(cutoffId)
+            If state.IsPosted Then Throw New PayrollInputValidationException("This Cutoff is already Posted.")
+            If Not state.CanPost Then Throw New PayrollInputValidationException(state.BlockedText())
+
+            Return Await _processRepo.PostCutoffAsync(cutoffId, userName, state.RequiredGroups)
         End Function
 
     End Class

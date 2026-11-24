@@ -29,6 +29,24 @@ Namespace PayrollProcessing.Data
 
         Function GetResultsAsync(cutoffId As Integer) As Task(Of PayrollResultSheet)
 
+        ' ---------------- Export at Post ----------------
+
+        ''' <summary>Net pay ng bawat empleyado sa mga cutoff, kasama ang Pay By / Bank (live galing sa Employee > Earnings).</summary>
+        Function GetPayoutRowsAsync(cutoffIds As IList(Of Integer)) As Task(Of List(Of PayrollPayoutRow))
+
+        ''' <summary>Isinusulat ang export log (isang row kada cutoff kada listahan). Ang ProcessedStamp ay kinukuha sa tblCutoff.LastProcessedDate.</summary>
+        Function InsertExportLogAsync(entries As List(Of PayrollExportLogEntry)) As Task
+
+        ''' <summary>Bilang ng may babala, bilang ng loan installments, at mga listahang valid na ang export.</summary>
+        Function GetPostFactsAsync(cutoffId As Integer) As Task(Of PayrollPostFacts)
+
+        ''' <summary>
+        ''' Isang transaction: sinusuri ulit ang status, babala, export at loans; minamarkahang bayad ang loan installments
+        ''' (PayrollRefNo = PR-{CutoffID}); ang loan na kumpleto na ay nagiging Completed; Status = Posted. FINAL - walang Unpost.
+        ''' Throws InvalidOperationException (may malinaw na mensahe) kung may hadlang.
+        ''' </summary>
+        Function PostCutoffAsync(cutoffId As Integer, userName As String, requiredGroups As IList(Of String)) As Task(Of PayrollPostResult)
+
     End Interface
 
 End Namespace

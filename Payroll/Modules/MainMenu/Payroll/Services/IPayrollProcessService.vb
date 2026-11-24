@@ -18,6 +18,23 @@ Namespace PayrollProcessing.Services
 
         Function GetResultsAsync(cutoffId As Integer) As Task(Of PayrollResultSheet)
 
+        ' ---------------- Export at Post (Output tab) ----------------
+
+        ''' <summary>
+        ''' Inihahanda ang export: kung combineSamePayDate, kasama ang lahat ng cutoff (may results) na pareho ang Pay Date.
+        ''' Nagbabalik ng mga row na isasama at ng mga lalaktawan (Net &lt;= 0, kulang/mali ang account, walang Pay By).
+        ''' </summary>
+        Function BuildExportPlanAsync(cutoffId As Integer, combineSamePayDate As Boolean, kind As String) As Task(Of PayrollExportPlan)
+
+        ''' <summary>Isinusulat ang file at pagkatapos ay ang export log (kapag nagtagumpay lang ang pagsulat ng file).</summary>
+        Function WriteExportAsync(plan As PayrollExportPlan, filePath As String, userName As String) As Task
+
+        ''' <summary>Pwede na bang i-Post? Kasama ang mga dahilan kung hindi pa, at ang buod para sa Confirm.</summary>
+        Function GetPostStateAsync(cutoffId As Integer) As Task(Of PayrollPostState)
+
+        ''' <summary>Admin lang. FINAL: walang Unpost. Throws kapag may hadlang.</summary>
+        Function PostAsync(cutoffId As Integer, userName As String) As Task(Of PayrollPostResult)
+
     End Interface
 
 End Namespace
