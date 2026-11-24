@@ -35,6 +35,12 @@ Namespace PayrollProcessing.Data
         ''' </summary>
         Function SaveInputDataAsync(cutoffId As Integer, table As DataTable, columns As List(Of PayrollInputColumnModel), modifiedBy As String) As Task
 
+        ''' <summary>
+        ''' Ginagawang Closed ang Draft na cutoff na walang empleyadong lalabas. Nagbabalik ng False kung hindi pwede
+        ''' (hindi na Draft, may results, o may naka-save na input).
+        ''' </summary>
+        Function CloseEmptyDraftCutoffAsync(cutoffId As Integer, closedBy As String) As Task(Of Boolean)
+
     End Interface
 
 End Namespace

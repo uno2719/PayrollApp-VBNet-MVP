@@ -41,10 +41,16 @@ Public Class ucPayroll
     Private Async Sub TabPane1_SelectedPageChanged(sender As Object, e As EventArgs) Handles TabPane1.SelectedPageChanged
         RaiseBreadcrumbChanged()
 
+        ' Tumatakbo na ang event na ito habang ginagawa pa ang InitializeComponent (default page), bago pa maitakda ang mga view.
+        If _inputEntryView Is Nothing OrElse _outputView Is Nothing Then Return
+
         If TabPane1.SelectedPage Is TabNavigationPage2 Then
             ' Laging i-reload ang Output pagbukas ng tab: baka kaka-Process lang sa Input tab.
             _outputView.ResetLoadState()
             Await _outputView.EnsureLoadedAsync()
+        ElseIf TabPane1.SelectedPage Is TabNavigationPage1 Then
+            ' Pagbalik sa Input: i-refresh lang ang listahan ng cutoff (hindi na lalabas ang Posted/Closed). Hindi ginagalaw ang grid.
+            Await _inputEntryView.RefreshCutoffsAsync()
         End If
     End Sub
 

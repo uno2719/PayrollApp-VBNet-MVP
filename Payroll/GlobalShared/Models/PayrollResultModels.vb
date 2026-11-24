@@ -35,6 +35,8 @@ Namespace GlobalShared.Models
         Public Property EmployeeNo As String
         Public Property EmployeeName As String
         Public Property PayCycle As String
+        ''' <summary>Hindi galing sa DB: pangalan ng cutoff (ipinapakita sa "Group by pay date").</summary>
+        Public Property CutoffLabel As String
         Public Property RateBasis As Byte
         Public Property PeriodInMonth As Integer?
         Public Property DaysWorked As Decimal?

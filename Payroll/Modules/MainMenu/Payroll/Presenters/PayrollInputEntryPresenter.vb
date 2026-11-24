@@ -113,6 +113,33 @@ Namespace PayrollProcessing.Presenters
             End Try
         End Function
 
+        ''' <summary>
+        ''' Para sa pagbalik sa Input tab (hal. galing sa Output pagkatapos mag-Post): ina-update lang ang listahan ng cutoff.
+        ''' Hindi ginagalaw ang grid kung nandoon pa ang napiling cutoff, kaya hindi nawawala ang mga hindi pa na-save na input.
+        ''' </summary>
+        Public Async Function RefreshCutoffsAsync() As Task
+            Dim cutoffs = Await _service.GetCutoffsAsync()
+            _view.DisplayCutoffs(cutoffs)
+        End Function
+
+        ''' <summary>"Close this cutoff": para sa Draft na cutoff na walang empleyadong lalabas.</summary>
+        Public Async Function CloseEmptyCutoffAsync() As Task
+            Dim cutoffId = _view.GetSelectedCutoffId()
+            If Not cutoffId.HasValue Then Return
+
+            Try
+                If Not _view.AskConfirm("This cutoff has no employees. Close it?" & Environment.NewLine & Environment.NewLine &
+                                        "It will no longer appear in Input Entry. You can set it back to Draft anytime in Payroll Settings > Cut-Off.",
+                                        "Close Cutoff") Then Return
+
+                Await _service.CloseEmptyCutoffAsync(cutoffId.Value, _columns, _userName)
+                _view.ShowMessage("The cutoff was closed.")
+                Await RefreshCutoffsAsync()
+            Catch ex As PayrollInputValidationException
+                _view.ShowError(ex.Message)
+            End Try
+        End Function
+
     End Class
 
 End Namespace

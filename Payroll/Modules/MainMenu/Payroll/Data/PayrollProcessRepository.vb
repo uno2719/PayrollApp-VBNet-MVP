@@ -341,81 +341,152 @@ Namespace PayrollProcessing.Data
             Return facts
         End Function
 
-        Public Async Function PostCutoffAsync(cutoffId As Integer, userName As String, requiredGroups As IList(Of String)) As Task(Of PayrollPostResult) _
-            Implements IPayrollProcessRepository.PostCutoffAsync
+        ''' <summary>Isang transaction para sa LAHAT ng hiniling na cutoff: kapag may isang pumalya, walang mapo-post (rollback lahat).</summary>
+        Public Async Function PostCutoffsAsync(requests As IList(Of PayrollPostRequest), userName As String) As Task(Of PayrollPostResult) _
+            Implements IPayrollProcessRepository.PostCutoffsAsync
 
-            Dim result As New PayrollPostResult With {.PayrollRefNo = "PR-" & cutoffId.ToString()}
+            Dim total As New PayrollPostResult()
+            Dim refs As New List(Of String)()
 
             Using conn = GetConnection()
                 Using tx = conn.BeginTransaction()
+                    For Each req In requests
+                        Dim one As PayrollPostResult = Nothing
+                        Try
+                            one = Await PostOneAsync(conn, tx, req.CutoffID, req.RequiredGroups, userName)
+                        Catch ex As InvalidOperationException
+                            Throw New InvalidOperationException(req.CutoffLabel & ": " & ex.Message)
+                        End Try
 
-                    ' I-lock ang cutoff row habang nagpo-post.
-                    Dim status = Await conn.ExecuteScalarAsync(Of Byte?)(
-                        "SELECT Status FROM tblCutoff WITH (UPDLOCK, ROWLOCK) WHERE CutoffID = @cutoffId", New With {cutoffId}, tx)
-
-                    If Not status.HasValue Then Throw New InvalidOperationException("Selected Cutoff no longer exists.")
-                    If status.Value = CByte(CutoffStatus.Posted) Then Throw New InvalidOperationException("This Cutoff is already Posted.")
-                    If status.Value <> CByte(CutoffStatus.Processed) Then Throw New InvalidOperationException("Only a Processed Cutoff can be posted.")
-
-                    ' May babala pa?
-                    Dim warnings = Await conn.ExecuteScalarAsync(Of Integer)(
-                        "SELECT COUNT(*) FROM tblPayrollResult WHERE CutoffID = @cutoffId AND HasWarnings = 1", New With {cutoffId}, tx)
-                    If warnings > 0 Then
-                        Throw New InvalidOperationException($"{warnings} employee(s) still have warnings. Fix them and re-process the cutoff first.")
-                    End If
-
-                    ' Na-export na ba ang lahat ng kailangang listahan para sa KASALUKUYANG processing?
-                    Dim exported = (Await conn.QueryAsync(Of String)(ValidGroupsSql, New With {cutoffId}, tx)).ToList()
-                    Dim missing = If(requiredGroups, New List(Of String)()).Where(Function(g) Not exported.Contains(g)).ToList()
-                    If missing.Count > 0 Then
-                        Throw New InvalidOperationException("Export these lists first (the cutoff was re-processed or never exported): " &
-                                                            String.Join(", ", missing.Select(Function(g) PayoutGroup.DisplayName(g))))
-                    End If
-
-                    ' Stale check: hindi dapat nagbago ang loan installments mula nang i-process.
-                    Dim loanRows = (Await conn.QueryAsync(Of PayrollLoanCheckRow)(LoanCheckSql, New With {cutoffId, .loan = ResultCategory.Loan}, tx)).ToList()
-                    Dim problems As New List(Of String)()
-                    For Each lr In loanRows
-                        Dim who = lr.EmployeeName & " - " & lr.Description
-                        If Not lr.FoundScheduleId.HasValue Then
-                            problems.Add(who & ": installment no longer exists")
-                        ElseIf lr.IsPaid.GetValueOrDefault() Then
-                            problems.Add(who & ": installment is already paid")
-                        ElseIf Not String.Equals(lr.LoanStatus, LoanStatus.Active, StringComparison.OrdinalIgnoreCase) Then
-                            problems.Add(who & ": loan is no longer Active (" & lr.LoanStatus & ")")
-                        ElseIf Math.Abs((lr.AmountDue.GetValueOrDefault() - lr.AmountPaid.GetValueOrDefault()) - lr.LineAmount) > 0.005D Then
-                            problems.Add(who & ": balance changed")
-                        End If
+                        total.LoanInstallmentsPaid += one.LoanInstallmentsPaid
+                        total.LoansCompleted += one.LoansCompleted
+                        total.CutoffsPosted += 1
+                        refs.Add(one.PayrollRefNo)
                     Next
-                    If problems.Count > 0 Then
-                        Throw New InvalidOperationException("Loan installments changed after this cutoff was processed. Re-process the cutoff and export again:" &
-                                                            Environment.NewLine & String.Join(Environment.NewLine, problems.Take(8).Select(Function(x) "- " & x)) &
-                                                            If(problems.Count > 8, Environment.NewLine & "... and " & (problems.Count - 8) & " more", ""))
-                    End If
-
-                    ' Loans: markahang bayad
-                    Dim paidDate = Await conn.ExecuteScalarAsync(Of DateTime)(
-                        "SELECT ISNULL(PayDate, CutoffEnd) FROM tblCutoff WHERE CutoffID = @cutoffId", New With {cutoffId}, tx)
-
-                    result.LoanInstallmentsPaid = Await conn.ExecuteAsync(MarkLoansPaidSql, New With {
-                        cutoffId, .loan = ResultCategory.Loan, paidDate, .payrollRefNo = result.PayrollRefNo, userName}, tx)
-
-                    result.LoansCompleted = Await conn.ExecuteAsync(CompleteLoansSql, New With {
-                        cutoffId, .loan = ResultCategory.Loan, .completed = LoanStatus.Completed, .active = LoanStatus.Active, userName}, tx)
-
-                    ' I-lock ang cutoff
-                    Await conn.ExecuteAsync(
-                        "UPDATE tblCutoff
-                         SET Status = @posted, PostedBy = @userName, PostedDate = SYSDATETIME(),
-                             ModifiedBy = @userName, ModifiedDate = SYSDATETIME()
-                         WHERE CutoffID = @cutoffId",
-                        New With {.posted = CByte(CutoffStatus.Posted), userName, cutoffId}, tx)
 
                     tx.Commit()
                 End Using
             End Using
 
+            total.PayrollRefNo = String.Join(", ", refs)
+            Return total
+        End Function
+
+        Private Async Function PostOneAsync(conn As IDbConnection, tx As IDbTransaction, cutoffId As Integer,
+                                            requiredGroups As IList(Of String), userName As String) As Task(Of PayrollPostResult)
+
+            Dim result As New PayrollPostResult With {.PayrollRefNo = "PR-" & cutoffId.ToString()}
+
+            ' I-lock ang cutoff row habang nagpo-post.
+            Dim status = Await conn.ExecuteScalarAsync(Of Byte?)(
+                "SELECT Status FROM tblCutoff WITH (UPDLOCK, ROWLOCK) WHERE CutoffID = @cutoffId", New With {cutoffId}, tx)
+
+            If Not status.HasValue Then Throw New InvalidOperationException("Selected Cutoff no longer exists.")
+            If status.Value = CByte(CutoffStatus.Posted) Then Throw New InvalidOperationException("This Cutoff is already Posted.")
+            If status.Value <> CByte(CutoffStatus.Processed) Then Throw New InvalidOperationException("Only a Processed Cutoff can be posted.")
+
+            ' May babala pa?
+            Dim warnings = Await conn.ExecuteScalarAsync(Of Integer)(
+                "SELECT COUNT(*) FROM tblPayrollResult WHERE CutoffID = @cutoffId AND HasWarnings = 1", New With {cutoffId}, tx)
+            If warnings > 0 Then
+                Throw New InvalidOperationException($"{warnings} employee(s) still have warnings. Fix them and re-process the cutoff first.")
+            End If
+
+            ' Na-export na ba ang lahat ng kailangang listahan para sa KASALUKUYANG processing?
+            Dim exported = (Await conn.QueryAsync(Of String)(ValidGroupsSql, New With {cutoffId}, tx)).ToList()
+            Dim missing = If(requiredGroups, New List(Of String)()).Where(Function(g) Not exported.Contains(g)).ToList()
+            If missing.Count > 0 Then
+                Throw New InvalidOperationException("Export these lists first (the cutoff was re-processed or never exported): " &
+                                                    String.Join(", ", missing.Select(Function(g) PayoutGroup.DisplayName(g))))
+            End If
+
+            ' Stale check: hindi dapat nagbago ang loan installments mula nang i-process.
+            Dim loanRows = (Await conn.QueryAsync(Of PayrollLoanCheckRow)(LoanCheckSql, New With {cutoffId, .loan = ResultCategory.Loan}, tx)).ToList()
+            Dim problems As New List(Of String)()
+            For Each lr In loanRows
+                Dim who = lr.EmployeeName & " - " & lr.Description
+                If Not lr.FoundScheduleId.HasValue Then
+                    problems.Add(who & ": installment no longer exists")
+                ElseIf lr.IsPaid.GetValueOrDefault() Then
+                    problems.Add(who & ": installment is already paid")
+                ElseIf Not String.Equals(lr.LoanStatus, LoanStatus.Active, StringComparison.OrdinalIgnoreCase) Then
+                    problems.Add(who & ": loan is no longer Active (" & lr.LoanStatus & ")")
+                ElseIf Math.Abs((lr.AmountDue.GetValueOrDefault() - lr.AmountPaid.GetValueOrDefault()) - lr.LineAmount) > 0.005D Then
+                    problems.Add(who & ": balance changed")
+                End If
+            Next
+            If problems.Count > 0 Then
+                Throw New InvalidOperationException("Loan installments changed after this cutoff was processed. Re-process the cutoff and export again:" &
+                                                    Environment.NewLine & String.Join(Environment.NewLine, problems.Take(8).Select(Function(x) "- " & x)) &
+                                                    If(problems.Count > 8, Environment.NewLine & "... and " & (problems.Count - 8) & " more", ""))
+            End If
+
+            ' Loans: markahang bayad
+            Dim paidDate = Await conn.ExecuteScalarAsync(Of DateTime)(
+                "SELECT ISNULL(PayDate, CutoffEnd) FROM tblCutoff WHERE CutoffID = @cutoffId", New With {cutoffId}, tx)
+
+            result.LoanInstallmentsPaid = Await conn.ExecuteAsync(MarkLoansPaidSql, New With {
+                cutoffId, .loan = ResultCategory.Loan, paidDate, .payrollRefNo = result.PayrollRefNo, userName}, tx)
+
+            result.LoansCompleted = Await conn.ExecuteAsync(CompleteLoansSql, New With {
+                cutoffId, .loan = ResultCategory.Loan, .completed = LoanStatus.Completed, .active = LoanStatus.Active, userName}, tx)
+
+            ' I-lock ang cutoff
+            Await conn.ExecuteAsync(
+                "UPDATE tblCutoff
+                 SET Status = @posted, PostedBy = @userName, PostedDate = SYSDATETIME(),
+                     ModifiedBy = @userName, ModifiedDate = SYSDATETIME()
+                 WHERE CutoffID = @cutoffId",
+                New With {.posted = CByte(CutoffStatus.Posted), userName, cutoffId}, tx)
+
             Return result
+        End Function
+
+        ' =============================================
+        ' PAY-DATE MODE / BDO NAMING
+        ' =============================================
+
+        Public Async Function GetResultsForCutoffsAsync(cutoffIds As IList(Of Integer)) As Task(Of PayrollResultSheet) _
+            Implements IPayrollProcessRepository.GetResultsForCutoffsAsync
+
+            Dim sheet As New PayrollResultSheet()
+            If cutoffIds Is Nothing OrElse cutoffIds.Count = 0 Then Return sheet
+
+            Using conn = GetConnection()
+                sheet.Headers = (Await conn.QueryAsync(Of PayrollResultModel)(
+                    "SELECT * FROM tblPayrollResult WHERE CutoffID IN @ids ORDER BY EmployeeName, EmployeeNo",
+                    New With {.ids = cutoffIds})).ToList()
+
+                sheet.Lines = (Await conn.QueryAsync(Of PayrollResultLineModel)(
+                    "SELECT * FROM tblPayrollResultLine WHERE CutoffID IN @ids ORDER BY ResultId, SeqNo",
+                    New With {.ids = cutoffIds})).ToList()
+            End Using
+
+            Return sheet
+        End Function
+
+        ''' <summary>Company Code ng BDO Payroll Converter = Customer ID ng aktibong BDO row sa Company Bank settings.</summary>
+        Public Async Function GetBdoCompanyCodeAsync() As Task(Of String) _
+            Implements IPayrollProcessRepository.GetBdoCompanyCodeAsync
+
+            Using conn = GetConnection()
+                Return Await conn.ExecuteScalarAsync(Of String)(
+                    "SELECT TOP 1 LTRIM(RTRIM(CustomerID))
+                     FROM tblCompanyBank
+                     WHERE BankCode = 'BDO' AND IsActive = 1 AND CustomerID IS NOT NULL AND LTRIM(RTRIM(CustomerID)) <> ''
+                     ORDER BY BankId")
+            End Using
+        End Function
+
+        Public Async Function GetBdoDirectFileNamesAsync(prefix As String) As Task(Of List(Of String)) _
+            Implements IPayrollProcessRepository.GetBdoDirectFileNamesAsync
+
+            Using conn = GetConnection()
+                Dim rows = Await conn.QueryAsync(Of String)(
+                    "SELECT DISTINCT FileName FROM tblPayrollExportLog WHERE Format = @format AND FileName LIKE @pattern",
+                    New With {.format = ExportFormat.BdoDirect, .pattern = prefix & "%"})
+                Return rows.ToList()
+            End Using
         End Function
 
     End Class

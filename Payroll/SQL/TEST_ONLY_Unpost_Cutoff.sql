@@ -1,53 +1,61 @@
 /* =====================================================================
-   TEST ONLY - HUWAG GAMITIN SA PRODUCTION / SA TOTOONG PAYROLL.
-   Ibinabalik ang isang Posted na cutoff sa Processed (kabaligtaran ng Post Cutoff sa app).
+   TEST ONLY (v2) - HUWAG GAMITIN SA PRODUCTION / SA TOTOONG PAYROLL.
+   Ibinabalik ang isa o higit pang Posted na cutoff sa Processed (kabaligtaran ng Post sa app).
    Walang Unpost sa app dahil sa desisyon ng accounting head; ito ay para sa pagte-test mo lang.
 
    PAANO GAMITIN
-     1) Itakda ang @CutoffID sa baba.
-     2) Patakbuhin nang buo. Default ay PREVIEW: ipapakita ang mga mababago, tapos ROLLBACK (walang nagbabago).
-     3) Kung ayos ang preview, itakda ang @Commit = 1 at patakbuhin ulit.
+     1) Ilagay sa @Cutoffs ang CutoffID (isa o higit pa). Kapag "Post Pay Date" ang ginamit mo, ILAGAY LAHAT ng cutoff ng pay date.
+     2) Patakbuhin nang buo. Default ay PREVIEW (@Commit = 0): ipapakita ang BAGO at PAGKATAPOS, tapos ROLLBACK.
+     3) Kung ayos ang preview, gawing @Commit = 1 at patakbuhin ulit.
+     4) Pagkatapos, isara at buksan ulit ang Loans screen sa app (naka-cache ang grid hangga't hindi nire-reload).
 
    ANO ANG IBINABALIK
      - tblCutoff: Status = 1 (Processed), PostedBy/PostedDate = NULL
-     - Loans: ang mga installment na minarkahan ng Post na ito (PayrollRefNo = 'PR-{CutoffID}') ay ibabalik:
-              AmountPaid -= kinaltas sa cutoff, IsPaid / PaidDate / PayrollRefNo ayon doon
-     - Loan na naging Completed dahil sa Post na ito (may hindi na bayad na installment ulit) ay ibabalik sa Active
-   HINDI ginagalaw: tblPayrollExportLog (valid pa rin ang export hangga't hindi nire-re-process ang cutoff)
+     - Loan installments na may PayrollRefNo = 'PR-{CutoffID}' (galing sa Post): AmountPaid -= kinaltas, IsPaid/PaidDate/PayrollRefNo ayon doon
+     - Loan na naging Completed dahil sa Post (may hindi na bayad na installment ulit) -> Active
+   HINDI ginagalaw: tblPayrollExportLog.
 
-   SAFETY: titigil kung hindi Posted ang cutoff, o kung may mas bagong Posted na cutoff ng parehong pay cycle.
+   MAHALAGA: ang mga installment na MAY ibang PayrollRefNo (hal. ni-record mo mismo sa Loans screen) ay HINDI ginagalaw nito.
+   Lalabas iyon sa "MatchesPostRef = 0" sa diagnostic sa baba.
    ===================================================================== */
 SET NOCOUNT ON;
 
-DECLARE @CutoffID INT = 0;      -- <== ILAGAY ANG CutoffID DITO
-DECLARE @Commit   BIT = 0;      -- 0 = preview lang (ROLLBACK), 1 = i-commit
+DECLARE @Commit BIT = 0;       -- 0 = preview lang (ROLLBACK), 1 = i-commit
 
-DECLARE @Ref VARCHAR(50) = 'PR-' + CAST(@CutoffID AS VARCHAR(20));
+DECLARE @Cutoffs TABLE (CutoffID INT PRIMARY KEY);
+INSERT INTO @Cutoffs (CutoffID) VALUES (0);         -- <== ILAGAY DITO, hal. VALUES (27), (28), (29)
 
 BEGIN TRY
+    IF EXISTS (SELECT 1 FROM @Cutoffs WHERE CutoffID = 0)
+        RAISERROR('Ilagay muna ang totoong CutoffID sa @Cutoffs (sa taas).', 16, 1);
+
     BEGIN TRAN;
 
-    DECLARE @Status TINYINT, @CycleType NVARCHAR(100), @CutoffStart DATE;
-    SELECT @Status = Status, @CycleType = CycleType, @CutoffStart = CutoffStart
-    FROM dbo.tblCutoff WITH (UPDLOCK, ROWLOCK)
-    WHERE CutoffID = @CutoffID;
+    IF EXISTS (SELECT 1 FROM @Cutoffs x WHERE NOT EXISTS (SELECT 1 FROM dbo.tblCutoff c WHERE c.CutoffID = x.CutoffID))
+        RAISERROR('May CutoffID sa listahan na wala sa tblCutoff.', 16, 1);
 
-    IF @Status IS NULL      RAISERROR('Walang cutoff na may ganitong CutoffID.', 16, 1);
-    IF @Status <> 2         RAISERROR('Hindi Posted ang cutoff na ito (Status <> 2). Walang gagawin.', 16, 1);
+    IF EXISTS (SELECT 1 FROM @Cutoffs x INNER JOIN dbo.tblCutoff c ON c.CutoffID = x.CutoffID WHERE c.Status <> 2)
+        RAISERROR('May cutoff sa listahan na hindi Posted (Status <> 2). Walang gagawin.', 16, 1);
 
-    IF EXISTS (SELECT 1 FROM dbo.tblCutoff
-               WHERE CutoffID <> @CutoffID AND Status = 2
-                 AND CycleType = @CycleType AND CutoffStart > @CutoffStart)
-        RAISERROR('May mas bagong Posted na cutoff ng parehong pay cycle. I-unpost muna iyon.', 16, 1);
+    IF EXISTS (SELECT 1
+               FROM @Cutoffs x
+                    INNER JOIN dbo.tblCutoff c ON c.CutoffID = x.CutoffID
+                    INNER JOIN dbo.tblCutoff n ON n.CycleType = c.CycleType AND n.Status = 2 AND n.CutoffStart > c.CutoffStart
+               WHERE n.CutoffID NOT IN (SELECT CutoffID FROM @Cutoffs))
+        RAISERROR('May mas bagong Posted na cutoff ng parehong pay cycle na wala sa listahan. Isama o i-unpost muna iyon.', 16, 1);
 
-    -- PREVIEW: mga loan installment na ibabalik
-    SELECT 'LOAN INSTALLMENTS NA IBABALIK' AS Preview, s.ScheduleId, s.EmployeeLoanId, s.AmountDue,
-           s.AmountPaid AS AmountPaid_Now, s.AmountPaid - l.Amount AS AmountPaid_After, s.IsPaid AS IsPaid_Now
-    FROM dbo.tblEmployeeLoanSchedule s
-         INNER JOIN dbo.tblPayrollResultLine l ON l.RefId = s.ScheduleId
-    WHERE l.CutoffID = @CutoffID AND l.Category = 'LOAN' AND s.PayrollRefNo = @Ref;
+    /* ---------- BAGO: lahat ng LOAN line ng mga cutoff na ito at ang kalagayan ng installment ---------- */
+    SELECT 'BAGO' AS Stage, l.CutoffID, r.EmployeeName, s.ScheduleId, l.Amount AS LineAmount, s.AmountDue, s.AmountPaid, s.IsPaid,
+           s.PayrollRefNo,
+           CASE WHEN s.PayrollRefNo = 'PR-' + CAST(l.CutoffID AS VARCHAR(20)) THEN 1 ELSE 0 END AS MatchesPostRef
+    FROM dbo.tblPayrollResultLine l
+         INNER JOIN @Cutoffs x ON x.CutoffID = l.CutoffID
+         INNER JOIN dbo.tblPayrollResult r ON r.ResultId = l.ResultId
+         LEFT JOIN dbo.tblEmployeeLoanSchedule s ON s.ScheduleId = l.RefId
+    WHERE l.Category = 'LOAN'
+    ORDER BY l.CutoffID, r.EmployeeName;
 
-    -- 1) Loan installments
+    /* ---------- 1) Loan installments ---------- */
     UPDATE s
     SET    s.AmountPaid   = CASE WHEN s.AmountPaid - l.Amount < 0 THEN 0 ELSE s.AmountPaid - l.Amount END,
            s.IsPaid       = CASE WHEN s.AmountPaid - l.Amount >= s.AmountDue THEN 1 ELSE 0 END,
@@ -57,10 +65,12 @@ BEGIN TRY
            s.UpdatedBy    = 'TEST-UNPOST'
     FROM   dbo.tblEmployeeLoanSchedule s
            INNER JOIN dbo.tblPayrollResultLine l ON l.RefId = s.ScheduleId
-    WHERE  l.CutoffID = @CutoffID AND l.Category = 'LOAN' AND s.PayrollRefNo = @Ref;
+           INNER JOIN @Cutoffs x ON x.CutoffID = l.CutoffID
+    WHERE  l.Category = 'LOAN'
+      AND  s.PayrollRefNo = 'PR-' + CAST(l.CutoffID AS VARCHAR(20));
     PRINT 'Installments na naibalik: ' + CAST(@@ROWCOUNT AS VARCHAR(20));
 
-    -- 2) Loans na naging Completed dahil sa Post na ito -> Active ulit
+    /* ---------- 2) Loans na naging Completed dahil sa Post -> Active ulit ---------- */
     UPDATE ln
     SET    ln.Status      = 'Active',
            ln.CompletedAt = NULL,
@@ -71,29 +81,41 @@ BEGIN TRY
       AND  ln.EmployeeLoanId IN (SELECT s.EmployeeLoanId
                                  FROM dbo.tblEmployeeLoanSchedule s
                                       INNER JOIN dbo.tblPayrollResultLine l ON l.RefId = s.ScheduleId
-                                 WHERE l.CutoffID = @CutoffID AND l.Category = 'LOAN')
-      AND  EXISTS (SELECT 1 FROM dbo.tblEmployeeLoanSchedule x
-                   WHERE x.EmployeeLoanId = ln.EmployeeLoanId AND x.IsPaid = 0);
+                                      INNER JOIN @Cutoffs x ON x.CutoffID = l.CutoffID
+                                 WHERE l.Category = 'LOAN')
+      AND  EXISTS (SELECT 1 FROM dbo.tblEmployeeLoanSchedule z WHERE z.EmployeeLoanId = ln.EmployeeLoanId AND z.IsPaid = 0);
     PRINT 'Loans na ibinalik sa Active: ' + CAST(@@ROWCOUNT AS VARCHAR(20));
 
-    -- 3) Cutoff
-    UPDATE dbo.tblCutoff
-    SET    Status = 1, PostedBy = NULL, PostedDate = NULL,
-           ModifiedBy = 'TEST-UNPOST', ModifiedDate = SYSDATETIME()
-    WHERE  CutoffID = @CutoffID;
+    /* ---------- 3) Cutoffs ---------- */
+    UPDATE c
+    SET    c.Status = 1, c.PostedBy = NULL, c.PostedDate = NULL,
+           c.ModifiedBy = 'TEST-UNPOST', c.ModifiedDate = SYSDATETIME()
+    FROM   dbo.tblCutoff c
+           INNER JOIN @Cutoffs x ON x.CutoffID = c.CutoffID;
+    PRINT 'Cutoffs na ibinalik sa Processed: ' + CAST(@@ROWCOUNT AS VARCHAR(20));
 
-    SELECT 'CUTOFF PAGKATAPOS' AS Preview, CutoffID, CutoffLabel, Status, PostedBy, PostedDate
-    FROM dbo.tblCutoff WHERE CutoffID = @CutoffID;
+    /* ---------- PAGKATAPOS ---------- */
+    SELECT 'PAGKATAPOS' AS Stage, l.CutoffID, r.EmployeeName, s.ScheduleId, l.Amount AS LineAmount, s.AmountDue, s.AmountPaid, s.IsPaid,
+           s.PayrollRefNo
+    FROM dbo.tblPayrollResultLine l
+         INNER JOIN @Cutoffs x ON x.CutoffID = l.CutoffID
+         INNER JOIN dbo.tblPayrollResult r ON r.ResultId = l.ResultId
+         LEFT JOIN dbo.tblEmployeeLoanSchedule s ON s.ScheduleId = l.RefId
+    WHERE l.Category = 'LOAN'
+    ORDER BY l.CutoffID, r.EmployeeName;
+
+    SELECT 'CUTOFFS' AS Stage, c.CutoffID, c.CutoffLabel, c.Status, c.PostedBy, c.PostedDate
+    FROM dbo.tblCutoff c INNER JOIN @Cutoffs x ON x.CutoffID = c.CutoffID;
 
     IF @Commit = 1
     BEGIN
         COMMIT TRAN;
-        PRINT 'COMMITTED: ang cutoff ay Processed na ulit.';
+        PRINT 'COMMITTED: ang mga cutoff ay Processed na ulit. Buksan ulit ang Loans screen sa app.';
     END
     ELSE
     BEGIN
         ROLLBACK TRAN;
-        PRINT 'PREVIEW LANG - na-rollback. Itakda ang @Commit = 1 para ipatupad.';
+        PRINT 'PREVIEW LANG - na-rollback, WALANG nabago. Itakda ang @Commit = 1 at patakbuhin ulit para ipatupad.';
     END
 END TRY
 BEGIN CATCH

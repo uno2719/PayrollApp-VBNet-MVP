@@ -13,13 +13,18 @@ Public Class ucPayrollOutput
     Private _lines As New List(Of PayrollResultLineModel)()
     Private _columnsBuilt As Boolean = False
     Private _loadingCutoffs As Boolean = False
-    Private _cutoffs As New List(Of CutoffModel)()
+    Private _cutoffs As New List(Of CutoffModel)()              ' mode: per-cutoff
+    Private _groups As New List(Of PayDateGroupModel)()         ' mode: Group by pay date
+    Private _groupMode As Boolean = False
 
     ''' <summary>
-    ''' Para sa Reports button: itatakda ng Shell kapag nagawa na ang Reports module (parameter = napiling CutoffID).
-    ''' Hangga't Nothing, magpapakita lang ng "coming soon".
+    ''' Para sa Reports button: itatakda ng Shell kapag nagawa na ang Reports module (parameter = mga napiling CutoffID).
+    ''' Hangga't Nothing, magpapakita lang ng "not available yet".
     ''' </summary>
-    Public Property OpenReportsAction As Action(Of Integer?)
+    Public Property OpenReportsAction As Action(Of List(Of Integer))
+
+    ''' <summary>Pareho, para sa Payslips button (Payslip module).</summary>
+    Public Property OpenPayslipAction As Action(Of List(Of Integer))
 
     Public Sub New()
         InitializeComponent()
@@ -57,32 +62,58 @@ Public Class ucPayrollOutput
 #Region "IPayrollOutputView"
 
     Public Sub DisplayCutoffs(cutoffs As List(Of CutoffModel)) Implements IPayrollOutputView.DisplayCutoffs
-        Dim previous = GetSelectedCutoffId()
+        Dim previous As Object = If(_groupMode, Nothing, cboCutoff.EditValue)
+        _groupMode = False
         _cutoffs = If(cutoffs, New List(Of CutoffModel)())
+        _groups = New List(Of PayDateGroupModel)()
 
+        lblCutoff.Text = "Cutoff:"
+        BindCombo(_cutoffs, NameOf(CutoffModel.DisplayLabel), NameOf(CutoffModel.CutoffID), "Cutoff", previous,
+                  If(_cutoffs.Count > 0, CObj(_cutoffs(0).CutoffID), Nothing))      ' pinakabago ang una
+        RefreshSelection()
+    End Sub
+
+    Public Sub DisplayPayDates(groups As List(Of PayDateGroupModel)) Implements IPayrollOutputView.DisplayPayDates
+        Dim previous As Object = If(_groupMode, cboCutoff.EditValue, Nothing)
+        _groupMode = True
+        _groups = If(groups, New List(Of PayDateGroupModel)())
+        _cutoffs = New List(Of CutoffModel)()
+
+        lblCutoff.Text = "Pay date:"
+        BindCombo(_groups, NameOf(PayDateGroupModel.DisplayLabel), NameOf(PayDateGroupModel.GroupKey), "Pay date", previous,
+                  If(_groups.Count > 0, CObj(_groups(0).GroupKey), Nothing))
+        RefreshSelection()
+    End Sub
+
+    Private Sub BindCombo(source As Object, displayMember As String, valueMember As String, caption As String,
+                          previous As Object, firstValue As Object)
         _loadingCutoffs = True
         Try
-            cboCutoff.Properties.DataSource = cutoffs
-            cboCutoff.Properties.DisplayMember = NameOf(CutoffModel.DisplayLabel)
-            cboCutoff.Properties.ValueMember = NameOf(CutoffModel.CutoffID)
+            cboCutoff.Properties.DataSource = source
+            cboCutoff.Properties.DisplayMember = displayMember
+            cboCutoff.Properties.ValueMember = valueMember
             cboCutoff.Properties.Columns.Clear()
-            cboCutoff.Properties.Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo(NameOf(CutoffModel.DisplayLabel), "Cutoff"))
+            cboCutoff.Properties.Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo(displayMember, caption))
 
-            If previous.HasValue AndAlso cutoffs.Any(Function(c) c.CutoffID = previous.Value) Then
-                cboCutoff.EditValue = previous.Value
-            ElseIf cutoffs.Count > 0 Then
-                cboCutoff.EditValue = cutoffs(0).CutoffID      ' pinakabago
-            Else
-                cboCutoff.EditValue = Nothing
+            Dim keep As Boolean = False
+            If previous IsNot Nothing AndAlso previous IsNot DBNull.Value Then
+                If _groupMode Then
+                    keep = _groups.Any(Function(g) g.GroupKey = CStr(previous))
+                Else
+                    keep = _cutoffs.Any(Function(c) c.CutoffID = CInt(previous))
+                End If
             End If
+            cboCutoff.EditValue = If(keep, previous, firstValue)
         Finally
             _loadingCutoffs = False
         End Try
+    End Sub
 
-        ' Laging i-refresh ang results ng napiling cutoff (maaaring na-re-process sa Input tab).
-        Dim selected = GetSelectedCutoffId()
-        If selected.HasValue Then
-            Dim ignore = LoadSelectedAsync(selected.Value)
+    ' Laging i-refresh ang results ng napili (maaaring na-re-process sa Input tab).
+    Private Sub RefreshSelection()
+        Dim ids = GetSelectedCutoffIds()
+        If ids.Count > 0 Then
+            Dim ignore = LoadSelectionAsync(ids)
         Else
             ClearResults()
         End If
@@ -95,6 +126,12 @@ Public Class ucPayrollOutput
         _lines = If(lines, New List(Of PayrollResultLineModel)())
 
         gridControl.DataSource = _headers
+
+        Dim cutoffCol = gridView.Columns.ColumnByFieldName(NameOf(PayrollResultModel.CutoffLabel))
+        If cutoffCol IsNot Nothing Then
+            cutoffCol.Visible = _groupMode
+            If _groupMode Then cutoffCol.VisibleIndex = 2
+        End If
         gridView.BestFitColumns()
 
         Dim gross = _headers.Sum(Function(h) h.GrossPay)
@@ -118,18 +155,46 @@ Public Class ucPayrollOutput
         UpdateActionState()
     End Sub
 
-    Public Function GetSelectedCutoffId() As Integer? Implements IPayrollOutputView.GetSelectedCutoffId
-        If cboCutoff.EditValue Is Nothing OrElse cboCutoff.EditValue Is DBNull.Value Then Return Nothing
-        Return CInt(cboCutoff.EditValue)
+    Public Function IsGroupByPayDate() As Boolean Implements IPayrollOutputView.IsGroupByPayDate
+        Return chkCombine.Checked
     End Function
 
-    Public Function GetCombineSamePayDate() As Boolean Implements IPayrollOutputView.GetCombineSamePayDate
-        Return chkCombine.Checked
+    ' Mga cutoff ng napili: isa sa per-cutoff mode, o lahat ng cutoff ng napiling pay date.
+    Private Function SelectedCutoffList() As List(Of CutoffModel)
+        Dim value = cboCutoff.EditValue
+        If value Is Nothing OrElse value Is DBNull.Value Then Return New List(Of CutoffModel)()
+
+        If _groupMode Then
+            Dim key = CStr(value)
+            Dim grp = _groups.FirstOrDefault(Function(g) g.GroupKey = key)
+            Return If(grp Is Nothing, New List(Of CutoffModel)(), grp.Cutoffs)
+        End If
+
+        Dim id = CInt(value)
+        Return _cutoffs.Where(Function(c) c.CutoffID = id).ToList()
+    End Function
+
+    Public Function GetSelectedCutoffIds() As List(Of Integer) Implements IPayrollOutputView.GetSelectedCutoffIds
+        Return SelectedCutoffList().Select(Function(c) c.CutoffID).ToList()
+    End Function
+
+    Public Function GetSelectedPayDate() As Date? Implements IPayrollOutputView.GetSelectedPayDate
+        If Not _groupMode Then Return Nothing
+        Dim value = cboCutoff.EditValue
+        If value Is Nothing OrElse value Is DBNull.Value Then Return Nothing
+        Dim key = CStr(value)
+        Dim grp = _groups.FirstOrDefault(Function(g) g.GroupKey = key)
+        If grp Is Nothing Then Return Nothing
+        Return grp.PayDate
     End Function
 
     Public Function AskConfirm(message As String, title As String) As Boolean Implements IPayrollOutputView.AskConfirm
         Return DevExpress.XtraEditors.XtraMessageBox.Show(message, title, MessageBoxButtons.OKCancel,
                                                           MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) = DialogResult.OK
+    End Function
+
+    Public Function AskInput(prompt As String, title As String, defaultValue As String) As String Implements IPayrollOutputView.AskInput
+        Return DevExpress.XtraEditors.XtraInputBox.Show(prompt, title, defaultValue)
     End Function
 
     Public Function AskSaveFile(defaultFileName As String, filter As String, defaultExt As String) As String Implements IPayrollOutputView.AskSaveFile
@@ -192,6 +257,12 @@ Public Class ucPayrollOutput
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.ECC), "ECC (ER)")
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.PhilHealthER), "PhilHealth (ER)")
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.PagIbigER), "Pag-IBIG (ER)")
+        ' "Cutoff" column: lumalabas lang sa "Group by pay date" (kinokontrol sa DisplayResults)
+        Dim cutoffCol = gridView.Columns.AddField(NameOf(PayrollResultModel.CutoffLabel))
+        cutoffCol.Caption = "Cutoff"
+        cutoffCol.Visible = False
+        cutoffCol.OptionsColumn.AllowEdit = False
+
         gridView.OptionsView.ColumnAutoWidth = False
         gridView.OptionsBehavior.Editable = False
 
@@ -252,50 +323,64 @@ Public Class ucPayrollOutput
 
     Private Async Sub cboCutoff_EditValueChanged(sender As Object, e As EventArgs) Handles cboCutoff.EditValueChanged
         If _loadingCutoffs Then Return
-        Dim id = GetSelectedCutoffId()
-        If id.HasValue Then
-            Await LoadSelectedAsync(id.Value)
+        Dim ids = GetSelectedCutoffIds()
+        If ids.Count > 0 Then
+            Await LoadSelectionAsync(ids)
         Else
             ClearResults()
         End If
     End Sub
 
-    Private Async Function LoadSelectedAsync(cutoffId As Integer) As Task
+    Private Async Function LoadSelectionAsync(cutoffIds As List(Of Integer)) As Task
         Try
-            Await _presenter.LoadCutoffAsync(cutoffId)
+            Await _presenter.LoadSelectionAsync(cutoffIds)
         Catch ex As Exception
             ShowError(ex.Message)
         End Try
     End Function
 
-    ' Naka-enable lang ang mga button kapag may napiling cutoff na may results; ang Post ay Admin lang at Processed lang.
-    Private Function SelectedCutoff() As CutoffModel
-        Dim id = GetSelectedCutoffId()
-        If Not id.HasValue Then Return Nothing
-        Return _cutoffs.FirstOrDefault(Function(c) c.CutoffID = id.Value)
-    End Function
+    ' Pag-toggle ng "Group by pay date": ibang laman ang combo (mga pay date vs mga cutoff).
+    Private Async Sub chkCombine_CheckedChanged(sender As Object, e As EventArgs) Handles chkCombine.CheckedChanged
+        Try
+            Await _presenter.LoadAsync()
+        Catch ex As Exception
+            ShowError(ex.Message)
+        End Try
+    End Sub
 
+    ' Naka-enable lang ang mga button kapag may napili na may results; ang Post ay Admin lang at kapag may Processed na cutoff.
     Private Sub UpdateActionState()
-        Dim c = SelectedCutoff()
-        Dim hasRows = c IsNot Nothing AndAlso _headers.Count > 0
+        Dim selected = SelectedCutoffList()
+        Dim hasRows = selected.Count > 0 AndAlso _headers.Count > 0
 
         btnExportConverter.Enabled = hasRows
         btnExportDirect.Enabled = hasRows
         btnExportOther.Enabled = hasRows
-        chkCombine.Enabled = hasRows
-        btnPost.Enabled = hasRows AndAlso HasEditAccess AndAlso AppSession.IsAdmin AndAlso c.Status = CutoffStatus.Processed
-        btnReports.Enabled = c IsNot Nothing
+        btnPost.Enabled = hasRows AndAlso HasEditAccess AndAlso AppSession.IsAdmin AndAlso
+                          selected.Any(Function(c) c.Status = CutoffStatus.Processed)
+        btnPost.Text = If(_groupMode, "Post Pay Date", "Post Cutoff")
+        btnReports.Enabled = selected.Count > 0
+        btnPayslip.Enabled = selected.Count > 0
 
-        If c Is Nothing Then
+        If selected.Count = 0 Then
             lblStatus.Text = String.Empty
-        ElseIf c.Status = CutoffStatus.Posted Then
-            lblStatus.Text = "Status: POSTED" &
-                             If(String.IsNullOrWhiteSpace(c.PostedBy), "", " by " & c.PostedBy) &
-                             If(c.PostedDate.HasValue, " on " & c.PostedDate.Value.ToString("MMM d, yyyy h:mm tt"), "")
-            lblStatus.Appearance.ForeColor = System.Drawing.Color.SeaGreen
-        Else
-            lblStatus.Text = "Status: " & c.Status.ToString() & If(c.Status = CutoffStatus.Processed, " (not yet posted)", "")
             lblStatus.Appearance.ForeColor = System.Drawing.Color.Empty
+        ElseIf Not _groupMode Then
+            Dim c = selected(0)
+            If c.Status = CutoffStatus.Posted Then
+                lblStatus.Text = "Status: POSTED" &
+                                 If(String.IsNullOrWhiteSpace(c.PostedBy), "", " by " & c.PostedBy) &
+                                 If(c.PostedDate.HasValue, " on " & c.PostedDate.Value.ToString("MMM d, yyyy h:mm tt"), "")
+                lblStatus.Appearance.ForeColor = System.Drawing.Color.SeaGreen
+            Else
+                lblStatus.Text = "Status: " & c.Status.ToString() & If(c.Status = CutoffStatus.Processed, " (not yet posted)", "")
+                lblStatus.Appearance.ForeColor = System.Drawing.Color.Empty
+            End If
+        Else
+            Dim parts = selected.GroupBy(Function(c) c.Status).Select(Function(g) g.Count() & " " & g.Key.ToString())
+            lblStatus.Text = $"{selected.Count} cutoff(s): " & String.Join(", ", parts)
+            lblStatus.Appearance.ForeColor = If(selected.All(Function(c) c.Status = CutoffStatus.Posted),
+                                                System.Drawing.Color.SeaGreen, System.Drawing.Color.Empty)
         End If
     End Sub
 
@@ -319,7 +404,15 @@ Public Class ucPayrollOutput
         If OpenReportsAction Is Nothing Then
             ShowMessage("The Reports module is not available yet. Reports will be generated from Posted cutoffs.")
         Else
-            OpenReportsAction.Invoke(GetSelectedCutoffId())
+            OpenReportsAction.Invoke(GetSelectedCutoffIds())
+        End If
+    End Sub
+
+    Private Sub btnPayslip_Click(sender As Object, e As EventArgs) Handles btnPayslip.Click
+        If OpenPayslipAction Is Nothing Then
+            ShowMessage("The Payslip module is not available yet. Payslips will be generated from Posted cutoffs.")
+        Else
+            OpenPayslipAction.Invoke(GetSelectedCutoffIds())
         End If
     End Sub
 

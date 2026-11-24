@@ -18,22 +18,34 @@ Namespace PayrollProcessing.Services
 
         Function GetResultsAsync(cutoffId As Integer) As Task(Of PayrollResultSheet)
 
-        ' ---------------- Export at Post (Output tab) ----------------
+        ' ---------------- Pay-date mode / Export / Post (Output tab) ----------------
+
+        ''' <summary>Mga pay date na may processed cutoff, at ang mga cutoff nito ("Group by pay date").</summary>
+        Function GetPayDateGroupsAsync() As Task(Of List(Of PayDateGroupModel))
+
+        ''' <summary>Results ng isa o higit pang cutoff nang sabay (may CutoffLabel ang bawat empleyado).</summary>
+        Function GetResultsForCutoffsAsync(cutoffIds As IList(Of Integer)) As Task(Of PayrollResultSheet)
 
         ''' <summary>
-        ''' Inihahanda ang export: kung combineSamePayDate, kasama ang lahat ng cutoff (may results) na pareho ang Pay Date.
+        ''' Inihahanda ang export ng mga napiling cutoff (isa, o lahat ng cutoff ng pay date).
         ''' Nagbabalik ng mga row na isasama at ng mga lalaktawan (Net &lt;= 0, kulang/mali ang account, walang Pay By).
         ''' </summary>
-        Function BuildExportPlanAsync(cutoffId As Integer, combineSamePayDate As Boolean, kind As String) As Task(Of PayrollExportPlan)
+        Function BuildExportPlanAsync(cutoffIds As IList(Of Integer), kind As String) As Task(Of PayrollExportPlan)
+
+        ''' <summary>Company Code at mga batch na nagamit na ngayong araw para sa pangalan ng BDO Direct .txt. Throws kung walang Customer ID.</summary>
+        Function GetBdoDirectNamingAsync() As Task(Of BdoDirectNaming)
 
         ''' <summary>Isinusulat ang file at pagkatapos ay ang export log (kapag nagtagumpay lang ang pagsulat ng file).</summary>
         Function WriteExportAsync(plan As PayrollExportPlan, filePath As String, userName As String) As Task
 
-        ''' <summary>Pwede na bang i-Post? Kasama ang mga dahilan kung hindi pa, at ang buod para sa Confirm.</summary>
-        Function GetPostStateAsync(cutoffId As Integer) As Task(Of PayrollPostState)
+        ''' <summary>
+        ''' Pwede na bang i-Post? payDate ay may laman lang sa "Group by pay date" (lahat ng cutoff ng pay date ay sabay na ipo-post,
+        ''' all-or-nothing). Kasama ang mga dahilan kung hindi pa, at ang buod para sa Confirm.
+        ''' </summary>
+        Function GetPostStateAsync(cutoffIds As IList(Of Integer), payDate As Date?) As Task(Of PayrollPostState)
 
         ''' <summary>Admin lang. FINAL: walang Unpost. Throws kapag may hadlang.</summary>
-        Function PostAsync(cutoffId As Integer, userName As String) As Task(Of PayrollPostResult)
+        Function PostAsync(cutoffIds As IList(Of Integer), payDate As Date?, userName As String) As Task(Of PayrollPostResult)
 
     End Interface
 

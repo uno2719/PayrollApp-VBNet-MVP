@@ -20,6 +20,7 @@ Partial Class ucPayrollInputEntry
         PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         btnColumns = New DevExpress.XtraEditors.SimpleButton()
         btnProcess = New DevExpress.XtraEditors.SimpleButton()
+        btnCloseCutoff = New DevExpress.XtraEditors.SimpleButton()
         cboCutoff = New DevExpress.XtraEditors.LookUpEdit()
         lblCutoff = New DevExpress.XtraEditors.LabelControl()
         lblTabPageTitle = New DevExpress.XtraEditors.LabelControl()
@@ -41,6 +42,7 @@ Partial Class ucPayrollInputEntry
         '
         PanelControl1.Controls.Add(btnColumns)
         PanelControl1.Controls.Add(btnProcess)
+        PanelControl1.Controls.Add(btnCloseCutoff)
         PanelControl1.Controls.Add(cboCutoff)
         PanelControl1.Controls.Add(lblCutoff)
         PanelControl1.Controls.Add(lblTabPageTitle)
@@ -89,6 +91,16 @@ Partial Class ucPayrollInputEntry
         btnProcess.Size = New System.Drawing.Size(100, 25)
         btnProcess.TabIndex = 3
         btnProcess.Text = "Process"
+        '
+        ' btnCloseCutoff - lumalabas lang kapag Draft ang cutoff at walang empleyadong lumabas
+        '
+        btnCloseCutoff.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
+        btnCloseCutoff.Location = New System.Drawing.Point(744, 20)
+        btnCloseCutoff.Name = "btnCloseCutoff"
+        btnCloseCutoff.Size = New System.Drawing.Size(124, 25)
+        btnCloseCutoff.TabIndex = 5
+        btnCloseCutoff.Text = "Close this cutoff"
+        btnCloseCutoff.Visible = False
         '
         ' btnColumns
         '
@@ -170,6 +182,7 @@ Partial Class ucPayrollInputEntry
     Friend WithEvents lblCutoff As DevExpress.XtraEditors.LabelControl
     Friend WithEvents cboCutoff As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents btnProcess As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnCloseCutoff As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnColumns As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents gridControl As DevExpress.XtraGrid.GridControl
     Friend WithEvents gridView As DevExpress.XtraGrid.Views.Grid.GridView

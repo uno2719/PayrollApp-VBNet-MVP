@@ -41,11 +41,23 @@ Namespace PayrollProcessing.Data
         Function GetPostFactsAsync(cutoffId As Integer) As Task(Of PayrollPostFacts)
 
         ''' <summary>
-        ''' Isang transaction: sinusuri ulit ang status, babala, export at loans; minamarkahang bayad ang loan installments
-        ''' (PayrollRefNo = PR-{CutoffID}); ang loan na kumpleto na ay nagiging Completed; Status = Posted. FINAL - walang Unpost.
-        ''' Throws InvalidOperationException (may malinaw na mensahe) kung may hadlang.
+        ''' Isang transaction para sa lahat ng hiniling na cutoff: sinusuri ulit ang status, babala, export at loans;
+        ''' minamarkahang bayad ang loan installments (PayrollRefNo = PR-{CutoffID}); ang loan na kumpleto na ay nagiging
+        ''' Completed; Status = Posted. FINAL - walang Unpost. All-or-nothing. Throws InvalidOperationException (may malinaw
+        ''' na mensahe, may pangalan ng cutoff) kung may hadlang.
         ''' </summary>
-        Function PostCutoffAsync(cutoffId As Integer, userName As String, requiredGroups As IList(Of String)) As Task(Of PayrollPostResult)
+        Function PostCutoffsAsync(requests As IList(Of PayrollPostRequest), userName As String) As Task(Of PayrollPostResult)
+
+        ' ---------------- Pay-date mode / BDO naming ----------------
+
+        ''' <summary>Results (mga empleyado at linya) ng ilang cutoff nang sabay - para sa "Group by pay date".</summary>
+        Function GetResultsForCutoffsAsync(cutoffIds As IList(Of Integer)) As Task(Of PayrollResultSheet)
+
+        ''' <summary>Customer ID ng aktibong BDO row sa tblCompanyBank (= Company Code ng BDO Payroll Converter). Nothing kung wala.</summary>
+        Function GetBdoCompanyCodeAsync() As Task(Of String)
+
+        ''' <summary>Mga pangalan ng BDO Direct file sa export log na nagsisimula sa prefix (para malaman ang mga batch na nagamit na).</summary>
+        Function GetBdoDirectFileNamesAsync(prefix As String) As Task(Of List(Of String))
 
     End Interface
 

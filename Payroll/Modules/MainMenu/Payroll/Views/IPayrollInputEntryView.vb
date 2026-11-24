@@ -24,6 +24,9 @@ Namespace PayrollProcessing.Views
         ''' <summary>Ipinapakita ang buod ng computation; True kung pumayag ang user na i-save.</summary>
         Function ConfirmProcess(summary As String) As Boolean
 
+        ''' <summary>OK / Cancel (default ay Cancel). True kapag OK.</summary>
+        Function AskConfirm(message As String, title As String) As Boolean
+
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
 

@@ -23,6 +23,7 @@ Partial Class ucPayrollOutput
         btnExportOther = New DevExpress.XtraEditors.SimpleButton()
         btnPost = New DevExpress.XtraEditors.SimpleButton()
         btnReports = New DevExpress.XtraEditors.SimpleButton()
+        btnPayslip = New DevExpress.XtraEditors.SimpleButton()
         chkCombine = New DevExpress.XtraEditors.CheckEdit()
         lblStatus = New DevExpress.XtraEditors.LabelControl()
         cboCutoff = New DevExpress.XtraEditors.LookUpEdit()
@@ -50,6 +51,7 @@ Partial Class ucPayrollOutput
         PanelControl1.Controls.Add(lblStatus)
         PanelControl1.Controls.Add(chkCombine)
         PanelControl1.Controls.Add(btnReports)
+        PanelControl1.Controls.Add(btnPayslip)
         PanelControl1.Controls.Add(btnPost)
         PanelControl1.Controls.Add(btnExportOther)
         PanelControl1.Controls.Add(btnExportDirect)
@@ -88,10 +90,10 @@ Partial Class ucPayrollOutput
         ' cboCutoff
         '
         cboCutoff.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
-        cboCutoff.Location = New System.Drawing.Point(308, 14)
+        cboCutoff.Location = New System.Drawing.Point(316, 14)
         cboCutoff.Name = "cboCutoff"
         cboCutoff.Properties.NullText = "Select a Cutoff..."
-        cboCutoff.Size = New System.Drawing.Size(280, 20)
+        cboCutoff.Size = New System.Drawing.Size(400, 20)
         cboCutoff.TabIndex = 2
         '
         ' btnExportConverter
@@ -124,28 +126,37 @@ Partial Class ucPayrollOutput
         ' btnPost - Admin lang, FINAL (walang Unpost)
         '
         btnPost.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
-        btnPost.Location = New System.Drawing.Point(796, 12)
+        btnPost.Location = New System.Drawing.Point(738, 12)
         btnPost.Name = "btnPost"
-        btnPost.Size = New System.Drawing.Size(140, 25)
+        btnPost.Size = New System.Drawing.Size(110, 25)
         btnPost.TabIndex = 7
         btnPost.Text = "Post Cutoff"
         '
         ' btnReports - shortcut papunta sa Reports module (wala pa)
         '
         btnReports.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
-        btnReports.Location = New System.Drawing.Point(944, 12)
+        btnReports.Location = New System.Drawing.Point(974, 12)
         btnReports.Name = "btnReports"
-        btnReports.Size = New System.Drawing.Size(140, 25)
+        btnReports.Size = New System.Drawing.Size(110, 25)
         btnReports.TabIndex = 8
         btnReports.Text = "Reports"
+        '
+        ' btnPayslip - shortcut papunta sa Payslip module (wala pa)
+        '
+        btnPayslip.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
+        btnPayslip.Location = New System.Drawing.Point(856, 12)
+        btnPayslip.Name = "btnPayslip"
+        btnPayslip.Size = New System.Drawing.Size(110, 25)
+        btnPayslip.TabIndex = 11
+        btnPayslip.Text = "Payslips"
         '
         ' chkCombine - isang file para sa lahat ng cutoff na pareho ang Pay Date (default: unchecked)
         '
         chkCombine.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
-        chkCombine.Location = New System.Drawing.Point(600, 15)
+        chkCombine.Location = New System.Drawing.Point(316, 44)
         chkCombine.Name = "chkCombine"
-        chkCombine.Properties.Caption = "Combine same pay date"
-        chkCombine.Size = New System.Drawing.Size(170, 20)
+        chkCombine.Properties.Caption = "Group by pay date"
+        chkCombine.Size = New System.Drawing.Size(200, 20)
         chkCombine.TabIndex = 9
         '
         ' lblStatus - Processed / POSTED (sino at kailan)
@@ -153,7 +164,7 @@ Partial Class ucPayrollOutput
         lblStatus.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
         lblStatus.Appearance.Font = New System.Drawing.Font("Segoe UI", 9.0F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CByte(0))
         lblStatus.Appearance.Options.UseFont = True
-        lblStatus.Location = New System.Drawing.Point(260, 48)
+        lblStatus.Location = New System.Drawing.Point(700, 76)
         lblStatus.Name = "lblStatus"
         lblStatus.Size = New System.Drawing.Size(0, 15)
         lblStatus.TabIndex = 10
@@ -244,6 +255,7 @@ Partial Class ucPayrollOutput
     Friend WithEvents btnExportOther As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnPost As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnReports As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnPayslip As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents chkCombine As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents lblStatus As DevExpress.XtraEditors.LabelControl
     Friend WithEvents gridControl As DevExpress.XtraGrid.GridControl

@@ -75,6 +75,31 @@ Namespace PayrollProcessing.Services
             Await _repository.SaveInputDataAsync(cutoffId, table, columns, modifiedBy)
         End Function
 
+        Public Async Function CloseEmptyCutoffAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel), closedBy As String) As Task _
+            Implements IPayrollInputService.CloseEmptyCutoffAsync
+
+            Dim cutoffs = Await _repository.GetCutoffsAsync()
+            Dim cutoff = cutoffs.FirstOrDefault(Function(c) c.CutoffID = cutoffId)
+            If cutoff Is Nothing Then Throw New PayrollInputValidationException("Selected Cutoff no longer exists or is no longer open.")
+            If cutoff.Status <> CutoffStatus.Draft Then
+                Throw New PayrollInputValidationException("Only a Draft cutoff can be closed here.")
+            End If
+
+            ' Sinusuri ulit ngayon (hindi lang ang nakikita sa grid): may lalabas pa bang empleyado?
+            Dim sheet = Await _repository.GetInputDataAsync(cutoffId, columns)
+            If sheet.Table.Rows.Count > 0 Then
+                Throw New PayrollInputValidationException($"This cutoff still has {sheet.Table.Rows.Count} employee(s), so it cannot be closed.")
+            End If
+            If sheet.Warnings.Count > 0 Then
+                Throw New PayrollInputValidationException($"{sheet.Warnings.Count} employee(s) can't be included because their setup is incomplete. Fix their setup first, so nobody is skipped by mistake.")
+            End If
+
+            Dim closed = Await _repository.CloseEmptyDraftCutoffAsync(cutoffId, closedBy)
+            If Not closed Then
+                Throw New PayrollInputValidationException("The cutoff could not be closed (it may already have saved inputs or results).")
+            End If
+        End Function
+
     End Class
 
 End Namespace

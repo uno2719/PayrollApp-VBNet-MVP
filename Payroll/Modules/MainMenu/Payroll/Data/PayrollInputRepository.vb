@@ -281,6 +281,21 @@ Namespace PayrollProcessing.Data
             End Using
         End Function
 
+        Public Async Function CloseEmptyDraftCutoffAsync(cutoffId As Integer, closedBy As String) As Task(Of Boolean) _
+            Implements IPayrollInputRepository.CloseEmptyDraftCutoffAsync
+
+            Using conn = GetConnection()
+                Dim affected = Await conn.ExecuteAsync(
+                    "UPDATE tblCutoff
+                     SET Status = @closed, ModifiedBy = @closedBy, ModifiedDate = SYSDATETIME()
+                     WHERE CutoffID = @cutoffId AND Status = @draft
+                       AND NOT EXISTS (SELECT 1 FROM tblPayrollResult r WHERE r.CutoffID = tblCutoff.CutoffID)
+                       AND NOT EXISTS (SELECT 1 FROM tblPayrollInputTxn t WHERE t.CutoffID = tblCutoff.CutoffID)",
+                    New With {.closed = CByte(CutoffStatus.Closed), .draft = CByte(CutoffStatus.Draft), cutoffId, closedBy})
+                Return affected > 0
+            End Using
+        End Function
+
     End Class
 
 End Namespace

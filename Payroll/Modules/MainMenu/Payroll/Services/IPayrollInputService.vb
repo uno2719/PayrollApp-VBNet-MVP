@@ -21,6 +21,13 @@ Namespace PayrollProcessing.Services
 
         ''' <summary>Validates, then saves. Throws PayrollInputValidationException on failure.</summary>
         Function SaveInputDataAsync(cutoffId As Integer, table As DataTable, columns As List(Of PayrollInputColumnModel), modifiedBy As String) As Task
+
+        ''' <summary>
+        ''' Isinasara ang Draft na cutoff na walang empleyadong lalabas sa grid (hal. lahat ng Daily ay nilipat na sa SemiMonthly).
+        ''' Sinusuri ulit sa server: walang empleyado, walang babala sa setup, walang results o naka-save na input.
+        ''' </summary>
+        Function CloseEmptyCutoffAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel), closedBy As String) As Task
+
     End Interface
 
     Public Class PayrollInputValidationException
