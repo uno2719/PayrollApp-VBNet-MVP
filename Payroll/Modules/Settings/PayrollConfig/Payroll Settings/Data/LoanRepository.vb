@@ -18,6 +18,7 @@ Namespace PayrollSettings.Data
 
             Dim sql = $"
                 SELECT {IdColumn} AS Id, Code, Description, LoanType,
+                       DefaultInterestMethod, DefaultInterestRate, DefaultRatePeriod,
                        IsActive, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
                 FROM {TableName}
                 ORDER BY Code"
@@ -46,13 +47,19 @@ Namespace PayrollSettings.Data
             Implements ILoanRepository.InsertAsync
 
             Dim sql = $"
-                INSERT INTO {TableName} (Code, Description, LoanType, IsActive, CreatedAt, CreatedBy)
+                INSERT INTO {TableName} (Code, Description, LoanType,
+                                         DefaultInterestMethod, DefaultInterestRate, DefaultRatePeriod,
+                                         IsActive, CreatedAt, CreatedBy)
                 OUTPUT INSERTED.{IdColumn}
-                VALUES (@Code, @Description, @LoanType, @IsActive, GETDATE(), @UserName)"
+                VALUES (@Code, @Description, @LoanType,
+                        @DefaultInterestMethod, @DefaultInterestRate, @DefaultRatePeriod,
+                        @IsActive, GETDATE(), @UserName)"
 
             Using conn = GetConnection()
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
-                    item.Code, item.Description, item.LoanType, item.IsActive, userName
+                    item.Code, item.Description, item.LoanType,
+                    item.DefaultInterestMethod, item.DefaultInterestRate, item.DefaultRatePeriod,
+                    item.IsActive, userName
                 })
             End Using
         End Function
@@ -66,13 +73,18 @@ Namespace PayrollSettings.Data
                 SET Code = @Code,
                     Description = @Description,
                     LoanType = @LoanType,
+                    DefaultInterestMethod = @DefaultInterestMethod,
+                    DefaultInterestRate = @DefaultInterestRate,
+                    DefaultRatePeriod = @DefaultRatePeriod,
                     IsActive = @IsActive,
                     UpdatedAt = GETDATE(),
                     UpdatedBy = @UserName
                 WHERE {IdColumn} = @Id"
 
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
-                item.Id, item.Code, item.Description, item.LoanType, item.IsActive, userName
+                item.Id, item.Code, item.Description, item.LoanType,
+                item.DefaultInterestMethod, item.DefaultInterestRate, item.DefaultRatePeriod,
+                item.IsActive, userName
             })
             Return rows > 0
         End Function

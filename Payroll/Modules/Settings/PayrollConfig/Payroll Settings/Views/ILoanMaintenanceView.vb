@@ -7,6 +7,11 @@ Namespace PayrollSettings.Views
         Property Code As String
         Property Description As String
         Property LoanType As String
+
+        ' Default na interes para sa bagong employee loan (Nothing = walang default)
+        Property DefaultInterestMethod As String
+        Property DefaultInterestRate As Decimal?
+        Property DefaultRatePeriod As String
         Property IsActive As Boolean
 
         ' Grid

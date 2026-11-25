@@ -26,6 +26,13 @@ Partial Class ucLoan
         lblStatus = New DevExpress.XtraEditors.LabelControl()
         cboLoanType = New DevExpress.XtraEditors.ComboBoxEdit()
         lblLoanType = New DevExpress.XtraEditors.LabelControl()
+        lblDefaultInterestMethod = New DevExpress.XtraEditors.LabelControl()
+        cboDefaultInterestMethod = New DevExpress.XtraEditors.ComboBoxEdit()
+        lblDefaultInterestRate = New DevExpress.XtraEditors.LabelControl()
+        spnDefaultInterestRate = New DevExpress.XtraEditors.SpinEdit()
+        lblDefaultRatePeriod = New DevExpress.XtraEditors.LabelControl()
+        cboDefaultRatePeriod = New DevExpress.XtraEditors.ComboBoxEdit()
+        lblDefaultsHint = New DevExpress.XtraEditors.LabelControl()
         txtDescription = New DevExpress.XtraEditors.TextEdit()
         lblDescription = New DevExpress.XtraEditors.LabelControl()
         txtCode = New DevExpress.XtraEditors.TextEdit()
@@ -35,12 +42,16 @@ Partial Class ucLoan
         colCode = New DevExpress.XtraGrid.Columns.GridColumn()
         colDescription = New DevExpress.XtraGrid.Columns.GridColumn()
         colLoanType = New DevExpress.XtraGrid.Columns.GridColumn()
+        colDefaultInterest = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
         CType(PanelControl1, ComponentModel.ISupportInitialize).BeginInit()
         PanelControl1.SuspendLayout()
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
         grpDetails.SuspendLayout()
         CType(cboLoanType.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboDefaultInterestMethod.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(spnDefaultInterestRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboDefaultRatePeriod.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtDescription.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(gridconLoanList, ComponentModel.ISupportInitialize).BeginInit()
@@ -99,6 +110,13 @@ Partial Class ucLoan
         grpDetails.AppearanceCaption.Options.UseFont = True
         grpDetails.Controls.Add(lblStatus)
         grpDetails.Controls.Add(cboLoanType)
+        grpDetails.Controls.Add(lblDefaultInterestMethod)
+        grpDetails.Controls.Add(cboDefaultInterestMethod)
+        grpDetails.Controls.Add(lblDefaultInterestRate)
+        grpDetails.Controls.Add(spnDefaultInterestRate)
+        grpDetails.Controls.Add(lblDefaultRatePeriod)
+        grpDetails.Controls.Add(cboDefaultRatePeriod)
+        grpDetails.Controls.Add(lblDefaultsHint)
         grpDetails.Controls.Add(lblLoanType)
         grpDetails.Controls.Add(txtDescription)
         grpDetails.Controls.Add(lblDescription)
@@ -140,6 +158,72 @@ Partial Class ucLoan
         lblLoanType.Size = New Size(56, 13)
         lblLoanType.TabIndex = 3
         lblLoanType.Text = "Loan Type"
+        ' 
+        ' lblDefaultInterestMethod
+        ' 
+        lblDefaultInterestMethod.Location = New Point(280, 81)
+        lblDefaultInterestMethod.Name = "lblDefaultInterestMethod"
+        lblDefaultInterestMethod.Size = New Size(150, 13)
+        lblDefaultInterestMethod.TabIndex = 6
+        lblDefaultInterestMethod.Text = "Default Interest Method"
+        ' 
+        ' cboDefaultInterestMethod
+        ' 
+        cboDefaultInterestMethod.Location = New Point(280, 99)
+        cboDefaultInterestMethod.Name = "cboDefaultInterestMethod"
+        cboDefaultInterestMethod.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        cboDefaultInterestMethod.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboDefaultInterestMethod.Size = New Size(150, 20)
+        cboDefaultInterestMethod.TabIndex = 7
+        ' 
+        ' lblDefaultInterestRate
+        ' 
+        lblDefaultInterestRate.Location = New Point(450, 81)
+        lblDefaultInterestRate.Name = "lblDefaultInterestRate"
+        lblDefaultInterestRate.Size = New Size(110, 13)
+        lblDefaultInterestRate.TabIndex = 8
+        lblDefaultInterestRate.Text = "Default Rate (%)"
+        ' 
+        ' spnDefaultInterestRate
+        ' 
+        spnDefaultInterestRate.EditValue = New Decimal(New Integer() {0, 0, 0, 0})
+        spnDefaultInterestRate.Location = New Point(450, 99)
+        spnDefaultInterestRate.Name = "spnDefaultInterestRate"
+        spnDefaultInterestRate.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        spnDefaultInterestRate.Properties.DisplayFormat.FormatString = "n4"
+        spnDefaultInterestRate.Properties.DisplayFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnDefaultInterestRate.Properties.EditFormat.FormatString = "n4"
+        spnDefaultInterestRate.Properties.EditFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnDefaultInterestRate.Properties.MaxValue = New Decimal(New Integer() {100, 0, 0, 0})
+        spnDefaultInterestRate.Size = New Size(110, 20)
+        spnDefaultInterestRate.TabIndex = 9
+        ' 
+        ' lblDefaultRatePeriod
+        ' 
+        lblDefaultRatePeriod.Location = New Point(580, 81)
+        lblDefaultRatePeriod.Name = "lblDefaultRatePeriod"
+        lblDefaultRatePeriod.Size = New Size(120, 13)
+        lblDefaultRatePeriod.TabIndex = 10
+        lblDefaultRatePeriod.Text = "Interest Rate is"
+        ' 
+        ' cboDefaultRatePeriod
+        ' 
+        cboDefaultRatePeriod.Location = New Point(580, 99)
+        cboDefaultRatePeriod.Name = "cboDefaultRatePeriod"
+        cboDefaultRatePeriod.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        cboDefaultRatePeriod.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboDefaultRatePeriod.Size = New Size(120, 20)
+        cboDefaultRatePeriod.TabIndex = 11
+        ' 
+        ' lblDefaultsHint
+        ' 
+        lblDefaultsHint.Appearance.ForeColor = Color.DimGray
+        lblDefaultsHint.Appearance.Options.UseForeColor = True
+        lblDefaultsHint.Location = New Point(280, 125)
+        lblDefaultsHint.Name = "lblDefaultsHint"
+        lblDefaultsHint.Size = New Size(460, 13)
+        lblDefaultsHint.TabIndex = 12
+        lblDefaultsHint.Text = "Filled in automatically when this code is picked for a new employee loan (still editable there)."
         ' 
         ' txtDescription
         ' 
@@ -190,7 +274,7 @@ Partial Class ucLoan
         ' 
         ' gridviewLoanList
         ' 
-        gridviewLoanList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colLoanType, colActive})
+        gridviewLoanList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colLoanType, colDefaultInterest, colActive})
         gridviewLoanList.GridControl = gridconLoanList
         gridviewLoanList.Name = "gridviewLoanList"
         gridviewLoanList.OptionsPrint.PrintFilterInfo = True
@@ -224,13 +308,23 @@ Partial Class ucLoan
         colLoanType.VisibleIndex = 2
         colLoanType.Width = 150
         ' 
+        ' colDefaultInterest
+        ' 
+        colDefaultInterest.Caption = "Default Interest"
+        colDefaultInterest.FieldName = "DefaultInterestText"
+        colDefaultInterest.Name = "colDefaultInterest"
+        colDefaultInterest.OptionsColumn.AllowEdit = False
+        colDefaultInterest.Visible = True
+        colDefaultInterest.VisibleIndex = 3
+        colDefaultInterest.Width = 200
+        ' 
         ' colActive
         ' 
         colActive.Caption = "Active"
         colActive.FieldName = "IsActive"
         colActive.Name = "colActive"
         colActive.Visible = True
-        colActive.VisibleIndex = 3
+        colActive.VisibleIndex = 4
         colActive.Width = 70
         ' 
         ' ucLoan
@@ -252,6 +346,9 @@ Partial Class ucLoan
         grpDetails.ResumeLayout(False)
         grpDetails.PerformLayout()
         CType(cboLoanType.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboDefaultInterestMethod.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(spnDefaultInterestRate.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboDefaultRatePeriod.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtDescription.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(gridconLoanList, ComponentModel.ISupportInitialize).EndInit()
@@ -263,6 +360,14 @@ Partial Class ucLoan
     Friend WithEvents wbpMainCommands As DevExpress.XtraBars.Docking2010.WindowsUIButtonPanel
     Friend WithEvents grpDetails As DevExpress.XtraEditors.GroupControl
     Friend WithEvents lblStatus As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblDefaultInterestMethod As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboDefaultInterestMethod As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents lblDefaultInterestRate As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents spnDefaultInterestRate As DevExpress.XtraEditors.SpinEdit
+    Friend WithEvents lblDefaultRatePeriod As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboDefaultRatePeriod As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents lblDefaultsHint As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents colDefaultInterest As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents cboLoanType As DevExpress.XtraEditors.ComboBoxEdit
     Friend WithEvents lblLoanType As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtDescription As DevExpress.XtraEditors.TextEdit

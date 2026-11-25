@@ -78,6 +78,28 @@ Namespace GlobalShared.Constants
     Public Module LoanInterestMethod
         Public Const StraightLine As String = "Straight Line"
         Public Const Diminishing As String = "Diminishing"
+        Public ReadOnly All As String() = {StraightLine, Diminishing}
+    End Module
+
+
+    ''' <summary>
+    ''' Mga Loan Type sa Payroll Settings > Loan (tblLoan.LoanType). Ito rin ang laman ng dropdown.
+    ''' </summary>
+    Public Module LoanTypeName
+        Public Const Others As String = "Others"
+        Public Const CompanyLoan As String = "Company Loan"
+        Public Const PagIbigLoan As String = "PAG-IBIG Loan"
+        Public Const SssLoan As String = "SSS Loan"
+        Public ReadOnly All As String() = {Others, CompanyLoan, PagIbigLoan, SssLoan}
+
+        ''' <summary>
+        ''' Government loans: laging may interes at fixed ang rate, kaya REQUIRED ang default na
+        ''' Interest Method / Rate / Rate basis sa settings. Optional sa ibang type.
+        ''' </summary>
+        Public Function RequiresInterestDefaults(loanType As String) As Boolean
+            Return String.Equals(loanType, SssLoan, StringComparison.OrdinalIgnoreCase) OrElse
+                   String.Equals(loanType, PagIbigLoan, StringComparison.OrdinalIgnoreCase)
+        End Function
     End Module
 
 

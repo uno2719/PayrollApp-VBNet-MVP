@@ -787,6 +787,13 @@ Public Class ucLoans
     ''' "Interest Rate is" ay para sa Diminishing lang; "Total Amortization is" ay para sa Every Cycle lang.
     ''' Naka-disable (hindi tinatago) para kita pa rin ang naka-save na value.
     ''' </summary>
+    ' Pagpili ng Loan Code (New lang - nasa Presenter ang check): kopyahin ang default na interes ng code.
+    Private Sub lueLoanCode_EditValueChanged(sender As Object, e As EventArgs) Handles lueLoanCode.EditValueChanged
+        If _isPushingValues Then Return
+        If _presenter Is Nothing Then Return
+        _presenter.ApplyLoanCodeDefaults(LoanCode)
+    End Sub
+
     Private Sub UpdateOptionEnablement()
         If cboRatePeriod Is Nothing OrElse cboAmortBasis Is Nothing Then Return
 

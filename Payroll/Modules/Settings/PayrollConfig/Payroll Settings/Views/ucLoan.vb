@@ -1,6 +1,7 @@
 ﻿Imports DevExpress.Mvvm.Native
 Imports DevExpress.XtraBars.Docking2010
 Imports DevExpress.XtraEditors
+Imports Payroll.GlobalShared.Constants
 Imports Payroll.GlobalShared.Models
 Imports Payroll.PayrollSettings.Presenters
 Imports Payroll.PayrollSettings.Views
@@ -19,6 +20,9 @@ Public Class ucLoan
     Private Const BTN_DELETE As Integer = 4
     Private Const BTN_REFRESH As Integer = 6
     Private _isActive As Boolean = True
+
+    ' Unang item ng Default Interest Method: walang default (Nothing sa database).
+    Private Const NoDefaultText As String = "(none)"
 
     Public Sub SetPresenter(presenter As LoanPresenter)
         _presenter = presenter
@@ -71,7 +75,14 @@ Public Class ucLoan
     ' Base sa nakikita sa C1Pay reference screenshot lang muna.
     Private Sub SetupCombos()
         cboLoanType.Properties.Items.Clear()
-        cboLoanType.Properties.Items.AddRange({"Others", "Company Loan", "PAG-IBIG Loan", "SSS Loan"})
+        cboLoanType.Properties.Items.AddRange(LoanTypeName.All)
+
+        cboDefaultInterestMethod.Properties.Items.Clear()
+        cboDefaultInterestMethod.Properties.Items.Add(NoDefaultText)
+        cboDefaultInterestMethod.Properties.Items.AddRange(LoanInterestMethod.All)
+
+        cboDefaultRatePeriod.Properties.Items.Clear()
+        cboDefaultRatePeriod.Properties.Items.AddRange(LoanRatePeriod.All)
     End Sub
 
     Private Sub SetupCommandImages()
@@ -117,6 +128,36 @@ Public Class ucLoan
         End Set
     End Property
 
+    Public Property DefaultInterestMethod As String Implements ILoanMaintenanceView.DefaultInterestMethod
+        Get
+            Dim text = cboDefaultInterestMethod.Text
+            Return If(String.IsNullOrWhiteSpace(text) OrElse text = NoDefaultText, Nothing, text)
+        End Get
+        Set(value As String)
+            cboDefaultInterestMethod.Text = If(String.IsNullOrWhiteSpace(value), NoDefaultText, value)
+            UpdateInterestDefaultsUi()
+        End Set
+    End Property
+
+    Public Property DefaultInterestRate As Decimal? Implements ILoanMaintenanceView.DefaultInterestRate
+        Get
+            If DefaultInterestMethod Is Nothing Then Return Nothing
+            Return spnDefaultInterestRate.Value
+        End Get
+        Set(value As Decimal?)
+            spnDefaultInterestRate.Value = If(value, 0D)
+        End Set
+    End Property
+
+    Public Property DefaultRatePeriod As String Implements ILoanMaintenanceView.DefaultRatePeriod
+        Get
+            Return If(String.IsNullOrWhiteSpace(cboDefaultRatePeriod.Text), Nothing, cboDefaultRatePeriod.Text)
+        End Get
+        Set(value As String)
+            cboDefaultRatePeriod.Text = If(value, String.Empty)
+        End Set
+    End Property
+
     Public Property IsActive As Boolean Implements ILoanMaintenanceView.IsActive
         Get
             Return _isActive
@@ -147,6 +188,9 @@ Public Class ucLoan
         txtCode.Properties.ReadOnly = Not isEditable
         txtDescription.Properties.ReadOnly = Not isEditable
         cboLoanType.Properties.ReadOnly = Not isEditable
+        cboDefaultInterestMethod.Properties.ReadOnly = Not isEditable
+        spnDefaultInterestRate.Properties.ReadOnly = Not isEditable
+        cboDefaultRatePeriod.Properties.ReadOnly = Not isEditable
 
         gridconLoanList.Enabled = Not isEditable
 
@@ -185,7 +229,46 @@ Public Class ucLoan
         txtCode.Text = String.Empty
         txtDescription.Text = String.Empty
         cboLoanType.Text = String.Empty
+        cboDefaultInterestMethod.Text = NoDefaultText
+        spnDefaultInterestRate.Value = 0D
+        cboDefaultRatePeriod.Text = String.Empty
+        UpdateInterestDefaultsUi()
         IsActive = True
+    End Sub
+
+    ' ========================================================
+    ' DEFAULT NA INTERES
+    ' ========================================================
+    ' SSS Loan / PAG-IBIG Loan: may " *" ang label (required; ang LoanService ang nagbabantay).
+    ' Rate: kapag may Interest Method lang. Rate basis: Diminishing lang (flat % ang Straight Line).
+    ' Naka-disable lang (hindi nakatago) para kita pa rin ang laman.
+    Private Sub UpdateInterestDefaultsUi()
+        If cboDefaultInterestMethod Is Nothing Then Return
+
+        Dim required = LoanTypeName.RequiresInterestDefaults(cboLoanType.Text)
+        Dim method = cboDefaultInterestMethod.Text
+        Dim hasMethod = Not String.IsNullOrWhiteSpace(method) AndAlso method <> NoDefaultText
+        Dim isDiminishing = String.Equals(method, LoanInterestMethod.Diminishing, StringComparison.OrdinalIgnoreCase)
+
+        lblDefaultInterestMethod.Text = "Default Interest Method" & If(required, " *", "")
+        lblDefaultInterestRate.Text = "Default Rate (%)" & If(required, " *", "")
+        lblDefaultRatePeriod.Text = "Interest Rate is" & If(required AndAlso isDiminishing, " *", "")
+
+        spnDefaultInterestRate.Enabled = hasMethod
+        lblDefaultInterestRate.Enabled = hasMethod
+        cboDefaultRatePeriod.Enabled = isDiminishing
+        lblDefaultRatePeriod.Enabled = isDiminishing
+
+        ' Bagong pili ng Diminishing na walang basis: Per Year ang karaniwan (hal. SSS 8% per year).
+        If isDiminishing AndAlso String.IsNullOrWhiteSpace(cboDefaultRatePeriod.Text) AndAlso
+           Not cboDefaultRatePeriod.Properties.ReadOnly Then
+            cboDefaultRatePeriod.Text = LoanRatePeriod.PerYear
+        End If
+    End Sub
+
+    Private Sub InterestDefaults_EditValueChanged(sender As Object, e As EventArgs) _
+        Handles cboLoanType.EditValueChanged, cboDefaultInterestMethod.EditValueChanged
+        UpdateInterestDefaultsUi()
     End Sub
 
     Public Sub DisplayInfo(message As String) Implements ILoanMaintenanceView.ShowMessage

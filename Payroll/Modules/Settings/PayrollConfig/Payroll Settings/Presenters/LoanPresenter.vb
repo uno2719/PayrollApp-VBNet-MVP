@@ -57,6 +57,9 @@ Namespace PayrollSettings.Presenters
                 _view.Code = selected.Code
                 _view.Description = selected.Description
                 _view.LoanType = selected.LoanType
+                _view.DefaultInterestMethod = selected.DefaultInterestMethod
+                _view.DefaultInterestRate = selected.DefaultInterestRate
+                _view.DefaultRatePeriod = selected.DefaultRatePeriod
                 _view.IsActive = selected.IsActive
             End If
 
@@ -79,6 +82,9 @@ Namespace PayrollSettings.Presenters
                 .Code = If(_view.Code, "").Trim(),
                 .Description = If(_view.Description, "").Trim(),
                 .LoanType = _view.LoanType,
+                .DefaultInterestMethod = _view.DefaultInterestMethod,
+                .DefaultInterestRate = _view.DefaultInterestRate,
+                .DefaultRatePeriod = _view.DefaultRatePeriod,
                 .IsActive = _view.IsActive
             }
 

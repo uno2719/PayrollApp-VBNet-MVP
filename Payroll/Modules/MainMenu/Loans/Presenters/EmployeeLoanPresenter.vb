@@ -21,6 +21,9 @@ Namespace Loans.Presenters
         Private ReadOnly _service As Services.IEmployeeLoanService
         Private ReadOnly _employeeService As Employee.Services.IEmployeeService
         Private ReadOnly _loanCodeRepo As PayrollSettings.Data.ILoanRepository
+
+        ' Active na Loan Codes (may default na interes) - para sa auto-fill pagpili ng code.
+        Private _loanCodes As New List(Of LoanModel)
         Private ReadOnly _userName As String
 
         ' --- STATE ---
@@ -68,7 +71,8 @@ Namespace Loans.Presenters
             ' Ang Active lang ang ipinapakita - walang saysay na payagan
             ' kang mag-assign ng code na deactivated na.
             Dim allCodes = Await _loanCodeRepo.GetAllAsync()
-            _view.BindLoanCodes(allCodes.Where(Function(c) c.IsActive).ToList())
+            _loanCodes = allCodes.Where(Function(c) c.IsActive).ToList()
+            _view.BindLoanCodes(_loanCodes)
 
             Await LoadEmployeeListAsync()
 
@@ -448,6 +452,27 @@ Namespace Loans.Presenters
         Public Async Function UndoOpeningPaidAsync(loanId As Integer) As Task(Of Services.LoanSaveResult)
             Return Await _service.UndoOpeningPaidAsync(loanId, _userName)
         End Function
+
+        ''' <summary>
+        ''' Pagpili ng Loan Code sa BAGONG loan: kinokopya ang default na Interest Method / Rate / Rate basis
+        ''' mula sa Payroll Settings > Loan. Default lang ito - editable pa rin, at hindi ito ginagawa sa Edit
+        ''' para hindi mapalitan ang naka-save na value ng loan. Walang default ang code = walang binabago.
+        ''' </summary>
+        Public Sub ApplyLoanCodeDefaults(loanCode As String)
+
+            If Not _isNewMode Then Return
+            If String.IsNullOrWhiteSpace(loanCode) Then Return
+
+            Dim code = _loanCodes.FirstOrDefault(Function(c) String.Equals(c.Code, loanCode, StringComparison.OrdinalIgnoreCase))
+            If code Is Nothing OrElse Not code.HasInterestDefaults Then Return
+
+            _view.InterestMethod = code.DefaultInterestMethod
+            _view.InterestRate = If(code.DefaultInterestRate, 0D)
+            If Not String.IsNullOrWhiteSpace(code.DefaultRatePeriod) Then _view.RatePeriod = code.DefaultRatePeriod
+
+            Recompute()
+
+        End Sub
 
         ''' <summary>Undo offset. Ang newLoanId ay ang BAGONG loan (ang nag-offset). Admin + password: nasa View.</summary>
         Public Async Function UndoOffsetAsync(newLoanId As Integer) As Task(Of Services.LoanSaveResult)
