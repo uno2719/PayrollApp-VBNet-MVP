@@ -126,7 +126,7 @@ Namespace PayrollSettings.Data
             Dim refs As New List(Of UsageRef) From {
                 New UsageRef("payroll input entry(ies)", "tblPayrollInputTxn", $"TxnCategory = '{category}' AND TxnCode = @Code"),
                 New UsageRef("payroll result line(s)", "tblPayrollResultLine", $"Category = '{category}' AND Code = @Code"),
-                New UsageRef("General Settings code mapping(s)", "tblGeneralSettings", "BasicSalaryCodePlusId = @Id")
+                New UsageRef("General Settings code mapping(s)", "tblGeneralSettings", "BasicSalaryCodePlusId = @Id OR LoanRefundCodeId = @Id")
             }
 
             Return Await RecordDeleter.DeleteAsync(

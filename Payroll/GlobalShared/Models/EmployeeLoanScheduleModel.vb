@@ -38,6 +38,9 @@ Namespace GlobalShared.Models
         Public ReadOnly Property StatusText As String
             Get
                 If IsPaid AndAlso IsOpening Then Return "Paid (C1Pay)"
+                If IsPaid AndAlso Constants.LoanPaymentRef.IsOffset(PayrollRefNo) Then Return "Paid (Offset)"
+                If IsPaid AndAlso Constants.LoanPaymentRef.IsCredit(PayrollRefNo) Then Return "Paid (Credit)"
+                If Not IsPaid AndAlso AmountPaid > 0D AndAlso Constants.LoanPaymentRef.IsCredit(PayrollRefNo) Then Return "Partly paid (Credit)"
                 If IsPaid Then Return "Paid"
                 If ScheduledDate < Date.Today Then Return "Overdue"
                 Return "Scheduled"

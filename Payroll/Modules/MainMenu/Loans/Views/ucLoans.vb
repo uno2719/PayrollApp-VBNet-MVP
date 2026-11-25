@@ -124,6 +124,12 @@ Public Class ucLoans
         cboFrequency.Properties.Items.Clear()
         cboFrequency.Properties.Items.AddRange(LoanFrequency.All)
 
+        cboAmortBasis.Properties.Items.Clear()
+        cboAmortBasis.Properties.Items.AddRange(LoanAmortBasis.All)
+
+        cboRatePeriod.Properties.Items.Clear()
+        cboRatePeriod.Properties.Items.AddRange(LoanRatePeriod.All)
+
         ' LookUpEdit setup - ginagawa dito sa code imbes na sa Designer
         ' para isang lugar lang tingnan kung magbabago ang columns.
         With lueLoanCode.Properties
@@ -275,6 +281,24 @@ Public Class ucLoans
         End Set
     End Property
 
+    Public Property RatePeriod As String Implements IEmployeeLoanView.RatePeriod
+        Get
+            Return If(String.IsNullOrWhiteSpace(cboRatePeriod.Text), LoanRatePeriod.PerPeriod, cboRatePeriod.Text)
+        End Get
+        Set(value As String)
+            cboRatePeriod.Text = If(value, LoanRatePeriod.PerPeriod)
+        End Set
+    End Property
+
+    Public Property AmortBasis As String Implements IEmployeeLoanView.AmortBasis
+        Get
+            Return If(String.IsNullOrWhiteSpace(cboAmortBasis.Text), LoanAmortBasis.PerDeduction, cboAmortBasis.Text)
+        End Get
+        Set(value As String)
+            cboAmortBasis.Text = If(value, LoanAmortBasis.PerDeduction)
+        End Set
+    End Property
+
     Public Property Remark As String Implements IEmployeeLoanView.Remark
         Get
             Return txtRemark.Text
@@ -366,6 +390,7 @@ Public Class ucLoans
             Case LoanStatus.Inactive : Return Color.DarkOrange
             Case LoanStatus.Completed : Return Color.SteelBlue
             Case LoanStatus.Cancelled : Return Color.Firebrick
+            Case LoanStatus.Offset : Return Color.MediumPurple
             Case Else : Return Color.Gray
         End Select
     End Function
@@ -384,6 +409,9 @@ Public Class ucLoans
         rgAmortizationMethod.Properties.ReadOnly = Not isEditable
         rgInterestMethod.Properties.ReadOnly = Not isEditable
         spnInterestRate.Properties.ReadOnly = Not isEditable
+        cboRatePeriod.Properties.ReadOnly = Not isEditable
+        cboAmortBasis.Properties.ReadOnly = Not isEditable
+        UpdateOptionEnablement()
         spnPrincipalAmount.Properties.ReadOnly = Not isEditable
         txtRemark.Properties.ReadOnly = Not isEditable
 
@@ -503,6 +531,8 @@ Public Class ucLoans
             spnInterestAmortization.Value = 0D
             spnTotalAmortization.Value = 0D
             spnOpeningPaid.Value = 0D
+            cboRatePeriod.Text = LoanRatePeriod.PerPeriod
+            cboAmortBasis.Text = LoanAmortBasis.PerDeduction
 
             txtRemark.Text = String.Empty
             StatusText = String.Empty
@@ -540,6 +570,26 @@ Public Class ucLoans
         If changed Then RefreshAfterDetails()
 
     End Sub
+
+    ' ========================================================
+    ' OFFSET (renewal ng parehong Loan Code)
+    ' ========================================================
+    Public Function AskOffset(candidates As List(Of LoanOffsetCandidate), newLoan As EmployeeLoanModel) As LoanOffsetDialogResult _
+        Implements IEmployeeLoanView.AskOffset
+
+        Using dlg As New frmLoanOffset(candidates, newLoan)
+            dlg.ShowDialog(Me)
+            Return dlg.Result
+        End Using
+
+    End Function
+
+    Public Function ConfirmAdminWithPassword(title As String, message As String, actionDescription As String) As Boolean _
+        Implements IEmployeeLoanView.ConfirmAdminWithPassword
+
+        Return GlobalShared.Helpers.CommandBarHelper.ConfirmAdminAction(Me, title, message, actionDescription)
+
+    End Function
 
     Private Async Sub RefreshAfterDetails()
         Try
@@ -714,7 +764,12 @@ Public Class ucLoans
                 spnInterestRate.EditValueChanged,
                 spnTerms.EditValueChanged,
                 spnTotalAmortization.EditValueChanged,
-                rgInterestMethod.SelectedIndexChanged
+                rgInterestMethod.SelectedIndexChanged,
+                cboFrequency.EditValueChanged,
+                cboRatePeriod.EditValueChanged,
+                cboAmortBasis.EditValueChanged
+
+        UpdateOptionEnablement()
 
         If _isPushingValues Then Return
         If _presenter Is Nothing Then Return
@@ -726,6 +781,23 @@ Public Class ucLoans
             _isPushingValues = False
         End Try
 
+    End Sub
+
+    ''' <summary>
+    ''' "Interest Rate is" ay para sa Diminishing lang; "Total Amortization is" ay para sa Every Cycle lang.
+    ''' Naka-disable (hindi tinatago) para kita pa rin ang naka-save na value.
+    ''' </summary>
+    Private Sub UpdateOptionEnablement()
+        If cboRatePeriod Is Nothing OrElse cboAmortBasis Is Nothing Then Return
+
+        Dim isDiminishing = String.Equals(TryCast(rgInterestMethod.EditValue, String), LoanInterestMethod.Diminishing,
+                                          StringComparison.OrdinalIgnoreCase)
+        Dim isEveryCycle = String.Equals(cboFrequency.Text, LoanFrequency.EveryCycle, StringComparison.OrdinalIgnoreCase)
+
+        cboRatePeriod.Enabled = isDiminishing
+        lblRatePeriod.Enabled = isDiminishing
+        cboAmortBasis.Enabled = isEveryCycle
+        lblAmortBasis.Enabled = isEveryCycle
     End Sub
 
     Private Sub rgAmortizationMethod_SelectedIndexChanged(sender As Object, e As EventArgs) _

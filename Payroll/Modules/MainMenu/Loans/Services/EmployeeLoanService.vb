@@ -10,6 +10,7 @@
 ' may dalawang kopya, may araw na magkakaiba sila.
 ' ============================================================
 Imports Payroll.GlobalShared.Constants
+Imports Payroll.GlobalShared.Helpers
 Imports Payroll.GlobalShared.Models
 
 Namespace Loans.Services
@@ -176,7 +177,7 @@ Namespace Loans.Services
 
             Dim result As New LoanComputationResult
 
-            Dim i As Double = CDbl(item.InterestRate) / 100.0
+            Dim i As Double = CDbl(PeriodRate(item))
             Dim p As Double = CDbl(item.PrincipalAmount)
 
             ' --- Walang interes? Straight line na lang effectively. ---
@@ -206,7 +207,7 @@ Namespace Loans.Services
                 End If
 
                 Dim n As Double = -Math.Log(1.0 - (p * i / a)) / Math.Log(1.0 + i)
-                item.Terms = CInt(Math.Ceiling(n))
+                item.Terms = TermsFromN(n, a)
 
             Else
 
@@ -258,6 +259,10 @@ Namespace Loans.Services
             Implements IEmployeeLoanService.GenerateSchedule
 
             Dim installments = BuildInstallments(item)
+
+            ' Every Cycle + Per Month: ang bawat BUWANANG hulog ay hinahati sa dalawang kaltas (ika-15 at katapusan).
+            If IsEveryCyclePerMonth(item) Then installments = SplitPerMonth(installments)
+
             Dim dates = BuildDeductionDates(item.LoanStartDate, item.Frequency, installments.Count)
 
             For idx = 0 To installments.Count - 1
@@ -298,9 +303,11 @@ Namespace Loans.Services
 
             If isDiminishing Then
 
-                Dim i As Decimal = item.InterestRate / 100D
+                Dim i As Decimal = PeriodRate(item)
                 Dim balance As Decimal = item.PrincipalAmount
                 Dim amort As Decimal = item.TotalAmortization
+                Dim isBasedOnAmort = String.Equals(item.AmortizationMethod, LoanAmortizationMethod.BasedOnAmort,
+                                                   StringComparison.OrdinalIgnoreCase)
 
                 For n = 1 To terms
 
@@ -312,6 +319,18 @@ Namespace Loans.Services
                         ' Huling hulog: linisin ang natitirang balanse.
                         principalDue = balance
                         amountDue = principalDue + interestDue
+
+                        ' SSS-STYLE NA HULING HULOG (Based on Amort lang):
+                        '   Kapag halos kapareho na ng amortization ang huling hulog (diperensya <= LastRowTolerance),
+                        '   pantay na amortization pa rin ang singil at ang INTERES ang nag-a-adjust.
+                        '   Ebidensya: SSS statement, row 24 = 1,797.13 principal + 11.96 interest = 1,809.09
+                        '   (ang kuwentong 1,797.13 x rate ay 11.98). Kaya tugma ang total sa 43,418.16.
+                        If isBasedOnAmort AndAlso amort > 0D AndAlso
+                           Math.Abs(amountDue - amort) <= LastRowTolerance AndAlso
+                           amort - principalDue >= 0D Then
+                            interestDue = amort - principalDue
+                            amountDue = amort
+                        End If
                     Else
                         principalDue = RoundMoney(amort - interestDue)
 
@@ -493,8 +512,32 @@ Namespace Loans.Services
                 Return Fail($"Installments already paid ({openingPaid}) cannot be more than the number of installments ({schedule.Count}).")
             End If
 
+            ' --- OFFSET (bagong loan lang) ---
+            ' Kapag may OffsetRequest, iisang transaction ang lahat: insert ng loan + schedule + offset ng luma +
+            ' credit. Tingnan ang SaveWithOffsetAsync sa ibaba.
+            If item.Id = 0 AndAlso item.OffsetRequest IsNot Nothing Then
+                If openingPaid > 0 Then
+                    Return Fail("Opening payments (C1Pay) and Offset can't be saved together." & Environment.NewLine &
+                                "Save the loan with the offset first, then use Details > Mark paid if needed.")
+                End If
+                Return Await SaveWithOffsetAsync(item, schedule, userName)
+            End If
+
             ' --- EDIT GUARD ---
             If item.Id > 0 Then
+                Dim existing = Await _repo.GetByIdAsync(item.Id)
+                If existing Is Nothing Then Return Fail("Loan not found. The list may be out of date - please refresh.")
+
+                If existing.IsOffsetOld Then
+                    Return Fail($"This loan was offset by loan #{existing.OffsetByLoanId} and can no longer be edited." &
+                                Environment.NewLine & "Open Details and use 'Undo offset' first (Admin only).")
+                End If
+
+                If existing.HasOffsetChildren Then
+                    Return Fail("This loan paid off (offset) an older loan, so its schedule can't be regenerated." &
+                                Environment.NewLine & "Open Details and use 'Undo offset' first (Admin only), then edit.")
+                End If
+
                 Dim hasPayment = Await _repo.HasAnyPaymentAsync(item.Id)
 
                 If hasPayment Then
@@ -571,6 +614,23 @@ Namespace Loans.Services
 
             If loanId <= 0 Then Return Fail("Please select a loan first.")
 
+            Dim loan = Await _repo.GetByIdAsync(loanId)
+            If loan Is Nothing Then Return Fail("Loan not found. The list may be out of date - please refresh.")
+
+            If loan.IsOffsetOld Then
+                Return Fail($"This loan was offset by loan #{loan.OffsetByLoanId} and cannot be deleted." &
+                            Environment.NewLine & "Delete the new loan instead (that also undoes the offset).")
+            End If
+
+            ' Bagong loan na nag-offset: ibalik muna ang offset (lumang loan -> Active ulit, credit/refund tinatanggal).
+            ' Ang View na ang nag-check ng Admin + password bago tumawag dito.
+            Dim undoMessage As String = Nothing
+            If loan.HasOffsetChildren Then
+                Dim undo = Await UndoOffsetAsync(loanId, userName)
+                If Not undo.Success Then Return undo
+                undoMessage = undo.Message
+            End If
+
             Dim hasPayment = Await _repo.HasAnyPaymentAsync(loanId)
 
             If hasPayment Then
@@ -591,7 +651,7 @@ Namespace Loans.Services
 
             Await _repo.DeleteAsync(loanId)
 
-            Return New LoanSaveResult With {.Success = True}
+            Return New LoanSaveResult With {.Success = True, .Message = undoMessage}
 
         End Function
 
@@ -709,6 +769,10 @@ Namespace Loans.Services
                 Return Fail("This loan is Cancelled and can no longer be changed.")
             End If
 
+            If loan.IsOffsetOld Then
+                Return Fail($"This loan was offset by loan #{loan.OffsetByLoanId}. Use 'Undo offset' first.")
+            End If
+
             If Await _repo.HasPostedPaymentAsync(loanId) Then
                 Return Fail("This loan already has deductions posted from payroll, so the opening payments can no longer be undone.")
             End If
@@ -735,6 +799,184 @@ Namespace Loans.Services
                 .AffectedCount = undone,
                 .Message = $"{undone} opening payment(s) undone."
             }
+
+        End Function
+
+        ' ========================================================
+        ' OFFSET (RENEWAL NG PAREHONG LOAN CODE)
+        ' ========================================================
+        ' Halimbawa: SSS Salary Loan na ni-renew. Ang bagong loan (40,000) ay may bawas na balanse ng luma
+        ' (19,380.43), kaya ang natitirang hulog ng luma ay HINDI na dapat kaltasan.
+        '
+        ' Ang ginagawa ng Offset sa lumang loan (iisang transaction kasama ang pag-save ng bago):
+        '   - lahat ng hindi pa bayad na hulog: AmountPaid = AmountDue, PaidDate = offset date,
+        '     PayrollRefNo = OFFSET-{bagongLoanId}
+        '   - Status = Offset, OffsetByLoanId/OffsetDate, at dagdag na linya sa Remark
+        ' Hindi na siya kukunin ng Process dahil Status = 'Active' lang ang kinakaltasan.
+        ' ========================================================
+        Public Async Function GetOffsetCandidatesAsync(employeeRecordId As Integer, loanCode As String,
+                                                       excludeLoanId As Integer) _
+            As Task(Of List(Of LoanOffsetCandidate)) Implements IEmployeeLoanService.GetOffsetCandidatesAsync
+
+            If employeeRecordId <= 0 OrElse String.IsNullOrWhiteSpace(loanCode) Then
+                Return New List(Of LoanOffsetCandidate)
+            End If
+
+            Return Await _repo.GetOffsetCandidatesAsync(employeeRecordId, loanCode, excludeLoanId)
+
+        End Function
+
+        Private Async Function SaveWithOffsetAsync(item As EmployeeLoanModel,
+                                                   schedule As List(Of EmployeeLoanScheduleModel),
+                                                   userName As String) As Task(Of LoanSaveResult)
+
+            Dim req = item.OffsetRequest
+
+            If req.OldLoanIds Is Nothing OrElse req.OldLoanIds.Count = 0 Then
+                Return Fail("Select at least one old loan to offset, or choose 'Keep both'.")
+            End If
+
+            ' Basahin ulit mula sa database - baka may nagbago mula nang buksan ang dialog.
+            Dim candidates = Await _repo.GetOffsetCandidatesAsync(item.EmployeeRecordId, item.LoanCode, 0)
+            Dim selected = candidates.Where(Function(c) req.OldLoanIds.Contains(c.LoanId)).ToList()
+
+            If selected.Count <> req.OldLoanIds.Distinct().Count() Then
+                Return Fail("One of the selected loans is no longer Active or has no unpaid installments." &
+                            Environment.NewLine & "Close this message and save again to refresh the list.")
+            End If
+
+            Dim blocked = selected.FirstOrDefault(Function(c) c.IsBlocked)
+            If blocked IsNot Nothing Then
+                Return Fail($"Loan #{blocked.LoanId} can't be offset yet:" & Environment.NewLine & blocked.BlockedReason)
+            End If
+
+            Dim earliestStart = selected.Min(Function(c) c.LoanStartDate)
+            If req.OffsetDate.Date < earliestStart.Date Then
+                Return Fail("The offset date can't be earlier than the start date of the old loan.")
+            End If
+
+            ' --- CREDIT ---
+            Dim unpaid = selected.Sum(Function(c) c.UnpaidAmount)
+            Dim credit = LoanOffsetRules.ComputeCredit(req.BalancePerStatement, unpaid)
+
+            Dim plan As New LoanOffsetPlan With {
+                .OldLoanIds = selected.Select(Function(c) c.LoanId).ToList(),
+                .OffsetDate = req.OffsetDate.Date,
+                .BalancePerStatement = req.BalancePerStatement,
+                .Credit = credit
+            }
+
+            Dim creditNote As String = Nothing
+
+            If credit > 0D Then
+
+                Select Case req.CreditMode
+
+                    Case LoanCreditMode.ApplyToFirst, LoanCreditMode.ApplyToLast
+                        Dim fromLast = (req.CreditMode = LoanCreditMode.ApplyToLast)
+                        Dim allocations = LoanOffsetRules.AllocateCredit(schedule, credit, fromLast)
+                        If allocations Is Nothing Then
+                            Return Fail($"The credit ({credit:n2}) is bigger than the whole new loan ({item.TotalLoanAmount:n2}). " &
+                                        "Use 'Refund through payroll' instead.")
+                        End If
+                        plan.CreditAllocations = allocations
+                        creditNote = $"Credit {credit:n2} applied to installment(s) " &
+                                     String.Join(", ", allocations.Select(Function(a) "#" & a.InstallmentNo)) & "."
+
+                    Case LoanCreditMode.RefundThroughPayroll
+                        Dim target = Await _repo.GetRefundTargetAsync(item.EmployeeRecordId, plan.OffsetDate)
+
+                        If target Is Nothing OrElse Not target.CompensationId.HasValue Then
+                            Return Fail("No 'Loan Refund Code' is set." & Environment.NewLine &
+                                        "Set it in Settings > General > Code Mapping (a Compensation with Input unit = Amount), then save again.")
+                        End If
+                        If String.IsNullOrWhiteSpace(target.CompensationCode) Then
+                            Return Fail("The 'Loan Refund Code' in General Settings points to a Compensation that no longer exists.")
+                        End If
+                        If target.InputUnit.HasValue AndAlso target.InputUnit.Value <> CByte(PayrollInputUnit.Amount) Then
+                            Return Fail($"The Loan Refund Code '{target.CompensationCode}' must use Input unit = Amount (Payroll Settings > Compensation).")
+                        End If
+                        If String.IsNullOrWhiteSpace(target.PayCycle) Then
+                            Return Fail("This employee has no Pay Cycle (Employee > Earnings), so there is no cutoff to put the refund in.")
+                        End If
+                        If Not target.CutoffId.HasValue Then
+                            Return Fail($"There is no Draft {target.PayCycle} cutoff ending on or after {plan.OffsetDate.ToString(AppConstants.DisplayDateFormat)}." &
+                                        Environment.NewLine & "Generate the cutoffs first (Payroll Settings > Cutoff), then save again.")
+                        End If
+
+                        plan.RefundCutoffId = target.CutoffId
+                        plan.RefundCode = target.CompensationCode
+                        creditNote = $"Credit {credit:n2} will be refunded in cutoff {target.CutoffLabel} as '{target.CompensationCode}'."
+
+                    Case Else
+                        Return Fail($"There is a credit of {credit:n2} for the employee. Choose what to do with it.")
+
+                End Select
+
+                plan.CreditMode = req.CreditMode
+
+            End If
+
+            ' --- PERSIST (iisang transaction) ---
+            item.InputDate = Date.Today
+            item.Status = LoanStatus.Active
+            item.OffsetCredit = credit
+            item.OffsetCreditMode = plan.CreditMode
+
+            Dim newId = Await _repo.SaveWithOffsetAsync(item, schedule, plan, userName)
+            item.Id = newId
+
+            Dim message = $"{selected.Count} old loan(s) offset ({String.Join(", ", selected.Select(Function(c) "#" & c.LoanId))}): " &
+                          $"{selected.Sum(Function(c) c.UnpaidCount)} unpaid installment(s), total {unpaid:n2}, marked as paid by this loan."
+            If creditNote IsNot Nothing Then message &= Environment.NewLine & creditNote
+
+            Return New LoanSaveResult With {
+                .Success = True,
+                .NewStatus = item.Status,
+                .Message = message,
+                .AffectedCount = selected.Count
+            }
+
+        End Function
+
+        ''' <summary>
+        ''' Ibinabalik ang offset na ginawa ng BAGONG loan (newLoanId): ang lumang loan ay Active ulit at
+        ''' kakaltasan na ulit, ang credit sa bagong loan ay tinatanggal, at ang refund row (kung Draft pa ang
+        ''' cutoff) ay binubura. Admin + password - nasa View ang check na iyon.
+        ''' </summary>
+        Public Async Function UndoOffsetAsync(newLoanId As Integer, userName As String) As Task(Of LoanSaveResult) _
+            Implements IEmployeeLoanService.UndoOffsetAsync
+
+            If newLoanId <= 0 Then Return Fail("Please select a loan first.")
+
+            Dim loan = Await _repo.GetByIdAsync(newLoanId)
+            If loan Is Nothing Then Return Fail("Loan not found.")
+
+            If Not loan.HasOffsetChildren Then
+                Return Fail("This loan did not offset any older loan, so there is nothing to undo.")
+            End If
+
+            ' Kapag may kaltas na mula sa payroll ang bagong loan, hindi na malinis ibalik: ang PR- row ay
+            ' maaaring na-overwrite na ang CREDIT- ref, at ang luma ay kakaltasan ulit nang sabay.
+            If Await _repo.HasPostedPaymentAsync(newLoanId) Then
+                Return Fail("This loan already has deductions posted from payroll, so the offset can no longer be undone.")
+            End If
+
+            If loan.OffsetRefundTxnId.HasValue Then
+                Dim refund = Await _repo.GetRefundTxnStateAsync(loan.OffsetRefundTxnId.Value)
+                If refund.Found AndAlso refund.CutoffStatus <> CByte(CutoffStatus.Draft) Then
+                    Return Fail($"The refund of this offset is already in cutoff {refund.CutoffLabel}, which is no longer Draft." &
+                                Environment.NewLine & "The offset can no longer be undone.")
+                End If
+            End If
+
+            Dim counts = Await _repo.UndoOffsetAsync(newLoanId, userName)
+
+            Dim message = $"Offset undone: {counts.OldLoans} old loan(s) are Active again ({counts.OldInstallments} installment(s) set back to unpaid)."
+            If counts.CreditInstallments > 0 Then message &= $" Credit removed from {counts.CreditInstallments} installment(s) of this loan."
+            If counts.RefundRemoved Then message &= " The refund entry was removed from the payroll input."
+
+            Return New LoanSaveResult With {.Success = True, .NewStatus = loan.Status, .Message = message, .AffectedCount = counts.OldLoans}
 
         End Function
 
@@ -771,6 +1013,78 @@ Namespace Loans.Services
         ' ========================================================
         ' HELPERS
         ' ========================================================
+        ' --------------------------------------------------------
+        ' RATE, TERMS AT PER-MONTH SPLIT
+        ' --------------------------------------------------------
+
+        ' Hanggang ilang piso ang pwedeng diperensya ng huling hulog sa amortization bago ito gawing
+        ' pantay (interes ang mag-a-adjust). Tingnan ang BuildInstallments.
+        Private Const LastRowTolerance As Decimal = 1D
+
+        ''' <summary>
+        ''' Ilang hulog kada taon. Every Cycle na kada kaltas ang amortization = 24; lahat ng iba = 12
+        ''' (Monthly, First/Second Cycle Only, at Every Cycle na Per Month - buwanan ang kwenta ng interes doon).
+        ''' </summary>
+        Friend Shared Function PeriodsPerYear(item As EmployeeLoanModel) As Integer
+            Dim everyCycle = String.Equals(item.Frequency, LoanFrequency.EveryCycle, StringComparison.OrdinalIgnoreCase)
+            Return If(everyCycle AndAlso Not IsEveryCyclePerMonth(item), 24, 12)
+        End Function
+
+        ''' <summary>
+        ''' Ang rate KADA HULOG bilang fraction (hal. 0.0066666...). Per Year = rate / 100 / hulog-kada-taon,
+        ''' buong Decimal precision - kaya 8% per year ay eksaktong 266.67 na interes sa 40,000 (hindi 266.68
+        ''' na lumalabas kapag 0.6667 ang tinype, dahil 4 decimals lang ang Interest Rate field).
+        ''' </summary>
+        Friend Shared Function PeriodRate(item As EmployeeLoanModel) As Decimal
+            Dim rate = item.InterestRate / 100D
+            If String.Equals(item.RatePeriod, LoanRatePeriod.PerYear, StringComparison.OrdinalIgnoreCase) Then
+                Return rate / PeriodsPerYear(item)
+            End If
+            Return rate
+        End Function
+
+        Friend Shared Function IsEveryCyclePerMonth(item As EmployeeLoanModel) As Boolean
+            Return String.Equals(item.Frequency, LoanFrequency.EveryCycle, StringComparison.OrdinalIgnoreCase) AndAlso
+                   String.Equals(item.AmortBasis, LoanAmortBasis.PerMonth, StringComparison.OrdinalIgnoreCase)
+        End Function
+
+        ''' <summary>
+        ''' Bilang ng hulog mula sa annuity formula (n na may decimal).
+        ''' BAKIT HINDI LAGING CEILING?
+        '''   Naka-round sa sentimo ang amortization (1,809.09), kaya ang n ay halos laging may maliit na sobra
+        '''   (24.00002). Ang Ceiling ay gagawa ng ika-25 na hulog na sentimo lang ang laman. Kaya kapag ang
+        '''   sobra x amortization ay hindi lalampas sa LastRowTolerance (piso), ibinababa natin sa buong numero
+        '''   at ang maliit na tira ay sasama sa huling hulog.
+        ''' </summary>
+        Private Shared Function TermsFromN(n As Double, amortization As Double) As Integer
+            Dim whole = Math.Floor(n)
+            If whole >= 1.0 AndAlso (n - whole) * amortization <= CDbl(LastRowTolerance) Then
+                Return CInt(whole)
+            End If
+            Return CInt(Math.Ceiling(n))
+        End Function
+
+        ''' <summary>
+        ''' Hinahati ang bawat buwanang hulog sa dalawa. Ang unang kaltas = kalahati (naka-round), ang pangalawa
+        ''' = ang natira, para eksaktong buo pa rin ang buwan (hal. 1,809.09 = 904.55 + 904.54).
+        ''' Hiwalay na hinahati ang principal at interes para tama ang hati sa payroll register.
+        ''' </summary>
+        Private Shared Function SplitPerMonth(monthly As List(Of EmployeeLoanScheduleModel)) As List(Of EmployeeLoanScheduleModel)
+            Dim rows As New List(Of EmployeeLoanScheduleModel)
+            For Each m In monthly
+                Dim p1 = RoundMoney(m.PrincipalDue / 2D)
+                Dim i1 = RoundMoney(m.InterestDue / 2D)
+                Dim p2 = m.PrincipalDue - p1
+                Dim i2 = m.InterestDue - i1
+                rows.Add(New EmployeeLoanScheduleModel With {.PrincipalDue = p1, .InterestDue = i1, .AmountDue = p1 + i1})
+                rows.Add(New EmployeeLoanScheduleModel With {.PrincipalDue = p2, .InterestDue = i2, .AmountDue = p2 + i2})
+            Next
+            For idx = 0 To rows.Count - 1
+                rows(idx).InstallmentNo = idx + 1
+            Next
+            Return rows
+        End Function
+
         Private Shared Function Fail(message As String) As LoanSaveResult
             Return New LoanSaveResult With {.Success = False, .ErrorMessage = message}
         End Function

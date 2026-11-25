@@ -32,6 +32,8 @@ Partial Class ucGeneralSettings
         txtBonusCeiling = New DevExpress.XtraEditors.TextEdit()
         lblBonusCeiling = New DevExpress.XtraEditors.LabelControl()
         grpCodeMapping = New DevExpress.XtraEditors.GroupControl()
+        lookupLoanRefundCode = New DevExpress.XtraEditors.LookUpEdit()
+        lblLoanRefundCode = New DevExpress.XtraEditors.LabelControl()
         lookupEarlyOutCode = New DevExpress.XtraEditors.LookUpEdit()
         lblEarlyOutCode = New DevExpress.XtraEditors.LabelControl()
         lookupLateInCode = New DevExpress.XtraEditors.LookUpEdit()
@@ -68,6 +70,7 @@ Partial Class ucGeneralSettings
         CType(txtBonusCeiling.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(grpCodeMapping, ComponentModel.ISupportInitialize).BeginInit()
         grpCodeMapping.SuspendLayout()
+        CType(lookupLoanRefundCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookupEarlyOutCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookupLateInCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(lookupAbsentCode.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -262,6 +265,8 @@ Partial Class ucGeneralSettings
         grpCodeMapping.AppearanceCaption.Font = New Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         grpCodeMapping.AppearanceCaption.FontStyleDelta = FontStyle.Bold
         grpCodeMapping.AppearanceCaption.Options.UseFont = True
+        grpCodeMapping.Controls.Add(lookupLoanRefundCode)
+        grpCodeMapping.Controls.Add(lblLoanRefundCode)
         grpCodeMapping.Controls.Add(lookupEarlyOutCode)
         grpCodeMapping.Controls.Add(lblEarlyOutCode)
         grpCodeMapping.Controls.Add(lookupLateInCode)
@@ -278,6 +283,24 @@ Partial Class ucGeneralSettings
         grpCodeMapping.Size = New Size(1069, 140)
         grpCodeMapping.TabIndex = 2
         grpCodeMapping.Text = " CODE MAPPING"
+        ' 
+        ' lookupLoanRefundCode - Compensation para sa refund ng Loan Offset credit
+        ' 
+        lookupLoanRefundCode.Location = New Point(536, 102)
+        lookupLoanRefundCode.Margin = New Padding(3, 2, 3, 2)
+        lookupLoanRefundCode.Name = "lookupLoanRefundCode"
+        lookupLoanRefundCode.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        lookupLoanRefundCode.Size = New Size(230, 20)
+        lookupLoanRefundCode.TabIndex = 11
+        lookupLoanRefundCode.ToolTip = "Compensation used when a Loan Offset credit is refunded through payroll. Use a code with Input unit = Amount and no Tax/SSS/PhilHealth/Pag-IBIG flags."
+        ' 
+        ' lblLoanRefundCode
+        ' 
+        lblLoanRefundCode.Location = New Point(536, 84)
+        lblLoanRefundCode.Name = "lblLoanRefundCode"
+        lblLoanRefundCode.Size = New Size(140, 13)
+        lblLoanRefundCode.TabIndex = 10
+        lblLoanRefundCode.Text = "Loan Refund Code (+)"
         ' 
         ' lookupEarlyOutCode
         ' 
@@ -538,6 +561,7 @@ Partial Class ucGeneralSettings
         CType(grpCodeMapping, ComponentModel.ISupportInitialize).EndInit()
         grpCodeMapping.ResumeLayout(False)
         grpCodeMapping.PerformLayout()
+        CType(lookupLoanRefundCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookupEarlyOutCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookupLateInCode.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(lookupAbsentCode.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -585,6 +609,8 @@ Partial Class ucGeneralSettings
     Friend WithEvents lookupLateInCode As DevExpress.XtraEditors.LookUpEdit
     Friend WithEvents lblEarlyOutCode As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lookupEarlyOutCode As DevExpress.XtraEditors.LookUpEdit
+    Friend WithEvents lblLoanRefundCode As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lookupLoanRefundCode As DevExpress.XtraEditors.LookUpEdit
 
     Friend WithEvents grpStatutoryBasis As DevExpress.XtraEditors.GroupControl
     Friend WithEvents lblSSSBasedOn As DevExpress.XtraEditors.LabelControl

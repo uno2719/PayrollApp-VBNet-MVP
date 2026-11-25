@@ -158,6 +158,34 @@ Namespace GlobalShared.Helpers
             End Using
         End Function
 
+        ''' <summary>
+        ''' Para sa Admin-only na aksyon na HINDI Delete (hal. Loans > Undo offset): Admin check, isang
+        ''' Yes/No (default No), saka password ng naka-login na user. Kaparehong security ng ConfirmDelete,
+        ''' ibang wording.
+        ''' </summary>
+        Public Function ConfirmAdminAction(owner As IWin32Window, title As String, message As String,
+                                           actionDescription As String) As Boolean
+
+            If Not AppSession.IsAdmin Then
+                XtraMessageBox.Show(owner, "Only administrators can do this.", title,
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Return False
+            End If
+
+            Dim answer = XtraMessageBox.Show(owner, message, title,
+                                             MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2)
+            If answer <> DialogResult.Yes Then Return False
+
+            Dim auth As IAuthenticationService = New AuthenticationService(New UserRepository())
+            Dim username = AppSession.CurrentUser
+
+            Using dlg As New frmConfirmPassword(actionDescription)
+                dlg.PromptText = $"Enter your password to {actionDescription}."
+                dlg.Verifier = Function(password As String) auth.VerifyCurrentUserPasswordAsync(username, password)
+                Return dlg.ShowDialog(owner) = DialogResult.OK
+            End Using
+        End Function
+
     End Module
 
 End Namespace

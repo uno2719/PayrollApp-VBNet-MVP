@@ -39,6 +39,13 @@ Namespace Loans.Services
 
         Function UndoOpeningPaidAsync(loanId As Integer, userName As String) As Task(Of LoanSaveResult)
 
+        ' Offset (renewal ng parehong LoanCode): mga Active na lumang loan na pwedeng i-offset ng bagong loan.
+        Function GetOffsetCandidatesAsync(employeeRecordId As Integer, loanCode As String, excludeLoanId As Integer) _
+            As Task(Of List(Of LoanOffsetCandidate))
+
+        ' Ibalik ang offset na ginawa ng bagong loan (Admin + password ang check sa View).
+        Function UndoOffsetAsync(newLoanId As Integer, userName As String) As Task(Of LoanSaveResult)
+
         Function RecordPaymentAsync(scheduleId As Integer, loanId As Integer,
                                     amountPaid As Decimal, paidDate As Date,
                                     payrollRefNo As String, userName As String) As Task(Of LoanSaveResult)

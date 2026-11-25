@@ -35,6 +35,12 @@ Namespace GlobalShared.Models
         Public Property InterestRate As Decimal
         Public Property Terms As Integer
 
+        ''' <summary>Per Period (default, dating behavior) o Per Year. Diminishing lang. Tingnan ang LoanRatePeriod.</summary>
+        Public Property RatePeriod As String = Constants.LoanRatePeriod.PerPeriod
+
+        ''' <summary>Every Cycle lang: Per Deduction (default) o Per Month. Tingnan ang LoanAmortBasis.</summary>
+        Public Property AmortBasis As String = Constants.LoanAmortBasis.PerDeduction
+
         ' --- Halaga ---
         Public Property PrincipalAmount As Decimal
         Public Property InterestAmount As Decimal
@@ -47,6 +53,25 @@ Namespace GlobalShared.Models
         ' --- Estado ---
         Public Property Status As String = Constants.LoanStatus.Active
         Public Property CompletedAt As DateTime?
+
+        ' --- Offset (renewal) ---
+        ''' <summary>Sa LUMANG loan (Status = Offset): ang bagong loan na pumalit dito, at kailan.</summary>
+        Public Property OffsetByLoanId As Integer?
+        Public Property OffsetDate As Date?
+
+        ''' <summary>Sa BAGONG loan: ang credit (sobrang bayad) mula sa offset, paano ginamit, at ang refund row kung Refund.</summary>
+        Public Property OffsetCredit As Decimal
+        Public Property OffsetCreditMode As String
+        Public Property OffsetRefundTxnId As Integer?
+
+        ''' <summary>COMPUTED: ilang lumang loan ang na-offset ng loan na ito (0 kung wala).</summary>
+        Public Property OffsetChildCount As Integer
+
+        ''' <summary>
+        ''' TRANSIENT (hindi naka-store): kung bagong loan na may offset, dala nito ang desisyon ng user mula sa
+        ''' Offset dialog. Nothing = walang offset.
+        ''' </summary>
+        Public Property OffsetRequest As LoanOffsetRequest
         Public Property Remark As String
 
         ' --- Opening payments (C1Pay) ---
@@ -96,6 +121,20 @@ Namespace GlobalShared.Models
             End Get
         End Property
 
+        ''' <summary>True kung ito ang LUMANG loan na na-offset na.</summary>
+        Public ReadOnly Property IsOffsetOld As Boolean
+            Get
+                Return String.Equals(Status, Constants.LoanStatus.Offset, StringComparison.OrdinalIgnoreCase)
+            End Get
+        End Property
+
+        ''' <summary>True kung ito ang BAGONG loan na nag-offset ng lumang loan.</summary>
+        Public ReadOnly Property HasOffsetChildren As Boolean
+            Get
+                Return OffsetChildCount > 0
+            End Get
+        End Property
+
         ''' <summary>
         ''' Para sa display: "3 of 24 paid"
         ''' </summary>
@@ -106,5 +145,47 @@ Namespace GlobalShared.Models
         End Property
 
     End Class
+
+    ''' <summary>Isang lumang loan na pwedeng i-offset (para sa Offset dialog).</summary>
+    Public Class LoanOffsetCandidate
+        Public Property LoanId As Integer
+        Public Property LoanCode As String
+        Public Property LoanStartDate As Date
+        Public Property Status As String
+        Public Property TotalLoanAmount As Decimal
+        Public Property TotalAmortization As Decimal
+        Public Property TotalInstallments As Integer
+        Public Property UnpaidCount As Integer
+        ''' <summary>Kabuuan ng (AmountDue - AmountPaid) ng mga hindi pa bayad na hulog.</summary>
+        Public Property UnpaidAmount As Decimal
+        ''' <summary>May laman kung bawal i-offset (hal. nasa Processed na cutoff ang hulog).</summary>
+        Public Property BlockedReason As String
+
+        ''' <summary>Para sa checklist ng dialog.</summary>
+        Public Property Selected As Boolean = True
+
+        Public ReadOnly Property IsBlocked As Boolean
+            Get
+                Return Not String.IsNullOrWhiteSpace(BlockedReason)
+            End Get
+        End Property
+    End Class
+
+    ''' <summary>Ang desisyon ng user sa Offset dialog.</summary>
+    Public Class LoanOffsetRequest
+        Public Property OldLoanIds As New List(Of Integer)
+        Public Property OffsetDate As Date = Date.Today
+        ''' <summary>Optional: balanse ng lumang loan ayon sa SSS/Pag-IBIG statement (reference + basehan ng credit).</summary>
+        Public Property BalancePerStatement As Decimal?
+        ''' <summary>LoanCreditMode.* kapag may credit (hindi pinapansin kung walang credit).</summary>
+        Public Property CreditMode As String
+    End Class
+
+    ''' <summary>Ang pinili sa Offset dialog.</summary>
+    Public Enum LoanOffsetChoice
+        Cancel = 0
+        KeepBoth = 1
+        Offset = 2
+    End Enum
 
 End Namespace

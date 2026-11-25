@@ -21,10 +21,20 @@ Public Class frmConfirmPassword
         _isSoftDelete = isSoftDelete
     End Sub
 
+    ''' <summary>
+    ''' Kapag may laman, ito ang ipapakitang mensahe imbes na ang "Enter your password to delete ...".
+    ''' Para sa mga Admin na aksyon na hindi Delete (hal. Loans > Undo offset).
+    ''' </summary>
+    Public Property PromptText As String
+
     Private Sub frmConfirmPassword_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        lblMessage.Text = If(_isSoftDelete,
-            $"Enter your password to delete {_itemDescription}.",
-            $"Enter your password to permanently delete {_itemDescription}.")
+        If Not String.IsNullOrWhiteSpace(PromptText) Then
+            lblMessage.Text = PromptText
+        Else
+            lblMessage.Text = If(_isSoftDelete,
+                $"Enter your password to delete {_itemDescription}.",
+                $"Enter your password to permanently delete {_itemDescription}.")
+        End If
         txtPassword.Properties.PasswordChar = "●"c
         lblError.Text = String.Empty
         txtPassword.Focus()

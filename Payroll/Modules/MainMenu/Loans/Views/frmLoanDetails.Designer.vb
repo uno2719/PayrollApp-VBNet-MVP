@@ -63,6 +63,7 @@ Partial Class frmLoanDetails
         btnClose = New DevExpress.XtraEditors.SimpleButton()
         btnMarkPaid = New DevExpress.XtraEditors.SimpleButton()
         btnUndoOpening = New DevExpress.XtraEditors.SimpleButton()
+        btnUndoOffset = New DevExpress.XtraEditors.SimpleButton()
         CType(pnlHeader, ComponentModel.ISupportInitialize).BeginInit()
         pnlHeader.SuspendLayout()
         CType(grpSummary, ComponentModel.ISupportInitialize).BeginInit()
@@ -539,6 +540,7 @@ Partial Class frmLoanDetails
         ' 
         ' pnlFooter
         ' 
+        pnlFooter.Controls.Add(btnUndoOffset)
         pnlFooter.Controls.Add(btnUndoOpening)
         pnlFooter.Controls.Add(btnMarkPaid)
         pnlFooter.Controls.Add(btnClose)
@@ -574,6 +576,16 @@ Partial Class frmLoanDetails
         btnUndoOpening.Size = New Size(180, 28)
         btnUndoOpening.TabIndex = 2
         btnUndoOpening.Text = "Undo opening payments"
+        ' 
+        ' btnUndoOffset - Admin lang (password)
+        ' 
+        btnUndoOffset.Anchor = AnchorStyles.Top Or AnchorStyles.Left
+        btnUndoOffset.Location = New Point(420, 11)
+        btnUndoOffset.Name = "btnUndoOffset"
+        btnUndoOffset.Size = New Size(150, 28)
+        btnUndoOffset.TabIndex = 3
+        btnUndoOffset.Text = "Undo offset..."
+        btnUndoOffset.Visible = False
         ' 
         ' frmLoanDetails
         ' 
@@ -655,5 +667,6 @@ Partial Class frmLoanDetails
     Friend WithEvents btnClose As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnMarkPaid As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnUndoOpening As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnUndoOffset As DevExpress.XtraEditors.SimpleButton
 
 End Class

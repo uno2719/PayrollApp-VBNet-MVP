@@ -50,6 +50,9 @@ Namespace GlobalShared.Models
         Public Property LateInCodeId As Integer?
         Public Property EarlyOutCodeId As Integer?
 
+        ' Compensation (Input unit = Amount) na gagamitin kapag ang credit ng Loan Offset ay ibinalik sa payroll.
+        Public Property LoanRefundCodeId As Integer?
+
         ' --- Statutory Basis ---
         Public Property SSSBasedOn As String = "Progressive Earnings"
         Public Property PhilHealthBasedOn As String = "Fixed Basic"

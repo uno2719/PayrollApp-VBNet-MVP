@@ -24,6 +24,7 @@ Namespace GeneralSettings.Views
         Property AbsentCodeId As Integer?
         Property LateInCodeId As Integer?
         Property EarlyOutCodeId As Integer?
+        Property LoanRefundCodeId As Integer?
 
         ' --- Statutory Basis ---
         Property SSSBasedOn As String

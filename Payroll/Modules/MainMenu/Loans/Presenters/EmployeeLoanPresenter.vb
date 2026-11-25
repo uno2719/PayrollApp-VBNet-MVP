@@ -169,6 +169,11 @@ Namespace Loans.Presenters
             _view.Frequency = LoanFrequency.EveryCycle
             _view.AmortizationMethod = LoanAmortizationMethod.BasedOnTerm
             _view.InterestMethod = LoanInterestMethod.StraightLine
+            ' Bagong loan: Per Year ang rate (hal. 8 = 8% kada taon, gaya ng SSS statement) at buwanan ang
+            ' amortization na hinahati sa mga cutoff ng buwan. Ang mga lumang loan ay naka-save bilang
+            ' Per Period / Per Deduction kaya hindi sila nagbabago.
+            _view.RatePeriod = LoanRatePeriod.PerYear
+            _view.AmortBasis = LoanAmortBasis.PerMonth
             _view.StatusText = LoanStatus.Active
             _view.OpeningPaidInstallments = 0
 
@@ -281,6 +286,34 @@ Namespace Loans.Presenters
             item.Id = _selectedLoanId
             item.EmployeeRecordId = _selectedEmployeeId
 
+            ' --- OFFSET PROMPT (bagong loan lang) ---
+            ' May Active na loan na pareho ang LoanCode? Tanungin si user: Offset / Keep both / Cancel.
+            If _isNewMode Then
+                Dim candidates = Await _service.GetOffsetCandidatesAsync(_selectedEmployeeId, item.LoanCode, 0)
+
+                If candidates.Count > 0 Then
+                    ' Kailangan ng kumpletong kwenta ng bagong loan para sa preview (total, at kung kasya ang credit).
+                    Dim preview = PullFromView()
+                    preview.EmployeeRecordId = _selectedEmployeeId
+                    Dim computed = _service.Compute(preview)
+                    If Not computed.IsComplete Then
+                        _view.ShowError(If(computed.Warning, "Unable to compute the loan amortization."))
+                        Return
+                    End If
+
+                    Dim answer = _view.AskOffset(candidates, preview)
+
+                    Select Case answer.Choice
+                        Case LoanOffsetChoice.Cancel
+                            Return
+                        Case LoanOffsetChoice.Offset
+                            item.OffsetRequest = answer.Request
+                        Case Else
+                            ' Keep both: ordinaryong save, parehong kakaltasan.
+                    End Select
+                End If
+            End If
+
             Dim result = Await _service.SaveAsync(item, _userName)
 
             If Not result.Success Then
@@ -319,6 +352,19 @@ Namespace Loans.Presenters
                 Return
             End If
 
+            ' Loan na nag-offset ng lumang loan: ang pag-delete ay nagbabalik din ng offset - Admin + password.
+            Dim selected = _loanList?.FirstOrDefault(Function(x) x.Id = _selectedLoanId)
+            If selected IsNot Nothing AndAlso selected.HasOffsetChildren Then
+                If Not _view.ConfirmAdminWithPassword(
+                        "Delete Loan",
+                        $"Loan #{selected.Id} paid off (offset) {selected.OffsetChildCount} older loan(s)." & Environment.NewLine &
+                        "Deleting it will also UNDO the offset: the old loan(s) become Active again and will be deducted again." &
+                        Environment.NewLine & Environment.NewLine & "Continue?",
+                        $"delete loan #{selected.Id} and undo its offset") Then
+                    Return
+                End If
+            End If
+
             Dim result = Await _service.DeleteAsync(_selectedLoanId, _userName)
 
             If Not result.Success Then
@@ -326,7 +372,7 @@ Namespace Loans.Presenters
                 Return
             End If
 
-            _view.ShowMessage("Loan deleted.")
+            _view.ShowMessage(If(String.IsNullOrWhiteSpace(result.Message), "Loan deleted.", "Loan deleted." & Environment.NewLine & result.Message))
 
             Await LoadLoanListAsync()
             ResetForm()
@@ -403,6 +449,11 @@ Namespace Loans.Presenters
             Return Await _service.UndoOpeningPaidAsync(loanId, _userName)
         End Function
 
+        ''' <summary>Undo offset. Ang newLoanId ay ang BAGONG loan (ang nag-offset). Admin + password: nasa View.</summary>
+        Public Async Function UndoOffsetAsync(newLoanId As Integer) As Task(Of Services.LoanSaveResult)
+            Return Await _service.UndoOffsetAsync(newLoanId, _userName)
+        End Function
+
         ''' <summary>
         ''' Tinatawag pagkasara ng Details window kung may nagbago (bayad/status) - i-refresh ang listahan.
         ''' </summary>
@@ -436,6 +487,8 @@ Namespace Loans.Presenters
                 .InterestMethod = _view.InterestMethod,
                 .InterestRate = _view.InterestRate,
                 .Terms = _view.Terms,
+                .RatePeriod = _view.RatePeriod,
+                .AmortBasis = _view.AmortBasis,
                 .PrincipalAmount = _view.PrincipalAmount,
                 .InterestAmount = _view.InterestAmount,
                 .TotalLoanAmount = _view.TotalLoanAmount,
@@ -458,6 +511,8 @@ Namespace Loans.Presenters
             _view.InterestMethod = loan.InterestMethod
             _view.InterestRate = loan.InterestRate
             _view.Terms = loan.Terms
+            _view.RatePeriod = If(loan.RatePeriod, LoanRatePeriod.PerPeriod)
+            _view.AmortBasis = If(loan.AmortBasis, LoanAmortBasis.PerDeduction)
             _view.PrincipalAmount = loan.PrincipalAmount
             _view.InterestAmount = loan.InterestAmount
             _view.TotalLoanAmount = loan.TotalLoanAmount

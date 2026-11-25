@@ -30,8 +30,24 @@ Namespace Loans.Data
 
         Function HasAnyPaymentAsync(loanId As Integer) As Task(Of Boolean)
 
-        ' May bayad na GALING SA PAYROLL POST (o ibang hindi-C1PAY)? Ang opening payments ng C1Pay ay hindi kasama.
+        ' May bayad na GALING SA PAYROLL POST? Hindi kasama ang C1PAY (opening), OFFSET- at CREDIT- (offset).
         Function HasPostedPaymentAsync(loanId As Integer) As Task(Of Boolean)
+
+        ' --- Offset (renewal) ---
+        Function GetOffsetCandidatesAsync(employeeRecordId As Integer, loanCode As String,
+                                          excludeLoanId As Integer) As Task(Of List(Of LoanOffsetCandidate))
+
+        Function GetRefundTargetAsync(employeeRecordId As Integer, offsetDate As Date) As Task(Of LoanRefundTarget)
+
+        Function GetRefundTxnStateAsync(txnId As Integer) As Task(Of LoanRefundTxnState)
+
+        ' Insert ng bagong loan + schedule + offset ng luma + credit, sa iisang transaction. Ibinabalik ang bagong Id.
+        Function SaveWithOffsetAsync(item As EmployeeLoanModel,
+                                     schedule As List(Of EmployeeLoanScheduleModel),
+                                     plan As LoanOffsetPlan,
+                                     userName As String) As Task(Of Integer)
+
+        Function UndoOffsetAsync(newLoanId As Integer, userName As String) As Task(Of LoanOffsetUndoCounts)
 
         ' Markahang bayad ang unbayad na hulog #1..#upTo bilang opening payment (C1PAY). Ibinabalik ang bilang na na-update.
         Function MarkOpeningPaidAsync(loanId As Integer, upToInstallmentNo As Integer, userName As String) As Task(Of Integer)

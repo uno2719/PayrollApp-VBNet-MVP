@@ -30,7 +30,7 @@ Namespace GeneralSettings.Data
                        BonusCeiling, TotalDaysPerYear, WorkHourPerDay,
                        AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths, FileStorageRoot,
                        BasicSalaryCodePlusId, BasicSalaryCodeMinusId,
-                       AbsentCodeId, LateInCodeId, EarlyOutCodeId,
+                       AbsentCodeId, LateInCodeId, EarlyOutCodeId, LoanRefundCodeId,
                        SSSBasedOn, PhilHealthBasedOn,
                        CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
                 FROM {TableName}
@@ -50,7 +50,7 @@ Namespace GeneralSettings.Data
                     (BonusCeiling, TotalDaysPerYear, WorkHourPerDay,
                      AmountPrecision, PercentPrecision, DailyRateMonthlyFactor, ProbationMonths, FileStorageRoot,
                      BasicSalaryCodePlusId, BasicSalaryCodeMinusId,
-                     AbsentCodeId, LateInCodeId, EarlyOutCodeId,
+                     AbsentCodeId, LateInCodeId, EarlyOutCodeId, LoanRefundCodeId,
                      SSSBasedOn, PhilHealthBasedOn,
                      CreatedAt, CreatedBy)
                 OUTPUT INSERTED.GeneralSettingsId
@@ -58,7 +58,7 @@ Namespace GeneralSettings.Data
                     (@BonusCeiling, @TotalDaysPerYear, @WorkHourPerDay,
                      @AmountPrecision, @PercentPrecision, @DailyRateMonthlyFactor, @ProbationMonths, @FileStorageRoot,
                      @BasicSalaryCodePlusId, @BasicSalaryCodeMinusId,
-                     @AbsentCodeId, @LateInCodeId, @EarlyOutCodeId,
+                     @AbsentCodeId, @LateInCodeId, @EarlyOutCodeId, @LoanRefundCodeId,
                      @SSSBasedOn, @PhilHealthBasedOn,
                      GETDATE(), @UserName)"
 
@@ -68,7 +68,7 @@ Namespace GeneralSettings.Data
                     item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor, item.ProbationMonths,
                     item.FileStorageRoot,
                     item.BasicSalaryCodePlusId, item.BasicSalaryCodeMinusId,
-                    item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId,
+                    item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId, item.LoanRefundCodeId,
                     item.SSSBasedOn, item.PhilHealthBasedOn,
                     userName
                 })
@@ -94,6 +94,7 @@ Namespace GeneralSettings.Data
                     AbsentCodeId           = @AbsentCodeId,
                     LateInCodeId           = @LateInCodeId,
                     EarlyOutCodeId         = @EarlyOutCodeId,
+                    LoanRefundCodeId       = @LoanRefundCodeId,
                     SSSBasedOn             = @SSSBasedOn,
                     PhilHealthBasedOn      = @PhilHealthBasedOn,
                     UpdatedAt              = GETDATE(),
@@ -106,7 +107,7 @@ Namespace GeneralSettings.Data
                 item.AmountPrecision, item.PercentPrecision, item.DailyRateMonthlyFactor, item.ProbationMonths,
                 item.FileStorageRoot,
                 item.BasicSalaryCodePlusId, item.BasicSalaryCodeMinusId,
-                item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId,
+                item.AbsentCodeId, item.LateInCodeId, item.EarlyOutCodeId, item.LoanRefundCodeId,
                 item.SSSBasedOn, item.PhilHealthBasedOn,
                 userName
             })

@@ -30,6 +30,10 @@ Namespace Loans.Views
         Property InterestMethod As String
         Property InterestRate As Decimal
         Property Terms As Integer
+
+        ' "Per Period" / "Per Year" (LoanRatePeriod) at "Per Deduction" / "Per Month" (LoanAmortBasis).
+        Property RatePeriod As String
+        Property AmortBasis As String
         Property Remark As String
 
         ' Ilang hulog ang nabayaran na sa C1Pay (bagong loan lang)
@@ -67,6 +71,14 @@ Namespace Loans.Views
 
         Sub ShowMessage(message As String)
         Sub ShowError(message As String)
+
+        ' --- Offset (renewal) ---
+        ' Ipinapakita ang Offset dialog: may Active na loan na pareho ang LoanCode. Ang newLoan ay kuwentado na
+        ' (para sa preview at sa check kung kasya ang credit).
+        Function AskOffset(candidates As List(Of LoanOffsetCandidate), newLoan As EmployeeLoanModel) As LoanOffsetDialogResult
+
+        ' Admin-only na aksyon: mensahe (Yes/No, default No) + password ng naka-login na Admin.
+        Function ConfirmAdminWithPassword(title As String, message As String, actionDescription As String) As Boolean
 
     End Interface
 

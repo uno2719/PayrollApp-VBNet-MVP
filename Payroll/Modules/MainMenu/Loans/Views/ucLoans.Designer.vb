@@ -43,6 +43,10 @@ Partial Class ucLoans
         dtInputDate = New DevExpress.XtraEditors.DateEdit()
         lblFrequency = New DevExpress.XtraEditors.LabelControl()
         cboFrequency = New DevExpress.XtraEditors.ComboBoxEdit()
+        lblAmortBasis = New DevExpress.XtraEditors.LabelControl()
+        cboAmortBasis = New DevExpress.XtraEditors.ComboBoxEdit()
+        lblRatePeriod = New DevExpress.XtraEditors.LabelControl()
+        cboRatePeriod = New DevExpress.XtraEditors.ComboBoxEdit()
 
         lblAmortizationMethod = New DevExpress.XtraEditors.LabelControl()
         rgAmortizationMethod = New DevExpress.XtraEditors.RadioGroup()
@@ -110,6 +114,8 @@ Partial Class ucLoans
         CType(dtInputDate.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).BeginInit()
         CType(dtInputDate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(cboFrequency.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboAmortBasis.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(cboRatePeriod.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(rgAmortizationMethod.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(rgInterestMethod.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnInterestRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -268,6 +274,10 @@ Partial Class ucLoans
         grpDetails.Controls.Add(dtInputDate)
         grpDetails.Controls.Add(lblFrequency)
         grpDetails.Controls.Add(cboFrequency)
+        grpDetails.Controls.Add(lblAmortBasis)
+        grpDetails.Controls.Add(cboAmortBasis)
+        grpDetails.Controls.Add(lblRatePeriod)
+        grpDetails.Controls.Add(cboRatePeriod)
         grpDetails.Controls.Add(lblAmortizationMethod)
         grpDetails.Controls.Add(rgAmortizationMethod)
         grpDetails.Controls.Add(lblInterestMethod)
@@ -366,6 +376,42 @@ Partial Class ucLoans
         cboFrequency.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
         cboFrequency.Size = New Size(210, 20)
         cboFrequency.TabIndex = 8
+        ' 
+        ' lblAmortBasis - Every Cycle lang: kada kaltas o kada buwan ang Total Amortization
+        ' 
+        lblAmortBasis.Location = New Point(20, 242)
+        lblAmortBasis.Name = "lblAmortBasis"
+        lblAmortBasis.Size = New Size(160, 13)
+        lblAmortBasis.TabIndex = 40
+        lblAmortBasis.Text = "Total Amortization is"
+        ' 
+        ' cboAmortBasis
+        ' 
+        cboAmortBasis.Location = New Point(20, 260)
+        cboAmortBasis.Name = "cboAmortBasis"
+        cboAmortBasis.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        cboAmortBasis.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboAmortBasis.Size = New Size(210, 20)
+        cboAmortBasis.TabIndex = 41
+        cboAmortBasis.ToolTip = "Every Cycle only. Per Month = the amortization is for the whole month and is split across the month's cutoffs (e.g. SSS: 1,809.09 = 904.55 + 904.54). Per Deduction = deducted in full every cutoff."
+        ' 
+        ' lblRatePeriod - Diminishing lang: kada hulog o kada taon ang Interest Rate
+        ' 
+        lblRatePeriod.Location = New Point(255, 242)
+        lblRatePeriod.Name = "lblRatePeriod"
+        lblRatePeriod.Size = New Size(110, 13)
+        lblRatePeriod.TabIndex = 42
+        lblRatePeriod.Text = "Interest Rate is"
+        ' 
+        ' cboRatePeriod
+        ' 
+        cboRatePeriod.Location = New Point(255, 260)
+        cboRatePeriod.Name = "cboRatePeriod"
+        cboRatePeriod.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        cboRatePeriod.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        cboRatePeriod.Size = New Size(110, 20)
+        cboRatePeriod.TabIndex = 43
+        cboRatePeriod.ToolTip = "Diminishing only. Per Year = annual rate (e.g. 8 for SSS); the system divides it by the number of deductions per year. Per Period = rate per deduction."
         ' 
         ' ---------- COLUMN B ----------
         ' 
@@ -821,6 +867,8 @@ Partial Class ucLoans
         CType(dtInputDate.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).EndInit()
         CType(dtInputDate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(cboFrequency.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboAmortBasis.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(cboRatePeriod.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(rgAmortizationMethod.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(rgInterestMethod.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnInterestRate.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -865,6 +913,10 @@ Partial Class ucLoans
     Friend WithEvents dtInputDate As DevExpress.XtraEditors.DateEdit
     Friend WithEvents lblFrequency As DevExpress.XtraEditors.LabelControl
     Friend WithEvents cboFrequency As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents lblAmortBasis As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboAmortBasis As DevExpress.XtraEditors.ComboBoxEdit
+    Friend WithEvents lblRatePeriod As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents cboRatePeriod As DevExpress.XtraEditors.ComboBoxEdit
 
     Friend WithEvents lblAmortizationMethod As DevExpress.XtraEditors.LabelControl
     Friend WithEvents rgAmortizationMethod As DevExpress.XtraEditors.RadioGroup

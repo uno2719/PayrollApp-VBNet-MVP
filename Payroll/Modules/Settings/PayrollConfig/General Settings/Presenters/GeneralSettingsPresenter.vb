@@ -61,6 +61,7 @@ Namespace GeneralSettings.Presenters
             _view.AbsentCodeId = _current.AbsentCodeId
             _view.LateInCodeId = _current.LateInCodeId
             _view.EarlyOutCodeId = _current.EarlyOutCodeId
+            _view.LoanRefundCodeId = _current.LoanRefundCodeId
 
             _view.SSSBasedOn = _current.SSSBasedOn
             _view.PhilHealthBasedOn = _current.PhilHealthBasedOn
@@ -81,6 +82,7 @@ Namespace GeneralSettings.Presenters
             _current.AbsentCodeId = _view.AbsentCodeId
             _current.LateInCodeId = _view.LateInCodeId
             _current.EarlyOutCodeId = _view.EarlyOutCodeId
+            _current.LoanRefundCodeId = _view.LoanRefundCodeId
 
             _current.SSSBasedOn = _view.SSSBasedOn
             _current.PhilHealthBasedOn = _view.PhilHealthBasedOn

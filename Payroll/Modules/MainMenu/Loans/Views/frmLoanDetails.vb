@@ -72,7 +72,9 @@ Public Class frmLoanDetails
         Dim loan = _detail.Loan
         Dim schedule = _detail.Schedule
 
-        Dim hasPosted = schedule.Any(Function(s) (s.IsPaid OrElse s.AmountPaid > 0D) AndAlso Not s.IsOpening)
+        ' "Posted" = bayad galing sa Payroll Post lang. Hindi kasama ang C1PAY, OFFSET- at CREDIT-.
+        Dim hasPosted = schedule.Any(Function(s) (s.IsPaid OrElse s.AmountPaid > 0D) AndAlso
+                                                 Not LoanPaymentRef.IsSystemAdjustment(s.PayrollRefNo))
         Dim openingCount = schedule.Where(Function(s) s.IsOpening).Count()
 
         btnMarkPaid.Visible = _canEdit
@@ -86,7 +88,16 @@ Public Class frmLoanDetails
         btnUndoOpening.Enabled = _canEdit AndAlso
                                  Not hasPosted AndAlso
                                  openingCount > 0 AndAlso
+                                 Not loan.IsOffsetOld AndAlso
                                  Not String.Equals(loan.Status, LoanStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+
+        ' --- Undo offset: lumalabas sa lumang loan (na-offset) at sa bagong loan (nag-offset) ---
+        Dim isOffsetRelated = loan.IsOffsetOld OrElse loan.HasOffsetChildren
+        btnUndoOffset.Visible = _canEdit AndAlso isOffsetRelated
+        btnUndoOffset.Enabled = _canEdit AndAlso isOffsetRelated AndAlso AppSession.IsAdmin
+        btnUndoOffset.ToolTip = If(AppSession.IsAdmin,
+            "Admin only. The old loan becomes Active again and its remaining installments will be deducted again; any credit/refund from the offset is removed.",
+            "Admin only.")
 
         btnMarkPaid.ToolTip = If(hasPosted,
             "Not available: this loan already has deductions posted from payroll.",
@@ -172,6 +183,44 @@ Public Class frmLoanDetails
 
     End Sub
 
+    ' ========================================================
+    ' UNDO OFFSET (Admin + password)
+    ' ========================================================
+    Private Async Sub btnUndoOffset_Click(sender As Object, e As EventArgs) Handles btnUndoOffset.Click
+
+        Dim loan = _detail.Loan
+
+        ' Ang Undo ay laging nakabase sa BAGONG loan (ang nag-offset).
+        Dim newLoanId As Integer = If(loan.IsOffsetOld, loan.OffsetByLoanId.GetValueOrDefault(), loan.Id)
+        If newLoanId <= 0 Then Return
+
+        Dim message =
+            $"Undo the offset made by loan #{newLoanId}?" & Environment.NewLine & Environment.NewLine &
+            "- The old loan(s) become Active again and their remaining installments will be deducted again." & Environment.NewLine &
+            "- Any credit applied to the new loan's installments is removed." & Environment.NewLine &
+            "- A refund entry in a Draft cutoff is removed." & Environment.NewLine & Environment.NewLine &
+            "The new loan itself stays. Delete it separately if it was a mistake."
+
+        If Not GlobalShared.Helpers.CommandBarHelper.ConfirmAdminAction(Me, "Undo Offset", message, $"undo the offset of loan #{newLoanId}") Then Return
+
+        Try
+            Dim result = Await _presenter.UndoOffsetAsync(newLoanId)
+
+            If Not result.Success Then
+                XtraMessageBox.Show(Me, result.ErrorMessage, "Undo Offset", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+
+            Await ReloadDetailAsync()
+
+            XtraMessageBox.Show(Me, result.Message, "Undo Offset", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        Catch ex As Exception
+            XtraMessageBox.Show(Me, ex.Message, "Undo Offset", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+
+    End Sub
+
     Private Sub SetupGrid()
 
         With gridviewSchedule
@@ -210,6 +259,15 @@ Public Class frmLoanDetails
 
         Text = $"Loan Details - {loan.LoanCode} ({loan.EmployeeName})"
 
+        ' Offset info sa title bar para kita agad kung saan napunta ang lumang loan.
+        If loan.IsOffsetOld AndAlso loan.OffsetByLoanId.HasValue Then
+            Text &= $"  -  offset by loan #{loan.OffsetByLoanId.Value}" &
+                    If(loan.OffsetDate.HasValue, $" on {loan.OffsetDate.Value.ToString(AppConstants.DisplayDateFormat)}", "")
+        ElseIf loan.HasOffsetChildren Then
+            Text &= $"  -  offset {loan.OffsetChildCount} older loan(s)" &
+                    If(loan.OffsetCredit > 0D, $", credit {loan.OffsetCredit:n2} ({loan.OffsetCreditMode})", "")
+        End If
+
     End Sub
 
     Private Sub PopulateSummary()
@@ -227,8 +285,17 @@ Public Class frmLoanDetails
         lblValStartDate.Text = loan.LoanStartDate.ToString("MMM dd, yyyy")
         lblValFrequency.Text = If(loan.Frequency, "-")
 
-        lblValMethod.Text = $"{loan.InterestMethod} / {loan.AmortizationMethod}" &
-                            If(loan.InterestRate > 0D, $"  @ {loan.InterestRate:n2}%", "")
+        Dim rateText = ""
+        If loan.InterestRate > 0D Then
+            Dim perYear = String.Equals(loan.RatePeriod, LoanRatePeriod.PerYear, StringComparison.OrdinalIgnoreCase)
+            rateText = $"  @ {loan.InterestRate:n4}%" & If(perYear, " per year", "")
+        End If
+        lblValMethod.Text = $"{loan.InterestMethod} / {loan.AmortizationMethod}" & rateText
+
+        If String.Equals(loan.Frequency, LoanFrequency.EveryCycle, StringComparison.OrdinalIgnoreCase) AndAlso
+           String.Equals(loan.AmortBasis, LoanAmortBasis.PerMonth, StringComparison.OrdinalIgnoreCase) Then
+            lblValFrequency.Text = loan.Frequency & " (monthly amount split per cutoff)"
+        End If
 
         ' --- KELAN ANG SUSUNOD NA KALTAS ---
         ' Ito ang pangunahing tanong ng HR pag binuksan nila ito.
@@ -274,6 +341,7 @@ Public Class frmLoanDetails
             Case LoanStatus.Inactive : Return Color.DarkOrange
             Case LoanStatus.Completed : Return Color.SteelBlue
             Case LoanStatus.Cancelled : Return Color.Firebrick
+            Case LoanStatus.Offset : Return Color.MediumPurple
             Case Else : Return Color.Gray
         End Select
     End Function

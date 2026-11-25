@@ -243,6 +243,15 @@ Public Class ucGeneralSettings
         End Set
     End Property
 
+    Public Property LoanRefundCodeId As Integer? Implements IGeneralSettingsView.LoanRefundCodeId
+        Get
+            Return ToNullableInt(lookupLoanRefundCode.EditValue)
+        End Get
+        Set(value As Integer?)
+            lookupLoanRefundCode.EditValue = value
+        End Set
+    End Property
+
     ' === IGeneralSettingsView : Statutory Basis ===
 
     Public Property SSSBasedOn As String Implements IGeneralSettingsView.SSSBasedOn
@@ -267,6 +276,8 @@ Public Class ucGeneralSettings
 
     Public Sub SetCompensationCodes(codes As List(Of LookupModel)) Implements IGeneralSettingsView.SetCompensationCodes
         BindCodeLookup(lookupBasicSalaryCodePlus, codes)
+        ' Loan Offset refund: Compensation na Input unit = Amount (sinusuri ng Loans module bago gamitin).
+        BindCodeLookup(lookupLoanRefundCode, codes)
     End Sub
 
     Public Sub SetDeductionCodes(codes As List(Of LookupModel)) Implements IGeneralSettingsView.SetDeductionCodes
