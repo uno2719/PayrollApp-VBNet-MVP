@@ -30,6 +30,15 @@ Namespace Loans.Data
 
         Function HasAnyPaymentAsync(loanId As Integer) As Task(Of Boolean)
 
+        ' May bayad na GALING SA PAYROLL POST (o ibang hindi-C1PAY)? Ang opening payments ng C1Pay ay hindi kasama.
+        Function HasPostedPaymentAsync(loanId As Integer) As Task(Of Boolean)
+
+        ' Markahang bayad ang unbayad na hulog #1..#upTo bilang opening payment (C1PAY). Ibinabalik ang bilang na na-update.
+        Function MarkOpeningPaidAsync(loanId As Integer, upToInstallmentNo As Integer, userName As String) As Task(Of Integer)
+
+        ' Ibalik sa unpaid ang LAHAT ng C1PAY na hulog ng loan. Ibinabalik ang bilang na na-update.
+        Function UndoOpeningPaidAsync(loanId As Integer, userName As String) As Task(Of Integer)
+
         Function MarkInstallmentPaidAsync(scheduleId As Integer,
                                           amountPaid As Decimal,
                                           paidDate As Date,

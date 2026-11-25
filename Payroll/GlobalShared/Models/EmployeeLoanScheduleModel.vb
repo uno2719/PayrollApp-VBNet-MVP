@@ -37,9 +37,19 @@ Namespace GlobalShared.Models
         ''' </summary>
         Public ReadOnly Property StatusText As String
             Get
+                If IsPaid AndAlso IsOpening Then Return "Paid (C1Pay)"
                 If IsPaid Then Return "Paid"
                 If ScheduledDate < Date.Today Then Return "Overdue"
                 Return "Scheduled"
+            End Get
+        End Property
+
+        ''' <summary>
+        ''' Nabayaran na sa C1Pay bago ginamit ang app na ito (PayrollRefNo = 'C1PAY').
+        ''' </summary>
+        Public ReadOnly Property IsOpening As Boolean
+            Get
+                Return Constants.LoanPaymentRef.IsOpening(PayrollRefNo)
             End Get
         End Property
 

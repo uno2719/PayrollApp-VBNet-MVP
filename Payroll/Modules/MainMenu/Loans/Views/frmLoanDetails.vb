@@ -15,17 +15,36 @@
 '   Installment" o "Waive Interest"), doon pa lang may saysay
 '   ang presenter - at gawin na natin iyon sa panahong iyon.
 ' ============================================================
+Imports DevExpress.XtraEditors
 Imports DevExpress.XtraGrid.Views.Grid
 Imports Payroll.GlobalShared.Constants
 Imports Payroll.GlobalShared.Models
+Imports Payroll.Loans.Presenters
 
 Public Class frmLoanDetails
 
-    Private ReadOnly _detail As EmployeeLoanDetailModel
+    Private _detail As EmployeeLoanDetailModel
 
-    Public Sub New(detail As EmployeeLoanDetailModel)
+    ' Para sa dalawang aksyon (Mark paid / Undo opening payments) lang ang presenter dito;
+    ' ang pagpapakita ng datos ay nananatiling purong display.
+    Private ReadOnly _presenter As EmployeeLoanPresenter
+    Private ReadOnly _canEdit As Boolean
+    Private _dataChanged As Boolean
+
+    ''' <summary>
+    ''' True kung may na-mark/na-undo na bayad habang nakabukas ang window - para i-refresh ng ucLoans ang listahan.
+    ''' </summary>
+    Public ReadOnly Property DataChanged As Boolean
+        Get
+            Return _dataChanged
+        End Get
+    End Property
+
+    Public Sub New(detail As EmployeeLoanDetailModel, presenter As EmployeeLoanPresenter, canEdit As Boolean)
         InitializeComponent()
         _detail = detail
+        _presenter = presenter
+        _canEdit = canEdit
     End Sub
 
     Private Sub frmLoanDetails_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -40,6 +59,116 @@ Public Class frmLoanDetails
         PopulateSummary()
 
         gridconSchedule.DataSource = _detail.Schedule
+
+        UpdateActionButtons()
+
+    End Sub
+
+    ' ========================================================
+    ' OPENING PAYMENTS (C1Pay)
+    ' ========================================================
+    Private Sub UpdateActionButtons()
+
+        Dim loan = _detail.Loan
+        Dim schedule = _detail.Schedule
+
+        Dim hasPosted = schedule.Any(Function(s) (s.IsPaid OrElse s.AmountPaid > 0D) AndAlso Not s.IsOpening)
+        Dim openingCount = schedule.Where(Function(s) s.IsOpening).Count()
+
+        btnMarkPaid.Visible = _canEdit
+        btnUndoOpening.Visible = _canEdit
+
+        btnMarkPaid.Enabled = _canEdit AndAlso
+                              LoanStatus.IsToggleable(loan.Status) AndAlso
+                              Not hasPosted AndAlso
+                              openingCount < schedule.Count
+
+        btnUndoOpening.Enabled = _canEdit AndAlso
+                                 Not hasPosted AndAlso
+                                 openingCount > 0 AndAlso
+                                 Not String.Equals(loan.Status, LoanStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
+
+        btnMarkPaid.ToolTip = If(hasPosted,
+            "Not available: this loan already has deductions posted from payroll.",
+            "Mark the first installments as already paid in C1Pay (they will not be deducted again).")
+
+        btnUndoOpening.ToolTip = If(hasPosted,
+            "Not available: this loan already has deductions posted from payroll.",
+            "Set all C1Pay (opening) installments back to unpaid.")
+
+    End Sub
+
+    Private Async Function ReloadDetailAsync() As Task
+
+        Dim fresh = Await _presenter.GetDetailAsync(_detail.Loan.Id)
+        If fresh Is Nothing OrElse fresh.Loan Is Nothing Then Close() : Return
+
+        _detail = fresh
+        _dataChanged = True
+
+        PopulateHeader()
+        PopulateSummary()
+        gridconSchedule.DataSource = _detail.Schedule
+        UpdateActionButtons()
+
+    End Function
+
+    Private Async Sub btnMarkPaid_Click(sender As Object, e As EventArgs) Handles btnMarkPaid.Click
+
+        Dim upTo As Integer
+
+        Using dlg As New frmLoanMarkPaid(_detail.Loan, _detail.Schedule)
+            If dlg.ShowDialog(Me) <> DialogResult.OK Then Return
+            upTo = dlg.UpToInstallmentNo
+        End Using
+
+        Try
+            Dim result = Await _presenter.MarkOpeningPaidAsync(_detail.Loan.Id, upTo)
+
+            If Not result.Success Then
+                XtraMessageBox.Show(Me, result.ErrorMessage, "Mark Paid",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+
+            Await ReloadDetailAsync()
+
+            XtraMessageBox.Show(Me, result.Message, "Mark Paid",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        Catch ex As Exception
+            XtraMessageBox.Show(Me, ex.Message, "Mark Paid", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+
+    End Sub
+
+    Private Async Sub btnUndoOpening_Click(sender As Object, e As EventArgs) Handles btnUndoOpening.Click
+
+        Dim confirm = XtraMessageBox.Show(Me,
+            "Set all installments marked as paid from C1Pay back to unpaid?" & Environment.NewLine &
+            "They will be deducted again by the next payroll Process.",
+            "Undo Opening Payments",
+            MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2)
+
+        If confirm <> DialogResult.Yes Then Return
+
+        Try
+            Dim result = Await _presenter.UndoOpeningPaidAsync(_detail.Loan.Id)
+
+            If Not result.Success Then
+                XtraMessageBox.Show(Me, result.ErrorMessage, "Undo Opening Payments",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+
+            Await ReloadDetailAsync()
+
+            XtraMessageBox.Show(Me, result.Message, "Undo Opening Payments",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        Catch ex As Exception
+            XtraMessageBox.Show(Me, ex.Message, "Undo Opening Payments", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
 
     End Sub
 
@@ -86,6 +215,9 @@ Public Class frmLoanDetails
     Private Sub PopulateSummary()
 
         Dim loan = _detail.Loan
+
+        ' Reset - baka pula pa ang kulay mula sa naunang load (overdue) bago mag-reload.
+        lblValNextDate.Appearance.ForeColor = Color.Empty
 
         lblValTotalLoan.Text = loan.TotalLoanAmount.ToString("n2")
         lblValTotalPaid.Text = loan.TotalPaid.ToString("n2")

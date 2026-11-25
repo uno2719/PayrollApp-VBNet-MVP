@@ -4,6 +4,7 @@
 Imports System.Data.SqlClient
 Imports Dapper
 Imports Payroll.GlobalShared.Base
+Imports Payroll.GlobalShared.Constants
 Imports Payroll.GlobalShared.Models
 
 Namespace Loans.Data
@@ -394,6 +395,73 @@ Namespace Loans.Data
                 Dim count = Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {loanId})
                 Return count > 0
             End Using
+
+        End Function
+
+        ' ========================================================
+        ' MAY BAYAD NA GALING SA PAYROLL? (hindi kasama ang C1PAY)
+        ' ========================================================
+        Public Async Function HasPostedPaymentAsync(loanId As Integer) As Task(Of Boolean) _
+            Implements IEmployeeLoanRepository.HasPostedPaymentAsync
+
+            Dim sql = $"
+                SELECT COUNT(1)
+                FROM   {SchedTable}
+                WHERE  EmployeeLoanId = @loanId
+                  AND  (IsPaid = 1 OR AmountPaid > 0)
+                  AND  ISNULL(PayrollRefNo, '') <> @refNo"
+
+            Using conn = GetConnection()
+                Dim count = Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
+                    loanId, .refNo = LoanPaymentRef.OpeningBalance})
+                Return count > 0
+            End Using
+
+        End Function
+
+        ' ========================================================
+        ' OPENING PAYMENTS (nabayaran na sa C1Pay)
+        ' ========================================================
+        ' Ang hulog #1..#upTo na hindi pa bayad ay minamarkahang bayad nang buo:
+        '   AmountPaid = AmountDue, PaidDate = ScheduledDate, PayrollRefNo = 'C1PAY'.
+        ' Isang UPDATE lang = atomic na.
+        Public Async Function MarkOpeningPaidAsync(loanId As Integer, upToInstallmentNo As Integer, userName As String) _
+            As Task(Of Integer) Implements IEmployeeLoanRepository.MarkOpeningPaidAsync
+
+            Dim sql = $"
+                UPDATE {SchedTable}
+                SET     AmountPaid   = AmountDue,
+                        PaidDate     = ScheduledDate,
+                        IsPaid       = 1,
+                        PayrollRefNo = @refNo,
+                        UpdatedAt    = GETDATE(),
+                        UpdatedBy    = @userName
+                WHERE   EmployeeLoanId = @loanId
+                  AND   InstallmentNo <= @upToInstallmentNo
+                  AND   IsPaid = 0
+                  AND   AmountPaid = 0"
+
+            Return Await MyBase.ExecuteAsync(sql, New With {
+                loanId, upToInstallmentNo, userName, .refNo = LoanPaymentRef.OpeningBalance})
+
+        End Function
+
+        Public Async Function UndoOpeningPaidAsync(loanId As Integer, userName As String) _
+            As Task(Of Integer) Implements IEmployeeLoanRepository.UndoOpeningPaidAsync
+
+            Dim sql = $"
+                UPDATE {SchedTable}
+                SET     AmountPaid   = 0,
+                        PaidDate     = NULL,
+                        IsPaid       = 0,
+                        PayrollRefNo = NULL,
+                        UpdatedAt    = GETDATE(),
+                        UpdatedBy    = @userName
+                WHERE   EmployeeLoanId = @loanId
+                  AND   PayrollRefNo   = @refNo"
+
+            Return Await MyBase.ExecuteAsync(sql, New With {
+                loanId, userName, .refNo = LoanPaymentRef.OpeningBalance})
 
         End Function
 

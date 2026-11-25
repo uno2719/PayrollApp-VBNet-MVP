@@ -69,6 +69,8 @@ Partial Class ucLoans
 
         lblRemark = New DevExpress.XtraEditors.LabelControl()
         txtRemark = New DevExpress.XtraEditors.TextEdit()
+        lblOpeningPaid = New DevExpress.XtraEditors.LabelControl()
+        spnOpeningPaid = New DevExpress.XtraEditors.SpinEdit()
         lblStatusCaption = New DevExpress.XtraEditors.LabelControl()
         lblStatusValue = New DevExpress.XtraEditors.LabelControl()
 
@@ -112,6 +114,7 @@ Partial Class ucLoans
         CType(rgInterestMethod.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnInterestRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnTerms.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(spnOpeningPaid.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnPrincipalAmount.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnInterestAmount.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnTotalLoanAmount.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -287,6 +290,8 @@ Partial Class ucLoans
         grpDetails.Controls.Add(spnTotalAmortization)
         grpDetails.Controls.Add(lblRemark)
         grpDetails.Controls.Add(txtRemark)
+        grpDetails.Controls.Add(lblOpeningPaid)
+        grpDetails.Controls.Add(spnOpeningPaid)
         grpDetails.Controls.Add(lblStatusCaption)
         grpDetails.Controls.Add(lblStatusValue)
         grpDetails.Dock = DockStyle.Top
@@ -564,8 +569,32 @@ Partial Class ucLoans
         txtRemark.Location = New Point(255, 214)
         txtRemark.Name = "txtRemark"
         txtRemark.Properties.MaxLength = 500
-        txtRemark.Size = New Size(435, 20)
+        txtRemark.Size = New Size(310, 20)
         txtRemark.TabIndex = 30
+        ' 
+        ' Installments already paid in C1Pay - lalabas lang kapag NEW ang loan
+        ' 
+        lblOpeningPaid.Location = New Point(580, 196)
+        lblOpeningPaid.Name = "lblOpeningPaid"
+        lblOpeningPaid.Size = New Size(100, 13)
+        lblOpeningPaid.TabIndex = 33
+        lblOpeningPaid.Text = "Already paid (C1Pay)"
+        lblOpeningPaid.Visible = False
+        ' 
+        spnOpeningPaid.EditValue = New Decimal(New Integer() {0, 0, 0, 0})
+        spnOpeningPaid.Location = New Point(580, 214)
+        spnOpeningPaid.Name = "spnOpeningPaid"
+        spnOpeningPaid.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        spnOpeningPaid.Properties.IsFloatValue = False
+        spnOpeningPaid.Properties.DisplayFormat.FormatString = "n0"
+        spnOpeningPaid.Properties.DisplayFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnOpeningPaid.Properties.EditFormat.FormatString = "n0"
+        spnOpeningPaid.Properties.EditFormat.FormatType = DevExpress.Utils.FormatType.Numeric
+        spnOpeningPaid.Properties.MaxValue = New Decimal(New Integer() {600, 0, 0, 0})
+        spnOpeningPaid.Size = New Size(110, 20)
+        spnOpeningPaid.TabIndex = 34
+        spnOpeningPaid.ToolTip = "How many installments were already deducted in C1Pay before this loan was entered here. They are marked paid and will not be deducted again."
+        spnOpeningPaid.Visible = False
         ' 
         lblStatusCaption.Location = New Point(715, 196)
         lblStatusCaption.Name = "lblStatusCaption"
@@ -796,6 +825,7 @@ Partial Class ucLoans
         CType(rgInterestMethod.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnInterestRate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnTerms.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(spnOpeningPaid.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnPrincipalAmount.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnInterestAmount.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnTotalLoanAmount.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -861,6 +891,8 @@ Partial Class ucLoans
 
     Friend WithEvents lblRemark As DevExpress.XtraEditors.LabelControl
     Friend WithEvents txtRemark As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lblOpeningPaid As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents spnOpeningPaid As DevExpress.XtraEditors.SpinEdit
     Friend WithEvents lblStatusCaption As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblStatusValue As DevExpress.XtraEditors.LabelControl
 

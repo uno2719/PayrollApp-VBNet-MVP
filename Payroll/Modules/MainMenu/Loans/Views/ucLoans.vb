@@ -284,6 +284,15 @@ Public Class ucLoans
         End Set
     End Property
 
+    Public Property OpeningPaidInstallments As Integer Implements IEmployeeLoanView.OpeningPaidInstallments
+        Get
+            Return CInt(spnOpeningPaid.Value)
+        End Get
+        Set(value As Integer)
+            spnOpeningPaid.Value = value
+        End Set
+    End Property
+
     Public Property PrincipalAmount As Decimal Implements IEmployeeLoanView.PrincipalAmount
         Get
             Return spnPrincipalAmount.Value
@@ -377,6 +386,13 @@ Public Class ucLoans
         spnInterestRate.Properties.ReadOnly = Not isEditable
         spnPrincipalAmount.Properties.ReadOnly = Not isEditable
         txtRemark.Properties.ReadOnly = Not isEditable
+
+        ' "Already paid (C1Pay)" - para sa BAGONG loan lang. Sa existing loan, nasa Details window ang
+        ' "Mark paid up to #N" / "Undo opening payments".
+        Dim showOpening As Boolean = isEditable AndAlso isNewRecord
+        lblOpeningPaid.Visible = showOpening
+        spnOpeningPaid.Visible = showOpening
+        spnOpeningPaid.Properties.ReadOnly = Not isEditable
 
         ' Ang Terms at Total Amortization ay may sarili pang rule -
         ' nakadepende sa Amortization Method. Pinangangasiwaan ito ng
@@ -486,6 +502,7 @@ Public Class ucLoans
             spnPrincipalAmortization.Value = 0D
             spnInterestAmortization.Value = 0D
             spnTotalAmortization.Value = 0D
+            spnOpeningPaid.Value = 0D
 
             txtRemark.Text = String.Empty
             StatusText = String.Empty
@@ -512,10 +529,24 @@ Public Class ucLoans
 
         If detail Is Nothing Then Return
 
-        Using dlg As New frmLoanDetails(detail)
+        Dim changed As Boolean
+
+        Using dlg As New frmLoanDetails(detail, _presenter, HasEditAccess)
             dlg.ShowDialog(Me)
+            changed = dlg.DataChanged
         End Using
 
+        ' May na-mark/na-undo na bayad sa loob ng Details? I-refresh ang listahan (Balance, Progress, Status).
+        If changed Then RefreshAfterDetails()
+
+    End Sub
+
+    Private Async Sub RefreshAfterDetails()
+        Try
+            Await _presenter.ReloadAfterDetailsChangeAsync()
+        Catch ex As Exception
+            ShowError(ex.Message)
+        End Try
     End Sub
 
     ' ========================================================

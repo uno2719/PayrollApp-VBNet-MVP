@@ -32,6 +32,9 @@ Namespace Loans.Views
         Property Terms As Integer
         Property Remark As String
 
+        ' Ilang hulog ang nabayaran na sa C1Pay (bagong loan lang)
+        Property OpeningPaidInstallments As Integer
+
         Property PrincipalAmount As Decimal
         Property InterestAmount As Decimal
         Property TotalLoanAmount As Decimal

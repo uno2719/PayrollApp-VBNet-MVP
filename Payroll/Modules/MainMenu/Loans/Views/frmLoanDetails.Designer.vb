@@ -61,6 +61,8 @@ Partial Class frmLoanDetails
         colPayrollRef = New DevExpress.XtraGrid.Columns.GridColumn()
         pnlFooter = New DevExpress.XtraEditors.PanelControl()
         btnClose = New DevExpress.XtraEditors.SimpleButton()
+        btnMarkPaid = New DevExpress.XtraEditors.SimpleButton()
+        btnUndoOpening = New DevExpress.XtraEditors.SimpleButton()
         CType(pnlHeader, ComponentModel.ISupportInitialize).BeginInit()
         pnlHeader.SuspendLayout()
         CType(grpSummary, ComponentModel.ISupportInitialize).BeginInit()
@@ -537,6 +539,8 @@ Partial Class frmLoanDetails
         ' 
         ' pnlFooter
         ' 
+        pnlFooter.Controls.Add(btnUndoOpening)
+        pnlFooter.Controls.Add(btnMarkPaid)
         pnlFooter.Controls.Add(btnClose)
         pnlFooter.Dock = DockStyle.Bottom
         pnlFooter.Location = New Point(0, 570)
@@ -552,6 +556,24 @@ Partial Class frmLoanDetails
         btnClose.Size = New Size(110, 28)
         btnClose.TabIndex = 0
         btnClose.Text = "Close"
+        ' 
+        ' btnMarkPaid - opening payments mula sa C1Pay
+        ' 
+        btnMarkPaid.Anchor = AnchorStyles.Top Or AnchorStyles.Left
+        btnMarkPaid.Location = New Point(20, 11)
+        btnMarkPaid.Name = "btnMarkPaid"
+        btnMarkPaid.Size = New Size(200, 28)
+        btnMarkPaid.TabIndex = 1
+        btnMarkPaid.Text = "Mark paid up to #N (C1Pay)..."
+        ' 
+        ' btnUndoOpening
+        ' 
+        btnUndoOpening.Anchor = AnchorStyles.Top Or AnchorStyles.Left
+        btnUndoOpening.Location = New Point(230, 11)
+        btnUndoOpening.Name = "btnUndoOpening"
+        btnUndoOpening.Size = New Size(180, 28)
+        btnUndoOpening.TabIndex = 2
+        btnUndoOpening.Text = "Undo opening payments"
         ' 
         ' frmLoanDetails
         ' 
@@ -631,5 +653,7 @@ Partial Class frmLoanDetails
 
     Friend WithEvents pnlFooter As DevExpress.XtraEditors.PanelControl
     Friend WithEvents btnClose As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnMarkPaid As DevExpress.XtraEditors.SimpleButton
+    Friend WithEvents btnUndoOpening As DevExpress.XtraEditors.SimpleButton
 
 End Class

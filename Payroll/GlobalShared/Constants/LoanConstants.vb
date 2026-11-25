@@ -74,4 +74,21 @@ Namespace GlobalShared.Constants
         Public Const Diminishing As String = "Diminishing"
     End Module
 
+
+    ''' <summary>
+    ''' Mga halaga ng PayrollRefNo sa tblEmployeeLoanSchedule na hindi galing sa Post ng cutoff (PR-{CutoffID}).
+    ''' </summary>
+    Public Module LoanPaymentRef
+
+        ''' <summary>
+        ''' Hulog na nabayaran na sa C1Pay bago ginamit ang app na ito ("opening payment").
+        ''' </summary>
+        Public Const OpeningBalance As String = "C1PAY"
+
+        Public Function IsOpening(payrollRefNo As String) As Boolean
+            Return String.Equals(payrollRefNo, OpeningBalance, StringComparison.OrdinalIgnoreCase)
+        End Function
+
+    End Module
+
 End Namespace

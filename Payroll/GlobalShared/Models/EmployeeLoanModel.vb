@@ -49,6 +49,11 @@ Namespace GlobalShared.Models
         Public Property CompletedAt As DateTime?
         Public Property Remark As String
 
+        ' --- Opening payments (C1Pay) ---
+        ' TRANSIENT: hindi naka-store sa tblEmployeeLoan. Ginagamit lang sa pag-save ng BAGONG loan:
+        ' ilan sa mga unang hulog ang nabayaran na sa C1Pay. Ang service ang magmamarka sa kanila.
+        Public Property OpeningPaidInstallments As Integer
+
         ' --- Audit ---
         Public Property CreatedAt As DateTime?
         Public Property CreatedBy As String

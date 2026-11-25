@@ -479,6 +479,20 @@ Namespace Loans.Services
                 Return Fail("Terms must be greater than zero.")
             End If
 
+            ' --- SCHEDULE (ginagawa na bago mag-save, para ma-validate ang opening payments) ---
+            Dim schedule = GenerateSchedule(item)
+
+            ' --- OPENING PAYMENTS (bagong loan lang) ---
+            Dim openingPaid As Integer = If(item.Id = 0, item.OpeningPaidInstallments, 0)
+
+            If openingPaid < 0 Then
+                Return Fail("Installments already paid cannot be negative.")
+            End If
+
+            If openingPaid > schedule.Count Then
+                Return Fail($"Installments already paid ({openingPaid}) cannot be more than the number of installments ({schedule.Count}).")
+            End If
+
             ' --- EDIT GUARD ---
             If item.Id > 0 Then
                 Dim hasPayment = Await _repo.HasAnyPaymentAsync(item.Id)
@@ -491,10 +505,18 @@ Namespace Loans.Services
                     '   mga rows na may bayad na. Mawawala ang kasaysayan
                     '   at hindi na magkakatugma ang payroll register sa
                     '   loan ledger.
+                    If Await _repo.HasPostedPaymentAsync(item.Id) Then
+                        Return Fail(
+                            "This loan already has posted deductions and can no longer be edited." &
+                            Environment.NewLine &
+                            "Set it to Inactive and create a new loan entry instead.")
+                    End If
+
+                    ' Opening payments (C1Pay) lang ang bayad - pwedeng ibalik muna.
                     Return Fail(
-                        "This loan already has posted deductions and can no longer be edited." &
+                        "This loan has opening payments from C1Pay and can't be edited as is." &
                         Environment.NewLine &
-                        "Set it to Inactive and create a new loan entry instead.")
+                        "Open Details and click 'Undo opening payments' first, edit the loan, then mark the paid installments again.")
                 End If
             End If
 
@@ -511,12 +533,32 @@ Namespace Loans.Services
             End If
 
             ' --- SCHEDULE ---
-            Dim schedule = GenerateSchedule(item)
             Await _repo.ReplaceScheduleAsync(loanId, schedule, userName)
 
             item.Id = loanId
 
-            Return New LoanSaveResult With {.Success = True, .NewStatus = item.Status}
+            ' --- OPENING PAYMENTS ---
+            Dim message As String = Nothing
+            Dim marked As Integer = 0
+
+            If openingPaid > 0 Then
+                marked = Await _repo.MarkOpeningPaidAsync(loanId, openingPaid, userName)
+
+                message = $"{marked} installment(s) marked as already paid (C1Pay)."
+
+                If openingPaid >= schedule.Count Then
+                    Await _repo.SetStatusAsync(loanId, LoanStatus.Completed, userName)
+                    item.Status = LoanStatus.Completed
+                    message &= " All installments are paid, so the loan is Completed."
+                End If
+            End If
+
+            Return New LoanSaveResult With {
+                .Success = True,
+                .NewStatus = item.Status,
+                .Message = message,
+                .AffectedCount = marked
+            }
 
         End Function
 
@@ -534,10 +576,17 @@ Namespace Loans.Services
             If hasPayment Then
                 ' Parehong dahilan gaya ng edit guard - may kasaysayan
                 ' na, hindi na pwedeng ipagkaila.
+                If Await _repo.HasPostedPaymentAsync(loanId) Then
+                    Return Fail(
+                        "This loan already has posted deductions and cannot be deleted." &
+                        Environment.NewLine &
+                        "Set it to Inactive instead if you want to stop the deduction.")
+                End If
+
                 Return Fail(
-                    "This loan already has posted deductions and cannot be deleted." &
+                    "This loan has opening payments from C1Pay." &
                     Environment.NewLine &
-                    "Set it to Inactive instead if you want to stop the deduction.")
+                    "Open Details and click 'Undo opening payments' first if you really want to delete it.")
             End If
 
             Await _repo.DeleteAsync(loanId)
@@ -578,6 +627,114 @@ Namespace Loans.Services
             Await _repo.SetStatusAsync(loanId, newStatus, userName)
 
             Return New LoanSaveResult With {.Success = True, .NewStatus = newStatus}
+
+        End Function
+
+        ' ========================================================
+        ' OPENING PAYMENTS (nabayaran na sa C1Pay)
+        ' ========================================================
+        ' Para sa mga loan na nagsimula bago ginamit ang app na ito: ang mga unang hulog ay nakaltas na sa C1Pay,
+        ' kaya minamarkahan natin silang bayad (PayrollRefNo = 'C1PAY', PaidDate = ScheduledDate) para hindi
+        ' sila makaltas ulit ng Process.
+        '
+        ' Mga rule:
+        '   - Active/Inactive lang ang loan (hindi Completed/Cancelled).
+        '   - Bawal kung may bayad na galing sa Payroll Post na - para walang butas sa pagkakasunod-sunod ng hulog.
+        '   - Pataas lang ang Mark; para magbawas o magbago, Undo muna tapos Mark ulit.
+        ' ========================================================
+        Public Async Function MarkOpeningPaidAsync(loanId As Integer, upToInstallmentNo As Integer, userName As String) _
+            As Task(Of LoanSaveResult) Implements IEmployeeLoanService.MarkOpeningPaidAsync
+
+            If loanId <= 0 Then Return Fail("Please select a loan first.")
+            If upToInstallmentNo <= 0 Then Return Fail("Enter an installment number of 1 or higher.")
+
+            Dim loan = Await _repo.GetByIdAsync(loanId)
+            If loan Is Nothing Then Return Fail("Loan not found.")
+
+            If Not LoanStatus.IsToggleable(loan.Status) Then
+                Return Fail($"This loan is already {loan.Status} and can no longer be changed.")
+            End If
+
+            Dim schedule = Await _repo.GetScheduleAsync(loanId)
+
+            If upToInstallmentNo > schedule.Count Then
+                Return Fail($"This loan only has {schedule.Count} installment(s).")
+            End If
+
+            If Await _repo.HasPostedPaymentAsync(loanId) Then
+                Return Fail("This loan already has deductions posted from payroll. " &
+                            "Opening payments can only be set before the first posted deduction.")
+            End If
+
+            Dim alreadyMarked = schedule.Where(Function(s) s.IsOpening).
+                                         Select(Function(s) s.InstallmentNo).
+                                         DefaultIfEmpty(0).Max()
+
+            If upToInstallmentNo <= alreadyMarked Then
+                Return Fail($"Installments up to #{alreadyMarked} are already marked as paid." & Environment.NewLine &
+                            "To lower the number, use 'Undo opening payments' first, then mark again.")
+            End If
+
+            Dim amount = schedule.Where(Function(s) s.InstallmentNo <= upToInstallmentNo AndAlso Not s.IsOpening).
+                                  Sum(Function(s) s.AmountDue)
+
+            Dim marked = Await _repo.MarkOpeningPaidAsync(loanId, upToInstallmentNo, userName)
+
+            Dim newStatus = loan.Status
+
+            If upToInstallmentNo >= schedule.Count Then
+                Await _repo.SetStatusAsync(loanId, LoanStatus.Completed, userName)
+                newStatus = LoanStatus.Completed
+            End If
+
+            Return New LoanSaveResult With {
+                .Success = True,
+                .NewStatus = newStatus,
+                .AffectedCount = marked,
+                .Message = $"{marked} installment(s) marked as paid (C1PAY), total {amount:n2}." &
+                           If(newStatus = LoanStatus.Completed, " The loan is now Completed.", "")
+            }
+
+        End Function
+
+        Public Async Function UndoOpeningPaidAsync(loanId As Integer, userName As String) _
+            As Task(Of LoanSaveResult) Implements IEmployeeLoanService.UndoOpeningPaidAsync
+
+            If loanId <= 0 Then Return Fail("Please select a loan first.")
+
+            Dim loan = Await _repo.GetByIdAsync(loanId)
+            If loan Is Nothing Then Return Fail("Loan not found.")
+
+            If String.Equals(loan.Status, LoanStatus.Cancelled, StringComparison.OrdinalIgnoreCase) Then
+                Return Fail("This loan is Cancelled and can no longer be changed.")
+            End If
+
+            If Await _repo.HasPostedPaymentAsync(loanId) Then
+                Return Fail("This loan already has deductions posted from payroll, so the opening payments can no longer be undone.")
+            End If
+
+            Dim schedule = Await _repo.GetScheduleAsync(loanId)
+
+            If Not schedule.Any(Function(s) s.IsOpening) Then
+                Return Fail("This loan has no opening (C1Pay) payments to undo.")
+            End If
+
+            Dim undone = Await _repo.UndoOpeningPaidAsync(loanId, userName)
+
+            Dim newStatus = loan.Status
+
+            ' Walang posted payment, kaya ang Completed ay galing lang sa opening payments - ibalik sa Active.
+            If String.Equals(loan.Status, LoanStatus.Completed, StringComparison.OrdinalIgnoreCase) Then
+                Await _repo.SetStatusAsync(loanId, LoanStatus.Active, userName)
+                newStatus = LoanStatus.Active
+            End If
+
+            Return New LoanSaveResult With {
+                .Success = True,
+                .NewStatus = newStatus,
+                .AffectedCount = undone,
+                .Message = $"{undone} opening payment(s) undone."
+            }
 
         End Function
 

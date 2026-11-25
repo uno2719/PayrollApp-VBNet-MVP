@@ -33,6 +33,12 @@ Namespace Loans.Services
 
         Function ToggleActiveStatusAsync(loanId As Integer, userName As String) As Task(Of LoanSaveResult)
 
+        ' Opening payments: mga hulog na nabayaran na sa C1Pay bago ginamit ang app na ito.
+        Function MarkOpeningPaidAsync(loanId As Integer, upToInstallmentNo As Integer, userName As String) _
+            As Task(Of LoanSaveResult)
+
+        Function UndoOpeningPaidAsync(loanId As Integer, userName As String) As Task(Of LoanSaveResult)
+
         Function RecordPaymentAsync(scheduleId As Integer, loanId As Integer,
                                     amountPaid As Decimal, paidDate As Date,
                                     payrollRefNo As String, userName As String) As Task(Of LoanSaveResult)
@@ -44,6 +50,10 @@ Namespace Loans.Services
         Public Property Success As Boolean
         Public Property ErrorMessage As String
         Public Property NewStatus As String
+
+        ' Impormasyon para sa user (hal. "7 installments marked as paid").
+        Public Property Message As String
+        Public Property AffectedCount As Integer
     End Class
 
     ''' <summary>

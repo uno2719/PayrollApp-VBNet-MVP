@@ -170,6 +170,7 @@ Namespace Loans.Presenters
             _view.AmortizationMethod = LoanAmortizationMethod.BasedOnTerm
             _view.InterestMethod = LoanInterestMethod.StraightLine
             _view.StatusText = LoanStatus.Active
+            _view.OpeningPaidInstallments = 0
 
             _view.ApplyAmortizationMethodLayout(True)
             _view.SetFormMode(True, True)
@@ -287,9 +288,15 @@ Namespace Loans.Presenters
                 Return
             End If
 
-            _view.ShowMessage(If(_isNewMode,
+            Dim savedMessage = If(_isNewMode,
                 "Loan added. The amortization schedule has been generated.",
-                "Loan updated. The amortization schedule has been regenerated."))
+                "Loan updated. The amortization schedule has been regenerated.")
+
+            If Not String.IsNullOrWhiteSpace(result.Message) Then
+                savedMessage &= Environment.NewLine & result.Message
+            End If
+
+            _view.ShowMessage(savedMessage)
 
             _isEditing = False
             _isNewMode = False
@@ -381,6 +388,39 @@ Namespace Loans.Presenters
         End Function
 
         ' ========================================================
+        ' OPENING PAYMENTS (para sa Details window)
+        ' ========================================================
+        ' Ang frmLoanDetails ay tumatawag dito para sa dalawang aksyon at sa pag-reload ng sariling datos.
+        Public Async Function GetDetailAsync(loanId As Integer) As Task(Of EmployeeLoanDetailModel)
+            Return Await _service.GetDetailAsync(loanId)
+        End Function
+
+        Public Async Function MarkOpeningPaidAsync(loanId As Integer, upToInstallmentNo As Integer) As Task(Of Services.LoanSaveResult)
+            Return Await _service.MarkOpeningPaidAsync(loanId, upToInstallmentNo, _userName)
+        End Function
+
+        Public Async Function UndoOpeningPaidAsync(loanId As Integer) As Task(Of Services.LoanSaveResult)
+            Return Await _service.UndoOpeningPaidAsync(loanId, _userName)
+        End Function
+
+        ''' <summary>
+        ''' Tinatawag pagkasara ng Details window kung may nagbago (bayad/status) - i-refresh ang listahan.
+        ''' </summary>
+        Public Async Function ReloadAfterDetailsChangeAsync() As Task
+
+            Dim keepId = _selectedLoanId
+
+            Await LoadLoanListAsync()
+
+            If keepId > 0 AndAlso _loanList.Any(Function(x) x.Id = keepId) Then
+                SelectLoan(keepId)
+            Else
+                ResetForm()
+            End If
+
+        End Function
+
+        ' ========================================================
         ' VIEW <-> MODEL
         ' ========================================================
         Private Function PullFromView() As EmployeeLoanModel
@@ -402,7 +442,8 @@ Namespace Loans.Presenters
                 .PrincipalAmortization = _view.PrincipalAmortization,
                 .InterestAmortization = _view.InterestAmortization,
                 .TotalAmortization = _view.TotalAmortization,
-                .Remark = _view.Remark
+                .Remark = _view.Remark,
+                .OpeningPaidInstallments = _view.OpeningPaidInstallments
             }
 
         End Function
