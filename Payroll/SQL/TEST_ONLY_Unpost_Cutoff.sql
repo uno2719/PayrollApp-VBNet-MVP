@@ -20,10 +20,10 @@
    ===================================================================== */
 SET NOCOUNT ON;
 
-DECLARE @Commit BIT = 0;       -- 0 = preview lang (ROLLBACK), 1 = i-commit
+DECLARE @Commit BIT = 1;       -- 0 = preview lang (ROLLBACK), 1 = i-commit
 
 DECLARE @Cutoffs TABLE (CutoffID INT PRIMARY KEY);
-INSERT INTO @Cutoffs (CutoffID) VALUES (0);         -- <== ILAGAY DITO, hal. VALUES (27), (28), (29)
+INSERT INTO @Cutoffs (CutoffID) VALUES (19), (43);         -- <== ILAGAY DITO, hal. VALUES (27), (28), (29)
 
 BEGIN TRY
     IF EXISTS (SELECT 1 FROM @Cutoffs WHERE CutoffID = 0)

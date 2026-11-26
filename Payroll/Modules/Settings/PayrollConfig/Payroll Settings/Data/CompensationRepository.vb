@@ -22,7 +22,7 @@ Namespace PayrollSettings.Data
             Dim sql = $"
                 SELECT {IdColumn} AS Id, Code, Description,
                        TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag,
-                       Component2316, DeminimisFlag, CeilingAmount, Frequency,
+                       Component2316, DeminimisFlag, IsPayslipAllowance, CeilingAmount, Frequency,
                        IsActive, IsEssential, InputUnit, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy
                 FROM {TableName}
                 ORDER BY Code"
@@ -53,18 +53,18 @@ Namespace PayrollSettings.Data
             Dim sql = $"
                 INSERT INTO {TableName}
                     (Code, Description, TaxFlag, SSSFlag, PhilHealthFlag, PagIbigFlag,
-                     Component2316, DeminimisFlag, CeilingAmount, Frequency,
+                     Component2316, DeminimisFlag, IsPayslipAllowance, CeilingAmount, Frequency,
                      IsActive, IsEssential, InputUnit, CreatedAt, CreatedBy)
                 OUTPUT INSERTED.{IdColumn}
                 VALUES
                     (@Code, @Description, @TaxFlag, @SSSFlag, @PhilHealthFlag, @PagIbigFlag,
-                     @Component2316, @DeminimisFlag, @CeilingAmount, @Frequency,
+                     @Component2316, @DeminimisFlag, @IsPayslipAllowance, @CeilingAmount, @Frequency,
                      @IsActive, @IsEssential, @InputUnit, GETDATE(), @UserName)"
 
             Using conn = GetConnection()
                 Return Await conn.ExecuteScalarAsync(Of Integer)(sql, New With {
                     item.Code, item.Description, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag,
-                    item.Component2316, item.DeminimisFlag, item.CeilingAmount, item.Frequency,
+                    item.Component2316, item.DeminimisFlag, item.IsPayslipAllowance, item.CeilingAmount, item.Frequency,
                     item.IsActive, item.IsEssential, .InputUnit = CByte(item.InputUnit), userName
                 })
             End Using
@@ -84,6 +84,7 @@ Namespace PayrollSettings.Data
                     PagIbigFlag = @PagIbigFlag,
                     Component2316 = @Component2316,
                     DeminimisFlag = @DeminimisFlag,
+                    IsPayslipAllowance = @IsPayslipAllowance,
                     CeilingAmount = @CeilingAmount,
                     Frequency = @Frequency,
                     IsActive = @IsActive,
@@ -95,7 +96,7 @@ Namespace PayrollSettings.Data
 
             Dim rows = Await MyBase.ExecuteAsync(sql, New With {
                 item.Id, item.Code, item.Description, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag,
-                item.Component2316, item.DeminimisFlag, item.CeilingAmount, item.Frequency,
+                item.Component2316, item.DeminimisFlag, item.IsPayslipAllowance, item.CeilingAmount, item.Frequency,
                 item.IsActive, item.IsEssential, .InputUnit = CByte(item.InputUnit), userName
             })
             Return rows > 0

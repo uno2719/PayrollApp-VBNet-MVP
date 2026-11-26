@@ -25,6 +25,7 @@ Partial Class ucCompensation
         grpDetails = New DevExpress.XtraEditors.GroupControl()
         lblStatus = New DevExpress.XtraEditors.LabelControl()
         chkDeminimisFlag = New DevExpress.XtraEditors.CheckEdit()
+        chkIsPayslipAllowance = New DevExpress.XtraEditors.CheckEdit()
         chkPagIbigFlag = New DevExpress.XtraEditors.CheckEdit()
         chkPhilHealthFlag = New DevExpress.XtraEditors.CheckEdit()
         chkSSSFlag = New DevExpress.XtraEditors.CheckEdit()
@@ -49,6 +50,7 @@ Partial Class ucCompensation
         colPagIbigFlag = New DevExpress.XtraGrid.Columns.GridColumn()
         col2316Component = New DevExpress.XtraGrid.Columns.GridColumn()
         colDeminimisFlag = New DevExpress.XtraGrid.Columns.GridColumn()
+        colPayslipAllowance = New DevExpress.XtraGrid.Columns.GridColumn()
         colCeilingAmount = New DevExpress.XtraGrid.Columns.GridColumn()
         colFrequency = New DevExpress.XtraGrid.Columns.GridColumn()
         colActive = New DevExpress.XtraGrid.Columns.GridColumn()
@@ -61,6 +63,7 @@ Partial Class ucCompensation
         CType(grpDetails, ComponentModel.ISupportInitialize).BeginInit()
         grpDetails.SuspendLayout()
         CType(chkDeminimisFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkIsPayslipAllowance.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPagIbigFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkPhilHealthFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkSSSFlag.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -131,6 +134,7 @@ Partial Class ucCompensation
         grpDetails.Controls.Add(lblInputUnit)
         grpDetails.Controls.Add(lblStatus)
         grpDetails.Controls.Add(chkDeminimisFlag)
+        grpDetails.Controls.Add(chkIsPayslipAllowance)
         grpDetails.Controls.Add(chkPagIbigFlag)
         grpDetails.Controls.Add(chkPhilHealthFlag)
         grpDetails.Controls.Add(chkSSSFlag)
@@ -172,6 +176,16 @@ Partial Class ucCompensation
         chkDeminimisFlag.Properties.Caption = "Deminimis Flag"
         chkDeminimisFlag.Size = New Size(130, 20)
         chkDeminimisFlag.TabIndex = 10
+        ' 
+        ' chkIsPayslipAllowance
+        ' 
+        chkIsPayslipAllowance.Location = New Point(430, 171)
+        chkIsPayslipAllowance.Margin = New Padding(3, 2, 3, 2)
+        chkIsPayslipAllowance.Name = "chkIsPayslipAllowance"
+        chkIsPayslipAllowance.Properties.Caption = "Allowance (Payslip)"
+        chkIsPayslipAllowance.Size = New Size(180, 20)
+        chkIsPayslipAllowance.TabIndex = 14
+        chkIsPayslipAllowance.ToolTip = "Checked = allowance. It can be left out of the payslip (Reports > Payslip > Include allowance)."
         ' 
         ' chkPagIbigFlag
         ' 
@@ -314,7 +328,7 @@ Partial Class ucCompensation
         ' 
         ' gridviewCompensationList
         ' 
-        gridviewCompensationList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colTaxFlag, colSSSFlag, colPhilHealthFlag, colPagIbigFlag, col2316Component, colDeminimisFlag, colCeilingAmount, colFrequency, colActive, colInputUnit})
+        gridviewCompensationList.Columns.AddRange(New DevExpress.XtraGrid.Columns.GridColumn() {colCode, colDescription, colTaxFlag, colSSSFlag, colPhilHealthFlag, colPagIbigFlag, col2316Component, colDeminimisFlag, colPayslipAllowance, colCeilingAmount, colFrequency, colActive, colInputUnit})
         gridviewCompensationList.GridControl = gridconCompensationList
         gridviewCompensationList.Name = "gridviewCompensationList"
         gridviewCompensationList.OptionsPrint.PrintFilterInfo = True
@@ -392,6 +406,15 @@ Partial Class ucCompensation
         colDeminimisFlag.Visible = True
         colDeminimisFlag.VisibleIndex = 7
         colDeminimisFlag.Width = 90
+        ' 
+        ' colPayslipAllowance
+        ' 
+        colPayslipAllowance.Caption = "Allowance (Payslip)"
+        colPayslipAllowance.FieldName = "IsPayslipAllowance"
+        colPayslipAllowance.Name = "colPayslipAllowance"
+        colPayslipAllowance.Visible = True
+        colPayslipAllowance.VisibleIndex = 12
+        colPayslipAllowance.Width = 110
         ' 
         ' colCeilingAmount
         ' 
@@ -474,6 +497,7 @@ Partial Class ucCompensation
         grpDetails.ResumeLayout(False)
         grpDetails.PerformLayout()
         CType(chkDeminimisFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkIsPayslipAllowance.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPagIbigFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkPhilHealthFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkSSSFlag.Properties, ComponentModel.ISupportInitialize).EndInit()
@@ -495,6 +519,7 @@ Partial Class ucCompensation
     Friend WithEvents grpDetails As DevExpress.XtraEditors.GroupControl
     Friend WithEvents lblStatus As DevExpress.XtraEditors.LabelControl
     Friend WithEvents chkDeminimisFlag As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents chkIsPayslipAllowance As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkPagIbigFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkPhilHealthFlag As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkSSSFlag As DevExpress.XtraEditors.CheckEdit
@@ -519,6 +544,7 @@ Partial Class ucCompensation
     Friend WithEvents colPagIbigFlag As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents col2316Component As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colDeminimisFlag As DevExpress.XtraGrid.Columns.GridColumn
+    Friend WithEvents colPayslipAllowance As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colCeilingAmount As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colFrequency As DevExpress.XtraGrid.Columns.GridColumn
     Friend WithEvents colActive As DevExpress.XtraGrid.Columns.GridColumn

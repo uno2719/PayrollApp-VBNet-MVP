@@ -172,6 +172,15 @@ Public Class ucCompensation
         End Set
     End Property
 
+    Public Property IsPayslipAllowance As Boolean Implements ICompensationMaintenanceView.IsPayslipAllowance
+        Get
+            Return chkIsPayslipAllowance.Checked
+        End Get
+        Set(value As Boolean)
+            chkIsPayslipAllowance.Checked = value
+        End Set
+    End Property
+
     Public Property CeilingAmount As Decimal Implements ICompensationMaintenanceView.CeilingAmount
         Get
             Return If(Decimal.TryParse(txtCeilingAmount.Text, Nothing), CDec(txtCeilingAmount.Text), 0D)
@@ -249,6 +258,7 @@ Public Class ucCompensation
         chkPagIbigFlag.Properties.ReadOnly = Not isEditable
         cbo2316Component.Properties.ReadOnly = Not isEditable
         chkDeminimisFlag.Properties.ReadOnly = Not isEditable
+        chkIsPayslipAllowance.Properties.ReadOnly = Not isEditable
         txtCeilingAmount.Properties.ReadOnly = Not isEditable
         cboFrequency.Properties.ReadOnly = Not isEditable
         chkIsEssential.Properties.ReadOnly = Not isEditable
@@ -296,6 +306,7 @@ Public Class ucCompensation
         chkPagIbigFlag.Checked = False
         cbo2316Component.Text = String.Empty
         chkDeminimisFlag.Checked = False
+        chkIsPayslipAllowance.Checked = False
         txtCeilingAmount.Text = "0.00"
         cboFrequency.Text = String.Empty
         IsActive = True

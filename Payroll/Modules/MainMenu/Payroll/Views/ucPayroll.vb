@@ -20,6 +20,13 @@ Public Class ucPayroll
         TabNavigationPage2.Controls.Add(_outputView)
     End Sub
 
+    ''' <summary>Para maikabit ng Shell ang Payslips/Reports buttons ng Output tab (OpenPayslipAction / OpenReportsAction).</summary>
+    Public ReadOnly Property OutputView As ucPayrollOutput
+        Get
+            Return _outputView
+        End Get
+    End Property
+
     Public Overrides ReadOnly Property Breadcrumb As String
         Get
             Return $"Main > Payroll > {TabPane1.SelectedPage.Caption}"

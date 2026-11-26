@@ -173,7 +173,7 @@ Public Class frmMain
                 _nav.NavigateTo(Of ucEmployees)(Function() CreateEmployeesView())
 
             Case "main_Payroll"
-                _nav.NavigateTo(Of ucPayroll)(Function() AppComposition.BuildPayrollView())
+                _nav.NavigateTo(Of ucPayroll)(Function() CreatePayrollView())
 
             Case "main_Loan"
                 _nav.NavigateTo(Of ucLoans)(Function() AppComposition.BuildLoansView())
@@ -210,6 +210,9 @@ Public Class frmMain
 
             Case "settings_Email"
                 _nav.NavigateTo(Of ucEmailSettings)(Function() AppComposition.BuildEmailSettingsView())
+
+            Case "reports_Payslip"
+                _nav.NavigateTo(Of ucPayslip)(Function() AppComposition.BuildPayslipView())
 
             Case "settings_Themes"
                 _nav.NavigateTo(Of ucThemeSettings)(Function() AppComposition.BuildThemeSettingsView())
@@ -301,6 +304,33 @@ Public Class frmMain
         AddHandler view.OpenLoansRequested, AddressOf OnOpenLoansRequested
         Return view
     End Function
+
+    ' Payroll: ikinakabit ang "Payslips" button ng Output tab sa Reports > Payslip.
+    Private Function CreatePayrollView() As ucPayroll
+        Dim view = AppComposition.BuildPayrollView()
+        view.OutputView.OpenPayslipAction = AddressOf OnOpenPayslipRequested
+        Return view
+    End Function
+
+    Private Async Sub OnOpenPayslipRequested(cutoffIds As List(Of Integer))
+        If Not PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Reports_Payslip) Then
+            XtraMessageBox.Show("You do not have access to the Payslip module." & Environment.NewLine &
+                                "Please contact your system administrator.",
+                                "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        Try
+            _nav.NavigateTo(Of ucPayslip)(Function() AppComposition.BuildPayslipView())
+            btnBack.Enabled = _nav.IsNavigationChanged
+            btnForward.Enabled = False
+
+            Dim payslip = _nav.TryGetView(Of ucPayslip)()
+            If payslip IsNot Nothing Then Await payslip.FocusCutoffAsync(cutoffIds)
+        Catch ex As Exception
+            XtraMessageBox.Show(ex.Message, "Payslip", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
+    End Sub
 
     Private Async Sub OnOpenLoansRequested(employeeRecordId As Integer)
         If Not PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Loan) Then Return
@@ -493,7 +523,7 @@ Public Class frmMain
     Private Sub OpenPayrollFromIndicator(sender As Object, e As EventArgs)
         If Not PermissionService.CanView("main_Payroll") Then Return
 
-        _nav.NavigateTo(Of ucPayroll)(Function() AppComposition.BuildPayrollView())
+        _nav.NavigateTo(Of ucPayroll)(Function() CreatePayrollView())
         btnBack.Enabled = _nav.IsNavigationChanged
         btnForward.Enabled = False
     End Sub

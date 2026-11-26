@@ -42,6 +42,9 @@ Imports Payroll.PayrollProcessing.Services
 Imports Payroll.PayrollSettings.Data
 Imports Payroll.PayrollSettings.Presenters
 Imports Payroll.PayrollSettings.Services
+Imports Payroll.Payslips.Data
+Imports Payroll.Payslips.Presenters
+Imports Payroll.Payslips.Services
 Imports Payroll.StatutorySettings.Data
 Imports Payroll.StatutorySettings.Presenters
 Imports Payroll.StatutorySettings.Services
@@ -660,6 +663,21 @@ Public Class AppComposition
         outputView.SetPresenter(outputPresenter)
 
         Return New ucPayroll(inputEntryView, outputView)
+
+    End Function
+
+    ' Reports > Payslip: preview / print / export PDF / email ng payslip (isang cutoff).
+    Public Shared Function BuildPayslipView() As ucPayslip
+
+        Dim repo As New PayslipRepository()
+        Dim emailService As New EmailSettingsService(New EmailSettingsRepository())
+        Dim service As New PayslipService(repo, emailService)
+
+        Dim view As New ucPayslip()
+        Dim presenter As New PayslipPresenter(view, service)
+        view.SetPresenter(presenter)
+
+        Return view
 
     End Function
 

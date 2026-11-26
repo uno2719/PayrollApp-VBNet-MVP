@@ -16,6 +16,8 @@
         Public Property PagIbigFlag As Boolean
         Public Property Component2316 As String
         Public Property DeminimisFlag As Boolean
+        ''' <summary>Allowance sa payslip: pwedeng i-exclude sa Reports > Payslip ("Include allowance").</summary>
+        Public Property IsPayslipAllowance As Boolean
         Public Property CeilingAmount As Decimal
         Public Property Frequency As String
         Public Property IsActive As Boolean = True

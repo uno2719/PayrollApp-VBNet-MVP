@@ -67,6 +67,7 @@ Namespace PayrollSettings.Presenters
                 _view.PagIbigFlag = selected.PagIbigFlag
                 _view.Component2316 = selected.Component2316
                 _view.DeminimisFlag = selected.DeminimisFlag
+                _view.IsPayslipAllowance = selected.IsPayslipAllowance
                 _view.CeilingAmount = selected.CeilingAmount
                 _view.Frequency = selected.Frequency
                 _view.IsActive = selected.IsActive
@@ -98,6 +99,7 @@ Namespace PayrollSettings.Presenters
                 .PagIbigFlag = _view.PagIbigFlag,
                 .Component2316 = _view.Component2316,
                 .DeminimisFlag = _view.DeminimisFlag,
+                .IsPayslipAllowance = _view.IsPayslipAllowance,
                 .CeilingAmount = _view.CeilingAmount,
                 .Frequency = _view.Frequency,
                 .IsActive = _view.IsActive,

@@ -12,6 +12,7 @@ Namespace PayrollSettings.Views
         Property PagIbigFlag As Boolean
         Property Component2316 As String
         Property DeminimisFlag As Boolean
+        Property IsPayslipAllowance As Boolean
         Property CeilingAmount As Decimal
         Property Frequency As String
         Property IsActive As Boolean
