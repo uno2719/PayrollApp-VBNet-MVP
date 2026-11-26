@@ -25,6 +25,7 @@ Partial Class rptPayslip
         lblCompanyName = New XRLabel()
         lblCompanyAddress = New XRLabel()
         lblTitle = New XRLabel()
+        lblDraftTag = New XRLabel()
         pnlNet = New XRPanel()
         lblNetCaption = New XRLabel()
         lblNetAmount = New XRLabel()
@@ -128,7 +129,7 @@ Partial Class rptPayslip
         Detail.HeightF = 158.0F
         Detail.Name = "Detail"
         Detail.PageBreak = PageBreak.BeforeBandExceptFirstEntry
-        Detail.Controls.AddRange(New XRControl() {picLogo, lblCompanyName, lblCompanyAddress, lblTitle, pnlNet, lineHeader,
+        Detail.Controls.AddRange(New XRControl() {picLogo, lblCompanyName, lblCompanyAddress, lblTitle, lblDraftTag, pnlNet, lineHeader,
             capEmployee, valEmployee, capEmployeeNo, valEmployeeNo, capPeriod, valPeriod,
             capDesignation, valDesignation, capDepartment, valDepartment, capPayCycle, valPayCycle,
             capSSS, valSSS, capPhilHealth, valPhilHealth, capPagIbig, valPagIbig,
@@ -155,11 +156,21 @@ Partial Class rptPayslip
         lblCompanyAddress.ExpressionBindings.Add(New ExpressionBinding("BeforePrint", "Text", "[CompanyAddress]"))
 
         lblTitle.LocationFloat = New DevExpress.Utils.PointFloat(72.0F, 42.0F)
-        lblTitle.SizeF = New System.Drawing.SizeF(450.0F, 18.0F)
+        lblTitle.SizeF = New System.Drawing.SizeF(110.0F, 18.0F)
         lblTitle.Name = "lblTitle"
         lblTitle.Font = New DevExpress.Drawing.DXFont("Segoe UI", 10.0F, DevExpress.Drawing.DXFontStyle.Bold)
         lblTitle.Padding = New DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100.0F)
         lblTitle.Text = "PAYSLIP"
+
+        ' Pulang tag kada payslip na DRAFT (hindi pa Posted ang cutoff) - para sa Group by pay date na halo ang status.
+        lblDraftTag.LocationFloat = New DevExpress.Utils.PointFloat(190.0F, 43.0F)
+        lblDraftTag.SizeF = New System.Drawing.SizeF(330.0F, 16.0F)
+        lblDraftTag.Name = "lblDraftTag"
+        lblDraftTag.Font = New DevExpress.Drawing.DXFont("Segoe UI", 8.0F, DevExpress.Drawing.DXFontStyle.Bold)
+        lblDraftTag.ForeColor = System.Drawing.Color.FromArgb(200, 30, 30)
+        lblDraftTag.Padding = New DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100.0F)
+        lblDraftTag.Text = "DRAFT - NOT YET POSTED"
+        lblDraftTag.ExpressionBindings.Add(New ExpressionBinding("BeforePrint", "Visible", "[IsDraft]"))
 
         ' NET PAY box (kanang itaas)
         pnlNet.LocationFloat = New DevExpress.Utils.PointFloat(540.0F, 0.0F)
@@ -445,6 +456,7 @@ Partial Class rptPayslip
     Friend WithEvents lblCompanyName As XRLabel
     Friend WithEvents lblCompanyAddress As XRLabel
     Friend WithEvents lblTitle As XRLabel
+    Friend WithEvents lblDraftTag As XRLabel
     Friend WithEvents pnlNet As XRPanel
     Friend WithEvents lblNetCaption As XRLabel
     Friend WithEvents lblNetAmount As XRLabel

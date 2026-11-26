@@ -29,7 +29,7 @@ Public Class rptPayslip
         Dim rpt As New rptPayslip()
         Dim docs = If(documents, batch.Documents).ToList()
         rpt.DataSource = docs
-        rpt.DisplayName = "Payslip " & If(batch.Cutoff?.CutoffLabel, "")
+        rpt.DisplayName = "Payslip " & batch.DisplayLabel
 
         ' Logo (iisa para sa lahat): file path mula sa Company Profile. Walang logo = itatago at aatras ang pangalan.
         Dim logo = batch.Company?.LogoFullPath
@@ -37,12 +37,13 @@ Public Class rptPayslip
             rpt.picLogo.ImageUrl = logo
         Else
             rpt.picLogo.Visible = False
-            For Each lbl In {rpt.lblCompanyName, rpt.lblCompanyAddress, rpt.lblTitle}
-                lbl.LocationFloat = New DevExpress.Utils.PointFloat(0.0F, lbl.LocationFloat.Y)
+            For Each lbl In {rpt.lblCompanyName, rpt.lblCompanyAddress, rpt.lblTitle, rpt.lblDraftTag}
+                lbl.LocationFloat = New DevExpress.Utils.PointFloat(lbl.LocationFloat.X - 72.0F, lbl.LocationFloat.Y)
             Next
         End If
 
-        If batch.IsDraft Then
+        ' Watermark kapag LAHAT ay draft; kapag halo (Group by pay date), ang pulang tag na lang sa header ng bawat draft.
+        If docs.Count > 0 AndAlso docs.All(Function(d) d.IsDraft) Then
             rpt.Watermark.Text = "DRAFT - NOT YET POSTED"
             rpt.Watermark.TextDirection = DevExpress.XtraPrinting.Drawing.DirectionMode.ForwardDiagonal
             rpt.Watermark.Font = New DevExpress.Drawing.DXFont("Segoe UI", 48.0F, DevExpress.Drawing.DXFontStyle.Bold)

@@ -7,6 +7,8 @@ Namespace GlobalShared.Models
 
         Public Property ResultId As Integer
         Public Property CutoffID As Integer
+        ''' <summary>Pangalan ng cutoff (ipinapakita sa grid kapag Group by pay date).</summary>
+        Public Property CutoffLabel As String
         Public Property RecordId As Integer
         Public Property EmployeeNo As String
         Public Property EmployeeName As String
@@ -113,12 +115,49 @@ Namespace GlobalShared.Models
         Public Property PrintedBy As String
     End Class
 
-    ''' <summary>Mga nabuong payslip ng isang cutoff (handa nang i-preview / i-print / i-export / i-email).</summary>
+    ''' <summary>
+    ''' Mga nabuong payslip (handa nang i-preview / i-print / i-export / i-email). Isang cutoff, o ilang cutoff kapag
+    ''' Group by pay date (pinagsama sa iisang batch, naka-sort ayon sa pangalan).
+    ''' </summary>
     Public Class PayslipBatch
+        ''' <summary>Unang cutoff (pang-display / pangalan ng file). Nasa Cutoffs ang lahat.</summary>
         Public Property Cutoff As CutoffModel
+        Public Property Cutoffs As List(Of CutoffModel) = New List(Of CutoffModel)()
         Public Property Company As PayslipCompanyInfo
+        ''' <summary>True kung may kahit isang cutoff na hindi pa Posted (may DRAFT na payslip).</summary>
         Public Property IsDraft As Boolean
         Public Property Documents As List(Of PayslipDocument) = New List(Of PayslipDocument)()
+
+        ''' <summary>Lahat ng payslip ay DRAFT (para sa watermark ng buong report).</summary>
+        Public ReadOnly Property AllDraft As Boolean
+            Get
+                Return Documents.Count > 0 AndAlso Documents.All(Function(d) d.IsDraft)
+            End Get
+        End Property
+
+        Public ReadOnly Property DisplayLabel As String
+            Get
+                If Cutoffs.Count > 1 Then
+                    Return "Pay date " & If(Cutoff.PayDate.HasValue, Cutoff.PayDate.Value, Cutoff.CutoffEnd).ToString("MMM d, yyyy")
+                End If
+                Return If(Cutoff?.DisplayLabel, "")
+            End Get
+        End Property
+
+        ''' <summary>Pinagsasama ang mga batch ng bawat cutoff sa iisa (Group by pay date).</summary>
+        Public Shared Function Merge(batches As IList(Of PayslipBatch)) As PayslipBatch
+            If batches Is Nothing OrElse batches.Count = 0 Then Return Nothing
+            If batches.Count = 1 Then Return batches(0)
+            Dim merged As New PayslipBatch With {
+                .Cutoff = batches(0).Cutoff,
+                .Cutoffs = batches.Select(Function(b) b.Cutoff).ToList(),
+                .Company = batches(0).Company,
+                .IsDraft = batches.Any(Function(b) b.IsDraft),
+                .Documents = batches.SelectMany(Function(b) b.Documents).
+                    OrderBy(Function(d) d.EmployeeName).ThenBy(Function(d) d.EmployeeNo).ToList()
+            }
+            Return merged
+        End Function
     End Class
 
     ' ======================================================================

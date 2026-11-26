@@ -42,8 +42,8 @@ Namespace Payslips.Data
                                FROM tblPayslipEmailLog x
                                WHERE x.CutoffID = r.CutoffID AND x.RecordId = r.RecordId
                                ORDER BY x.SentDate DESC, x.EmailLogId DESC) lg
-             WHERE r.CutoffID = @cutoffId
-             ORDER BY r.EmployeeName, r.EmployeeNo"
+             WHERE r.CutoffID IN @cutoffIds
+             ORDER BY r.EmployeeName, r.EmployeeNo, r.CutoffID"
 
         Private Const EmployeeInfoSql As String =
             "SELECT e.RecordId, p.PositionName, d.DepartmentName, b.BranchName,
@@ -136,11 +136,13 @@ Namespace Payslips.Data
             End Using
         End Function
 
-        Public Async Function GetEmployeeRowsAsync(cutoffId As Integer) As Task(Of List(Of PayslipEmployeeRow)) _
+        Public Async Function GetEmployeeRowsAsync(cutoffIds As IList(Of Integer)) As Task(Of List(Of PayslipEmployeeRow)) _
             Implements IPayslipRepository.GetEmployeeRowsAsync
 
+            Dim ids = If(cutoffIds, New List(Of Integer)()).Distinct().ToList()
+            If ids.Count = 0 Then Return New List(Of PayslipEmployeeRow)()
             Using conn = GetConnection()
-                Return (Await conn.QueryAsync(Of PayslipEmployeeRow)(EmployeeRowsSql, New With {cutoffId})).ToList()
+                Return (Await conn.QueryAsync(Of PayslipEmployeeRow)(EmployeeRowsSql, New With {.cutoffIds = ids})).ToList()
             End Using
         End Function
 

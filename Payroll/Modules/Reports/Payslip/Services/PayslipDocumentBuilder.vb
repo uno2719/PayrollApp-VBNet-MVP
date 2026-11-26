@@ -15,6 +15,7 @@ Namespace Payslips.Services
         Public Function Build(src As PayslipSource, options As PayslipOptions) As PayslipBatch
             Dim batch As New PayslipBatch With {
                 .Cutoff = src.Cutoff,
+                .Cutoffs = New List(Of CutoffModel) From {src.Cutoff},
                 .Company = If(src.Company, New PayslipCompanyInfo()),
                 .IsDraft = src.Cutoff.Status <> CutoffStatus.Posted
             }
@@ -90,14 +91,20 @@ Namespace Payslips.Services
             Next
 
             ' ---- Deductions (kanan): Statutory / Loans / Others ----
+            ' Hindi isinasama ang linyang 0 ang halaga; kapag walang natira sa isang group, wala ring group header.
             Dim right As New List(Of Cell)()
-            right.Add(New Cell("Statutory", Nothing, PayslipCellKind.GroupHeader))
-            right.Add(New Cell("SSS", h.SSSEE + h.SSSMPFEE, PayslipCellKind.GroupLine))
-            right.Add(New Cell("PhilHealth", h.PhilHealthEE, PayslipCellKind.GroupLine))
-            right.Add(New Cell("Pag-IBIG", h.PagIbigEE, PayslipCellKind.GroupLine))
-            right.Add(New Cell("Withholding tax", h.WithholdingTax, PayslipCellKind.GroupLine))
+            Dim statutory = {
+                New Cell("SSS", h.SSSEE + h.SSSMPFEE, PayslipCellKind.GroupLine),
+                New Cell("PhilHealth", h.PhilHealthEE, PayslipCellKind.GroupLine),
+                New Cell("Pag-IBIG", h.PagIbigEE, PayslipCellKind.GroupLine),
+                New Cell("Withholding tax", h.WithholdingTax, PayslipCellKind.GroupLine)
+            }.Where(Function(x) x.Amount.GetValueOrDefault() <> 0D).ToList()
+            If statutory.Count > 0 Then
+                right.Add(New Cell("Statutory", Nothing, PayslipCellKind.GroupHeader))
+                right.AddRange(statutory)
+            End If
 
-            Dim loanLines = lines.Where(Function(l) l.LineType = ResultLineType.Deduction AndAlso l.Category = ResultCategory.Loan).ToList()
+            Dim loanLines = lines.Where(Function(l) l.LineType = ResultLineType.Deduction AndAlso l.Category = ResultCategory.Loan AndAlso l.Amount <> 0D).ToList()
             If loanLines.Count > 0 Then
                 right.Add(New Cell("Loans", Nothing, PayslipCellKind.GroupHeader))
                 For Each ln In loanLines
@@ -110,7 +117,7 @@ Namespace Payslips.Services
                 Next
             End If
 
-            Dim others = lines.Where(Function(l) l.LineType = ResultLineType.Deduction AndAlso l.Category = ResultCategory.Deduction).ToList()
+            Dim others = lines.Where(Function(l) l.LineType = ResultLineType.Deduction AndAlso l.Category = ResultCategory.Deduction AndAlso l.Amount <> 0D).ToList()
             If others.Count > 0 Then
                 right.Add(New Cell("Others", Nothing, PayslipCellKind.GroupHeader))
                 For Each ln In others

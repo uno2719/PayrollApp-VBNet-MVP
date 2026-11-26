@@ -6,15 +6,18 @@ Imports Payroll.Payslips.Presenters
 Imports Payroll.Payslips.Views
 
 ''' <summary>
-''' Reports > Payslip. Kaliwa: mga empleyado ng cutoff (checkbox). Kanan: preview.
-''' Ang mga aksyon ay para sa mga naka-check; kapag walang naka-check, LAHAT ng empleyado sa cutoff.
+''' Reports > Payslip. Kaliwa: mga empleyado ng cutoff, o ng lahat ng cutoff ng isang pay date (Group by pay date).
+''' Kanan: preview. Ang mga aksyon ay para sa mga naka-check; kapag walang naka-check, LAHAT ng empleyado sa napili.
 ''' </summary>
 Public Class ucPayslip
     Implements IPayslipView
     Implements IAsyncLoadable
 
     Private _presenter As PayslipPresenter
-    Private _cutoffs As New List(Of CutoffModel)()
+    Private _cutoffs As New List(Of CutoffModel)()                ' mode: per cutoff
+    Private _groups As New List(Of PayDateGroupModel)()          ' mode: Group by pay date
+    Private _groupMode As Boolean = False
+    Private _settingGroup As Boolean = False
     Private _rows As New List(Of PayslipEmployeeRow)()
     Private _columnsBuilt As Boolean = False
     Private _loadingCutoffs As Boolean = False
@@ -53,47 +56,79 @@ Public Class ucPayslip
 
     ''' <summary>
     ''' Tinatawag ng Shell mula sa Payroll > Output > Payslips: i-reload ang listahan (baka kaka-Process/Post lang) at piliin
-    ''' ang cutoff. Ligtas kahit sabay sa unang load ng screen: pinapanatili ng DisplayCutoffs ang napili kung nandoon pa.
+    ''' ang cutoff. Kapag maraming cutoff (galing sa "Group by pay date" ng Output), lilipat din dito sa Group by pay date.
+    ''' Ligtas kahit sabay sa unang load ng screen: pinapanatili ng combo ang napili kung nandoon pa.
     ''' </summary>
     Public Async Function FocusCutoffAsync(cutoffIds As List(Of Integer)) As Task
-        Dim id As Integer? = Nothing
-        If cutoffIds IsNot Nothing AndAlso cutoffIds.Count > 0 Then id = cutoffIds(0)
-
         BuildGridColumns()
-        Await _presenter.LoadAsync(id)
-
-        If cutoffIds IsNot Nothing AndAlso cutoffIds.Count > 1 Then
-            ShowMessage("Payslips are generated per cutoff. Showing the first cutoff of the selected pay date; pick the others from the Cutoff list.")
-        End If
+        SetGroupByPayDate(cutoffIds IsNot Nothing AndAlso cutoffIds.Count > 1)
+        Await _presenter.LoadAsync(cutoffIds)
     End Function
 
 #Region "IPayslipView"
 
-    Public Sub DisplayCutoffs(cutoffs As List(Of CutoffModel), selectCutoffId As Integer?) Implements IPayslipView.DisplayCutoffs
-        Dim previous = cboCutoff.EditValue
+    Public Sub DisplayCutoffs(cutoffs As List(Of CutoffModel), selectCutoffIds As List(Of Integer)) Implements IPayslipView.DisplayCutoffs
+        Dim previous As Object = If(_groupMode, Nothing, cboCutoff.EditValue)
+        _groupMode = False
         _cutoffs = If(cutoffs, New List(Of CutoffModel)())
+        _groups = New List(Of PayDateGroupModel)()
 
+        Dim pick As Object = Nothing
+        Dim wanted = If(selectCutoffIds, New List(Of Integer)())
+        Dim hit = _cutoffs.FirstOrDefault(Function(c) wanted.Contains(c.CutoffID))
+        If hit IsNot Nothing Then
+            pick = hit.CutoffID
+        ElseIf previous IsNot Nothing AndAlso previous IsNot DBNull.Value AndAlso _cutoffs.Any(Function(c) c.CutoffID = CInt(previous)) Then
+            pick = previous
+        ElseIf _cutoffs.Count > 0 Then
+            pick = _cutoffs(0).CutoffID                                   ' pinakabago ang una
+        End If
+
+        lblCutoff.Text = "Cutoff:"
+        BindCombo(_cutoffs, NameOf(CutoffModel.DisplayLabel), NameOf(CutoffModel.CutoffID), "Cutoff", pick, includeStatus:=True)
+    End Sub
+
+    Public Sub DisplayPayDates(groups As List(Of PayDateGroupModel), selectCutoffIds As List(Of Integer)) Implements IPayslipView.DisplayPayDates
+        Dim previous As Object = If(_groupMode, cboCutoff.EditValue, Nothing)
+        _groupMode = True
+        _groups = If(groups, New List(Of PayDateGroupModel)())
+        _cutoffs = New List(Of CutoffModel)()
+
+        Dim pick As Object = Nothing
+        Dim wanted = If(selectCutoffIds, New List(Of Integer)())
+        Dim hit = _groups.FirstOrDefault(Function(g) g.Cutoffs.Any(Function(c) wanted.Contains(c.CutoffID)))
+        If hit IsNot Nothing Then
+            pick = hit.GroupKey
+        ElseIf previous IsNot Nothing AndAlso previous IsNot DBNull.Value AndAlso _groups.Any(Function(g) g.GroupKey = CStr(previous)) Then
+            pick = previous
+        ElseIf _groups.Count > 0 Then
+            pick = _groups(0).GroupKey
+        End If
+
+        lblCutoff.Text = "Pay date:"
+        BindCombo(_groups, NameOf(PayDateGroupModel.DisplayLabel), NameOf(PayDateGroupModel.GroupKey), "Pay date", pick, includeStatus:=False)
+    End Sub
+
+    Private Sub BindCombo(source As Object, displayMember As String, valueMember As String, caption As String,
+                          pick As Object, includeStatus As Boolean)
         _loadingCutoffs = True
         Try
-            cboCutoff.Properties.DataSource = _cutoffs
-            cboCutoff.Properties.DisplayMember = NameOf(CutoffModel.DisplayLabel)
-            cboCutoff.Properties.ValueMember = NameOf(CutoffModel.CutoffID)
+            cboCutoff.EditValue = Nothing
+            cboCutoff.Properties.DataSource = source
+            cboCutoff.Properties.DisplayMember = displayMember
+            cboCutoff.Properties.ValueMember = valueMember
             cboCutoff.Properties.Columns.Clear()
-            cboCutoff.Properties.Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo(NameOf(CutoffModel.DisplayLabel), "Cutoff"))
-            cboCutoff.Properties.Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo(NameOf(CutoffModel.Status), "Status"))
-
-            Dim pick As Object = Nothing
-            If selectCutoffId.HasValue AndAlso _cutoffs.Any(Function(c) c.CutoffID = selectCutoffId.Value) Then
-                pick = selectCutoffId.Value
-            ElseIf previous IsNot Nothing AndAlso previous IsNot DBNull.Value AndAlso _cutoffs.Any(Function(c) c.CutoffID = CInt(previous)) Then
-                pick = previous
-            ElseIf _cutoffs.Count > 0 Then
-                pick = _cutoffs(0).CutoffID
+            cboCutoff.Properties.Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo(displayMember, caption))
+            If includeStatus Then
+                cboCutoff.Properties.Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo(NameOf(CutoffModel.Status), "Status"))
             End If
             cboCutoff.EditValue = pick
         Finally
             _loadingCutoffs = False
         End Try
+
+        Dim colCutoff = gridView.Columns.ColumnByFieldName(NameOf(PayslipEmployeeRow.CutoffLabel))
+        If colCutoff IsNot Nothing Then colCutoff.Visible = _groupMode
 
         Dim ignore = ReloadEmployeesAsync()
     End Sub
@@ -105,11 +140,38 @@ Public Class ucPayslip
         UpdateState()
     End Sub
 
-    Public Function GetSelectedCutoff() As CutoffModel Implements IPayslipView.GetSelectedCutoff
+    Public Function IsGroupByPayDate() As Boolean Implements IPayslipView.IsGroupByPayDate
+        Return chkGroupByPayDate.Checked
+    End Function
+
+    Public Sub SetGroupByPayDate(value As Boolean) Implements IPayslipView.SetGroupByPayDate
+        _settingGroup = True
+        Try
+            chkGroupByPayDate.Checked = value
+        Finally
+            _settingGroup = False
+        End Try
+    End Sub
+
+    Public Function GetSelectedCutoffs() As List(Of CutoffModel) Implements IPayslipView.GetSelectedCutoffs
         Dim value = cboCutoff.EditValue
-        If value Is Nothing OrElse value Is DBNull.Value Then Return Nothing
+        If value Is Nothing OrElse value Is DBNull.Value Then Return New List(Of CutoffModel)()
+
+        If _groupMode Then
+            Dim key = CStr(value)
+            Dim grp = _groups.FirstOrDefault(Function(g) g.GroupKey = key)
+            Return If(grp Is Nothing, New List(Of CutoffModel)(), grp.Cutoffs.ToList())
+        End If
+
         Dim id = CInt(value)
-        Return _cutoffs.FirstOrDefault(Function(c) c.CutoffID = id)
+        Return _cutoffs.Where(Function(c) c.CutoffID = id).ToList()
+    End Function
+
+    Public Function GetSelectionLabel() As String Implements IPayslipView.GetSelectionLabel
+        Dim cutoffs = GetSelectedCutoffs()
+        If cutoffs.Count = 0 Then Return String.Empty
+        If cutoffs.Count = 1 Then Return cutoffs(0).DisplayLabel
+        Return "pay date " & PayslipPresenter.EffectivePayDate(cutoffs(0)).ToString("MMM d, yyyy") & $" ({cutoffs.Count} cutoffs)"
     End Function
 
     Public Function GetTargetRows() As List(Of PayslipEmployeeRow) Implements IPayslipView.GetTargetRows
@@ -223,6 +285,8 @@ Public Class ucPayslip
         AddColumn(NameOf(PayslipEmployeeRow.NetPay), "Net Pay", 5, True)
         AddColumn(NameOf(PayslipEmployeeRow.EmailAddress), "Email", 6, False)
         AddColumn(NameOf(PayslipEmployeeRow.EmailStatusText), "Email status", 7, False)
+        AddColumn(NameOf(PayslipEmployeeRow.CutoffLabel), "Cutoff", 8, False)
+        gridView.Columns.ColumnByFieldName(NameOf(PayslipEmployeeRow.CutoffLabel)).Visible = _groupMode
 
         gridView.OptionsBehavior.Editable = True
         gridView.OptionsView.ColumnAutoWidth = False
@@ -274,6 +338,13 @@ Public Class ucPayslip
     Private Async Sub cboCutoff_EditValueChanged(sender As Object, e As EventArgs) Handles cboCutoff.EditValueChanged
         If _loadingCutoffs Then Return
         Await ReloadEmployeesAsync()
+    End Sub
+
+    ' Group by pay date: i-reload ang combo sa ibang mode (pinapanatili ang cutoff/pay date na napili kung kaya).
+    Private Async Sub chkGroupByPayDate_CheckedChanged(sender As Object, e As EventArgs) Handles chkGroupByPayDate.CheckedChanged
+        If _settingGroup OrElse _presenter Is Nothing Then Return
+        Dim keep = GetSelectedCutoffs().Select(Function(c) c.CutoffID).ToList()
+        Await RunAsync(Function() _presenter.LoadAsync(keep))
     End Sub
 
     Private Async Function ReloadEmployeesAsync() As Task
@@ -364,10 +435,11 @@ Public Class ucPayslip
 
     ' Mga button: naka-enable lang kapag may cutoff at may empleyado. Email: Posted lang, may Edit access, at walang padalang tumatakbo.
     Private Sub UpdateState()
-        Dim c = GetSelectedCutoff()
-        Dim hasRows = c IsNot Nothing AndAlso _rows.Count > 0
+        Dim cutoffs = GetSelectedCutoffs()
+        Dim hasRows = cutoffs.Count > 0 AndAlso _rows.Count > 0
         Dim sending = _presenter IsNot Nothing AndAlso _presenter.IsSending
         Dim idle = hasRows AndAlso Not sending AndAlso Not _busy
+        Dim allPosted = cutoffs.Count > 0 AndAlso cutoffs.All(Function(c) c.Status = CutoffStatus.Posted)
 
         btnPreview.Enabled = idle
         btnOpenViewer.Enabled = idle
@@ -377,20 +449,25 @@ Public Class ucPayslip
         btnCheckAll.Enabled = hasRows AndAlso Not sending
         btnUncheckAll.Enabled = hasRows AndAlso Not sending
         cboCutoff.Enabled = Not sending
+        chkGroupByPayDate.Enabled = Not sending AndAlso Not _busy
         btnRefresh.Enabled = Not sending AndAlso Not _busy
 
-        Dim canEmail = idle AndAlso c.Status = CutoffStatus.Posted AndAlso HasEditAccess
+        Dim canEmail = idle AndAlso allPosted AndAlso HasEditAccess
         btnEmail.Enabled = canEmail
         btnEmailOne.Enabled = canEmail
 
-        ' Status ng cutoff
-        If c Is Nothing Then
+        ' Status ng napili (isang cutoff, o buod ng mga cutoff ng pay date)
+        If cutoffs.Count = 0 Then
             lblStatus.Text = String.Empty
-        ElseIf c.Status = CutoffStatus.Posted Then
-            lblStatus.Text = "POSTED"
+        ElseIf allPosted Then
+            lblStatus.Text = If(cutoffs.Count = 1, "POSTED", $"ALL {cutoffs.Count} CUTOFFS POSTED")
             lblStatus.Appearance.ForeColor = Color.SeaGreen
+        ElseIf cutoffs.Count = 1 Then
+            lblStatus.Text = cutoffs(0).Status.ToString().ToUpperInvariant() & " - payslips are DRAFT (email is for Posted cutoffs only)"
+            lblStatus.Appearance.ForeColor = Color.DarkOrange
         Else
-            lblStatus.Text = c.Status.ToString().ToUpperInvariant() & " - payslips are DRAFT (email is for Posted cutoffs only)"
+            Dim notPosted = cutoffs.Where(Function(c) c.Status <> CutoffStatus.Posted).Count()
+            lblStatus.Text = $"{notPosted} of {cutoffs.Count} cutoffs not yet Posted - DRAFT payslips (email needs all Posted)"
             lblStatus.Appearance.ForeColor = Color.DarkOrange
         End If
 

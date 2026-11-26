@@ -28,19 +28,47 @@ Namespace Payslips.Presenters
         ' LOAD
         ' =============================================
 
-        Public Async Function LoadAsync(Optional selectCutoffId As Integer? = Nothing) As Task
+        ''' <summary>
+        ''' Kinukuha ang Processed/Posted na cutoffs. Per cutoff, o naka-grupo ayon sa pay date (kapag naka-check ang
+        ''' "Group by pay date"). selectCutoffIds: piliin ang cutoff / pay date na naglalaman ng unang ID.
+        ''' </summary>
+        Public Async Function LoadAsync(Optional selectCutoffIds As List(Of Integer) = Nothing) As Task
             Dim cutoffs = Await _service.GetCutoffsAsync()
-            _view.DisplayCutoffs(cutoffs, selectCutoffId)
+            If _view.IsGroupByPayDate() Then
+                Dim groups = cutoffs.
+                    GroupBy(Function(c) EffectivePayDate(c)).
+                    OrderByDescending(Function(g) g.Key).
+                    Select(Function(g) New PayDateGroupModel With {
+                        .PayDate = g.Key,
+                        .Cutoffs = g.OrderBy(Function(c) c.CutoffStart).ThenBy(Function(c) c.CycleType).ToList()}).
+                    ToList()
+                _view.DisplayPayDates(groups, selectCutoffIds)
+            Else
+                _view.DisplayCutoffs(cutoffs, selectCutoffIds)
+            End If
         End Function
 
         Public Async Function LoadEmployeesAsync() As Task
-            Dim c = _view.GetSelectedCutoff()
+            Dim cutoffs = _view.GetSelectedCutoffs()
             _view.ShowPreview(Nothing)
-            If c Is Nothing Then
+            If cutoffs.Count = 0 Then
                 _view.DisplayEmployees(New List(Of PayslipEmployeeRow)())
                 Return
             End If
-            _view.DisplayEmployees(Await _service.GetEmployeeRowsAsync(c.CutoffID))
+
+            Dim rows = Await _service.GetEmployeeRowsAsync(cutoffs.Select(Function(c) c.CutoffID).ToList())
+            Dim labels = cutoffs.ToDictionary(Function(c) c.CutoffID,
+                                              Function(c) If(String.IsNullOrWhiteSpace(c.CutoffLabel), c.DisplayLabel, c.CutoffLabel))
+            For Each r In rows
+                Dim label As String = Nothing
+                If labels.TryGetValue(r.CutoffID, label) Then r.CutoffLabel = label
+            Next
+            _view.DisplayEmployees(rows)
+        End Function
+
+        ''' <summary>Parehong patakaran ng Output tab (PayrollExportBuilder.EffectivePayDate): Pay Date, o Cutoff End kung wala.</summary>
+        Public Shared Function EffectivePayDate(c As CutoffModel) As Date
+            Return If(c.PayDate.HasValue, c.PayDate.Value, c.CutoffEnd).Date
         End Function
 
         ' =============================================
@@ -49,8 +77,7 @@ Namespace Payslips.Presenters
 
         ''' <summary>Payslips ng target (naka-check o lahat), o ng naka-focus lang kapag singleFocused.</summary>
         Private Async Function BuildAsync(singleFocused As Boolean) As Task(Of PayslipBatch)
-            Dim c = _view.GetSelectedCutoff()
-            If c Is Nothing Then
+            If _view.GetSelectedCutoffs().Count = 0 Then
                 _view.ShowMessage("Select a cutoff first.")
                 Return Nothing
             End If
@@ -63,13 +90,13 @@ Namespace Payslips.Presenters
                 rows = _view.GetTargetRows()
             End If
             If rows.Count = 0 Then
-                _view.ShowMessage("No employees in this cutoff.")
+                _view.ShowMessage("No employees to print.")
                 Return Nothing
             End If
 
             Dim options = _view.GetOptions()
             options.PrintedBy = AppSession.CurrentUser
-            Return Await _service.BuildBatchAsync(c.CutoffID, rows.Select(Function(r) r.RecordId).ToList(), options)
+            Return Await _service.BuildBatchAsync(rows, options)
         End Function
 
         Public Async Function PreviewAsync(singleFocused As Boolean) As Task
@@ -123,14 +150,16 @@ Namespace Payslips.Presenters
         End Function
 
         Public Async Function ExportCombinedAsync() As Task
-            Dim c = _view.GetSelectedCutoff()
-            If c Is Nothing Then
+            Dim cutoffs = _view.GetSelectedCutoffs()
+            If cutoffs.Count = 0 Then
                 _view.ShowMessage("Select a cutoff first.")
                 Return
             End If
 
-            Dim payDate = If(c.PayDate.HasValue, c.PayDate.Value, c.CutoffEnd)
-            Dim path = _view.AskSaveFile($"Payslips_{SafeLabel(c)}_{payDate:yyyy-MM-dd}.pdf")
+            Dim payDate = EffectivePayDate(cutoffs(0))
+            Dim defaultName = If(cutoffs.Count > 1, $"Payslips_PayDate_{payDate:yyyy-MM-dd}.pdf",
+                                                    $"Payslips_{SafeLabel(cutoffs(0))}_{payDate:yyyy-MM-dd}.pdf")
+            Dim path = _view.AskSaveFile(defaultName)
             If String.IsNullOrWhiteSpace(path) Then Return
 
             _view.SetBusy(True)
@@ -178,14 +207,16 @@ Namespace Payslips.Presenters
         Public Async Function EmailAsync(singleFocused As Boolean) As Task
             If IsSending Then Return
 
-            Dim c = _view.GetSelectedCutoff()
-            If c Is Nothing Then
+            Dim cutoffs = _view.GetSelectedCutoffs()
+            If cutoffs.Count = 0 Then
                 _view.ShowMessage("Select a cutoff first.")
                 Return
             End If
-            If c.Status <> CutoffStatus.Posted Then
-                _view.ShowError("Only Posted cutoffs can be emailed. This cutoff is " & c.Status.ToString() &
-                                " - its payslips are still a DRAFT. Post it in Payroll > Output first.")
+            Dim notPosted = cutoffs.Where(Function(x) x.Status <> CutoffStatus.Posted).ToList()
+            If notPosted.Count > 0 Then
+                _view.ShowError("Only Posted cutoffs can be emailed. Not yet posted (payslips are still a DRAFT):" & Environment.NewLine &
+                                String.Join(Environment.NewLine, notPosted.Select(Function(x) "- " & x.DisplayLabel & " (" & x.Status.ToString() & ")")) &
+                                Environment.NewLine & Environment.NewLine & "Post them in Payroll > Output first.")
                 Return
             End If
 
@@ -221,7 +252,7 @@ Namespace Payslips.Presenters
             Dim alreadySent = withEmail.Where(Function(r) r.LastEmailSuccess.GetValueOrDefault()).Count()
 
             Dim nl = Environment.NewLine
-            Dim msg = $"Send payslips by email for {c.DisplayLabel}?" & nl & nl &
+            Dim msg = $"Send payslips by email for {_view.GetSelectionLabel()}?" & nl & nl &
                       $"Employees with email: {withEmail.Count}" & nl &
                       If(noEmail > 0, $"No email address (will be skipped): {noEmail}" & nl, "") &
                       If(alreadySent > 0, $"Already emailed before (will receive another copy): {alreadySent}" & nl, "") &
@@ -233,7 +264,7 @@ Namespace Payslips.Presenters
             Dim results As List(Of PayslipEmailResult) = Nothing
             Try
                 _view.SetBusy(True)
-                Dim batch = Await _service.BuildBatchAsync(c.CutoffID, withEmail.Select(Function(r) r.RecordId).ToList(), options)
+                Dim batch = Await _service.BuildBatchAsync(withEmail, options)
                 _view.SetBusy(False)
 
                 _view.SetEmailProgress(True, 0, batch.Documents.Count, "Preparing...")

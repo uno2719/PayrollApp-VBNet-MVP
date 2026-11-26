@@ -22,16 +22,21 @@ Namespace Payslips.Services
             Return _repo.GetCutoffsAsync()
         End Function
 
-        Public Function GetEmployeeRowsAsync(cutoffId As Integer) As Task(Of List(Of PayslipEmployeeRow)) _
+        Public Function GetEmployeeRowsAsync(cutoffIds As IList(Of Integer)) As Task(Of List(Of PayslipEmployeeRow)) _
             Implements IPayslipService.GetEmployeeRowsAsync
-            Return _repo.GetEmployeeRowsAsync(cutoffId)
+            Return _repo.GetEmployeeRowsAsync(cutoffIds)
         End Function
 
-        Public Async Function BuildBatchAsync(cutoffId As Integer, recordIds As IList(Of Integer), options As PayslipOptions) As Task(Of PayslipBatch) _
+        Public Async Function BuildBatchAsync(targets As IList(Of PayslipEmployeeRow), options As PayslipOptions) As Task(Of PayslipBatch) _
             Implements IPayslipService.BuildBatchAsync
 
-            Dim src = Await _repo.LoadSourceAsync(cutoffId, recordIds)
-            Return PayslipDocumentBuilder.Build(src, If(options, New PayslipOptions()))
+            Dim opts = If(options, New PayslipOptions())
+            Dim batches As New List(Of PayslipBatch)()
+            For Each grp In If(targets, New List(Of PayslipEmployeeRow)()).GroupBy(Function(r) r.CutoffID).OrderBy(Function(g) g.Key)
+                Dim src = Await _repo.LoadSourceAsync(grp.Key, grp.Select(Function(r) r.RecordId).ToList())
+                batches.Add(PayslipDocumentBuilder.Build(src, opts))
+            Next
+            Return PayslipBatch.Merge(batches)
         End Function
 
         Public Async Function CheckEmailReadyAsync() As Task(Of String) Implements IPayslipService.CheckEmailReadyAsync

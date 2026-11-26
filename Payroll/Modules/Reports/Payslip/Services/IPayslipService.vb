@@ -7,10 +7,13 @@ Namespace Payslips.Services
 
         Function GetCutoffsAsync() As Task(Of List(Of CutoffModel))
 
-        Function GetEmployeeRowsAsync(cutoffId As Integer) As Task(Of List(Of PayslipEmployeeRow))
+        Function GetEmployeeRowsAsync(cutoffIds As IList(Of Integer)) As Task(Of List(Of PayslipEmployeeRow))
 
-        ''' <summary>Bumubuo ng payslips ng mga napiling empleyado (data lang - ang rptPayslip.Create ang gagawa ng report).</summary>
-        Function BuildBatchAsync(cutoffId As Integer, recordIds As IList(Of Integer), options As PayslipOptions) As Task(Of PayslipBatch)
+        ''' <summary>
+        ''' Bumubuo ng payslips ng mga napiling row (data lang - ang rptPayslip.Create ang gagawa ng report). Pwedeng galing
+        ''' sa ilang cutoff (Group by pay date): binubuo kada cutoff saka pinagsasama.
+        ''' </summary>
+        Function BuildBatchAsync(targets As IList(Of PayslipEmployeeRow), options As PayslipOptions) As Task(Of PayslipBatch)
 
         ''' <summary>Nothing kapag handa ang Email Settings; kung hindi, ang dahilan (para sa mensahe sa user).</summary>
         Function CheckEmailReadyAsync() As Task(Of String)

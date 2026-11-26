@@ -27,6 +27,7 @@ Partial Class ucPayslip
         chkIncludeAllowance = New DevExpress.XtraEditors.CheckEdit()
         chkShowYtd = New DevExpress.XtraEditors.CheckEdit()
         chkProtectPdf = New DevExpress.XtraEditors.CheckEdit()
+        chkGroupByPayDate = New DevExpress.XtraEditors.CheckEdit()
         btnCheckAll = New DevExpress.XtraEditors.SimpleButton()
         btnUncheckAll = New DevExpress.XtraEditors.SimpleButton()
         lblSelection = New DevExpress.XtraEditors.LabelControl()
@@ -51,6 +52,7 @@ Partial Class ucPayslip
         CType(chkIncludeAllowance.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkShowYtd.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(chkProtectPdf.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkGroupByPayDate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(pnlProgress, ComponentModel.ISupportInitialize).BeginInit()
         pnlProgress.SuspendLayout()
         CType(progressEmail.Properties, ComponentModel.ISupportInitialize).BeginInit()
@@ -74,6 +76,7 @@ Partial Class ucPayslip
         PanelControl1.Controls.Add(chkIncludeAllowance)
         PanelControl1.Controls.Add(chkShowYtd)
         PanelControl1.Controls.Add(chkProtectPdf)
+        PanelControl1.Controls.Add(chkGroupByPayDate)
         PanelControl1.Controls.Add(btnCheckAll)
         PanelControl1.Controls.Add(btnUncheckAll)
         PanelControl1.Controls.Add(lblSelection)
@@ -166,6 +169,15 @@ Partial Class ucPayslip
         chkProtectPdf.Size = New Size(200, 20)
         chkProtectPdf.TabIndex = 6
         chkProtectPdf.ToolTip = "Password = employee's birthdate (MMDDYYYY). If there is no birthdate on file, the Employee ID."
+        ' 
+        ' chkGroupByPayDate
+        ' 
+        chkGroupByPayDate.Location = New Point(690, 44)
+        chkGroupByPayDate.Name = "chkGroupByPayDate"
+        chkGroupByPayDate.Properties.Caption = "Group by pay date"
+        chkGroupByPayDate.Size = New Size(140, 20)
+        chkGroupByPayDate.TabIndex = 18
+        chkGroupByPayDate.ToolTip = "Show all cutoffs with the same pay date together (like Payroll > Output)."
         ' 
         ' btnCheckAll
         ' 
@@ -351,6 +363,7 @@ Partial Class ucPayslip
         CType(chkIncludeAllowance.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkShowYtd.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(chkProtectPdf.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkGroupByPayDate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(pnlProgress, ComponentModel.ISupportInitialize).EndInit()
         pnlProgress.ResumeLayout(False)
         pnlProgress.PerformLayout()
@@ -376,6 +389,7 @@ Partial Class ucPayslip
     Friend WithEvents chkIncludeAllowance As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkShowYtd As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents chkProtectPdf As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents chkGroupByPayDate As DevExpress.XtraEditors.CheckEdit
     Friend WithEvents btnCheckAll As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnUncheckAll As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents lblSelection As DevExpress.XtraEditors.LabelControl
