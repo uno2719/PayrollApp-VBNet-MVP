@@ -175,7 +175,7 @@ Namespace PayrollProcessing.Services
                 catalog(PayrollComputationRules.CatalogKey(ResultCategory.Compensation, r.Code)) = New PayrollCatalogItem With {
                     .Category = ResultCategory.Compensation, .Code = r.Code, .Description = r.Description, .InputUnit = r.InputUnit,
                     .TaxFlag = r.TaxFlag, .SSSFlag = r.SSSFlag, .PhilHealthFlag = r.PhilHealthFlag,
-                    .PagIbigFlag = r.PagIbigFlag, .IsActive = r.IsActive}
+                    .PagIbigFlag = r.PagIbigFlag, .IsActive = r.IsActive, .Component2316 = r.Component2316}
             Next
             For Each r In Await _flaggedEntryRepo.GetAllAsync("tblBonus")
                 catalog(PayrollComputationRules.CatalogKey(ResultCategory.Bonus, r.Code)) = New PayrollCatalogItem With {

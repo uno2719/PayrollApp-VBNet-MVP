@@ -14,6 +14,7 @@ Namespace GeneralSettings.Views
 
         ' --- Employment ---
         Property ProbationMonths As Integer
+        Property ContractMonths As Integer
 
         ' --- Files ---
         Property FileStorageRoot As String

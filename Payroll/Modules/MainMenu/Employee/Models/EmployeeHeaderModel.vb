@@ -63,6 +63,25 @@
         ''' <summary>Galing sa tblGeneralSettings.ProbationMonths. Nothing = hindi mabasa (default ng presentation ang gagamitin).</summary>
         Public Property ProbationMonths As Integer?
 
+        ' --- Phase 2: Contractual at Minimum Wage (hiwalay na query; Nothing/False kung wala pa ang mga column) ---
+        ''' <summary>Planadong katapusan ng kontrata (Contractual).</summary>
+        Public Property ContractEndDate As Date?
+
+        ''' <summary>Simula ng probation kapag galing sa Contractual. Nothing = Date Joined.</summary>
+        Public Property DateProbationStart As Date?
+
+        ''' <summary>Ang "Minimum Wage Earner" checkbox sa Earnings.</summary>
+        Public Property MinimumWage As Boolean
+
+        ''' <summary>Wage Area ng branch ng empleyado (tblBranch.WageArea).</summary>
+        Public Property WageArea As String
+
+        ''' <summary>Hal. "NCR ₱755.00 (WO NCR-28, eff. 09/26/2026)". Walang laman = walang naka-set.</summary>
+        Public Property MinimumWageText As String
+
+        ''' <summary>Daily equivalent vs minimum wage (GlobalShared.Helpers.WageComparison). Hindi dinadala ang halaga ng sahod.</summary>
+        Public Property WageComparison As Integer
+
         Public ReadOnly Property FullName As String
             Get
                 Return String.Join(" ", {FirstName, MiddleName, LastName}.

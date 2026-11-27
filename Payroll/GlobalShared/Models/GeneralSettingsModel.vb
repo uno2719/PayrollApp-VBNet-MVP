@@ -34,6 +34,9 @@ Namespace GlobalShared.Models
         ''' </summary>
         Public Property ProbationMonths As Integer = 5
 
+        ''' <summary>Default na haba ng kontrata ng Contractual (buwan). Contract End = Date Joined + ContractMonths - 1 araw.</summary>
+        Public Property ContractMonths As Integer = 3
+
         ' --- Files ---
         ''' <summary>
         ''' Shared folder (UNC path, hal. \\server\share\PayrollFiles) kung saan nakalagay ang Employee 201 Files at Photo.

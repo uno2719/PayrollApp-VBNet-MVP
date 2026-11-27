@@ -45,6 +45,7 @@ Public Class ucEmployeesEarnings
     Private _editEnabled As Boolean = False
     Private _rateLocked As Boolean = False
     Private Const RateLockHint As String = "Locked. Use Actions > Salary adjustment to change the rate (it is recorded in History)."
+    Private Const MweLockHint As String = "Locked. Use Actions > Change tax status (or the Minimum Wage Earner box in Salary adjustment / Transfer); it is recorded in History."
     Private Const PayCycleLockHint As String = "Locked. Use Actions > Change pay cycle (or Regularize) to move the employee to another Pay Cycle with the new rate (it is recorded in History)."
 
     Public Sub SetRateLock(isLocked As Boolean) Implements Employee.Views.IEmployeesEarningsView.SetRateLock
@@ -63,6 +64,11 @@ Public Class ucEmployeesEarnings
         txtDailyRate.ToolTip = hint
         txtHourlyRate.ToolTip = hint
 
+        ' Minimum Wage Earner (tax-exempt): naka-lock din kapag may rate na - Actions > Change tax status (o kasama ng
+        ' Salary adjustment / Transfer), para may History. (Ang EmployeeService.SaveEarningsAsync ay hindi rin ito binabago.)
+        chkMinimumWage.Properties.ReadOnly = readOnlyRates
+        chkMinimumWage.ToolTip = If(_rateLocked, MweLockHint, String.Empty)
+
         ' Pay Cycle: naka-lock din kapag may rate na AT may naka-save nang cycle. Kung papalitan ito dito, walang paglalagyan
         ' ng rate ng bagong cycle (naka-lock ang Basic/Daily) at walang History - kaya Actions > Change pay cycle / Regularize.
         ' (Ang View lang ang nagla-lock nito; ang EmployeeService.SaveEarningsAsync ay tumatanggi rin.)
@@ -77,7 +83,7 @@ Public Class ucEmployeesEarnings
         txtDaysInYear.Properties.ReadOnly = Not enabled
         txtWorkHourPer.Properties.ReadOnly = Not enabled
         chkPayrollFlag.Properties.ReadOnly = Not enabled
-        chkMinimumWage.Properties.ReadOnly = Not enabled
+        ' chkMinimumWage.Properties.ReadOnly: hawak na ng ApplyRateReadOnly (Edit mode AT hindi naka-lock ang rate).
         ' cboPayCycle.Properties.ReadOnly: hawak na ng ApplyRateReadOnly (Edit mode AT hindi naka-lock ang rate).
         cboPayBy.Properties.ReadOnly = Not enabled
         sleBank.Properties.ReadOnly = Not enabled

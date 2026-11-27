@@ -141,6 +141,17 @@
                 Throw New UnauthorizedAccessException("You are not allowed to change an employee's pay cycle.")
             End If
 
+            ' Minimum Wage Earner (tax-exempt): para lang sa Tax status change, Salary adjustment at Transfer, at kailangan ng
+            ' "Employee Salary" (Can Edit) dahil nakakaapekto sa buwis. Sa Transfer na walang Salary access, hindi ito ginagalaw.
+            Dim canEditSalary = GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary)
+            If request.MovementType = Models.MovementTypes.TaxStatusChange Then
+                If Not canEditSalary Then Throw New UnauthorizedAccessException("You are not allowed to change an employee's tax status.")
+            ElseIf (request.MovementType <> Models.MovementTypes.SalaryAdjustment AndAlso
+                    request.MovementType <> Models.MovementTypes.Transfer) OrElse Not canEditSalary Then
+                request.NewMinimumWage = Nothing
+            End If
+            If request.MovementType <> Models.MovementTypes.ContractEndChange Then request.NewContractEndDate = Nothing
+
             request.Remarks = If(String.IsNullOrWhiteSpace(request.Remarks), Nothing, request.Remarks.Trim())
             request.CreatedBy = AppSession.CurrentUser
 
@@ -289,6 +300,14 @@
                 End If
             End If
 
+            ' Naka-lock din ang "Minimum Wage Earner" kapag may naka-save nang rate: ang pagbago ay sa Actions > Change tax status
+            ' (o kasama ng Salary adjustment / Transfer), para may History. Bukas habang wala pang rate (unang setup).
+            If stored IsNot Nothing Then
+                Dim storedHasRateForMwe As Boolean = (stored.BasicSalary.HasValue AndAlso stored.BasicSalary.Value > 0D) OrElse
+                                                     (stored.DailyRate.HasValue AndAlso stored.DailyRate.Value > 0D)
+                If storedHasRateForMwe Then model.MinimumWage = stored.MinimumWage
+            End If
+
             ' Set audit fields
             If model.EarningsId = 0 Then
                 model.CreatedBy = AppSession.CurrentUser
@@ -366,6 +385,18 @@
         Public Async Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel)) _
     Implements IEmployeeService.GetEmployeeLookupAsync
             Return Await _repo.GetEmployeeLookupAsync()
+        End Function
+
+        Public Async Function GetWageReferenceAsync(branchId As Integer?, onDate As Date) As Task(Of Models.WageReference) _
+            Implements IEmployeeService.GetWageReferenceAsync
+            Dim result As Models.WageReference = Nothing
+            Try
+                result = Await _repo.GetWageReferenceAsync(branchId, onDate)
+            Catch ex As Exception
+                ' Hindi pa na-run ang SQL (walang WageArea / tblMinimumWage): walang mungkahi, manual na lang.
+                Debug.WriteLine($"Wage reference not available: {ex.Message}")
+            End Try
+            Return If(result, New Models.WageReference())
         End Function
 
     End Class

@@ -13,6 +13,12 @@ Namespace PayrollProcessing.Views
 
         Sub DisplayData(table As DataTable)
 
+        ''' <summary>
+        ''' Employee > Fix Transactions na papasok kapag blangko ang cell (key = PayrollInputSheet.HintKey). Tinatawag BAGO ang DisplayData:
+        ''' ipinapakita bilang gray na hint, at kusang inilalabas ang column ng mga code na may Fix sa cutoff na ito.
+        ''' </summary>
+        Sub DisplayFixHints(hints As Dictionary(Of String, Decimal))
+
         ''' <summary>Mga empleyadong hindi naisama sa grid dahil kulang ang setup (walang laman = walang babala).</summary>
         Sub DisplayEligibilityWarnings(warnings As List(Of GlobalShared.Models.PayrollEligibilityWarning))
 

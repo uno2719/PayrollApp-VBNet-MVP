@@ -29,6 +29,13 @@ Public Class frmEmployeeAction
     Private _cycleBases As Dictionary(Of String, GlobalShared.Models.PayRateBasis)
     Private _cycleOffered As Boolean
 
+    ' Minimum Wage Earner (tax-exempt): Change tax status, Salary adjustment, Transfer. Ang mungkahi ay galing sa minimum wage
+    ' ng Wage Area ng branch (Settings > Payroll > Minimum Wage); ang checkbox pa rin ang masusunod (manual, gaya ng C1Pay).
+    Private _mweOffered As Boolean
+    Private _wageRef As Employee.Models.WageReference
+    Private _mweUserTouched As Boolean
+    Private _settingMwe As Boolean
+
     Public Sub New(service As Employee.Services.IEmployeeService,
                    header As Employee.Models.EmployeeHeaderModel,
                    movementType As String,
@@ -76,6 +83,15 @@ Public Class frmEmployeeAction
             If _movementType = Employee.Models.MovementTypes.PayCycleChange OrElse
                SupportsCycleOption() Then
                 Await LoadPayCycleContextAsync()
+            End If
+
+            If SupportsMwe() Then Await LoadMweContextAsync()
+
+            If _movementType = Employee.Models.MovementTypes.ContractEndChange Then
+                lblNewDate.Text = "New Contract End *"
+                dtpNewDate.ApplyDisplayDateFormat()
+                dtpNewDate.EditValue = If(_employment.ContractEndDate.HasValue, CObj(_employment.ContractEndDate.Value), Nothing)
+                If _employment.DateJoined.HasValue Then dtpNewDate.Properties.MinValue = _employment.DateJoined.Value.Date
             End If
 
             lblRemarks.Text = If(RemarksRequired(), "Remarks *", "Remarks")
@@ -203,6 +219,125 @@ Public Class frmEmployeeAction
         spnNewRate.EditValue = Nothing
     End Function
 
+    ' =============================================
+    ' MINIMUM WAGE EARNER (tax-exempt)
+    ' =============================================
+    Private Function SupportsMwe() As Boolean
+        Return _movementType = Employee.Models.MovementTypes.TaxStatusChange OrElse
+               _movementType = Employee.Models.MovementTypes.SalaryAdjustment OrElse
+               _movementType = Employee.Models.MovementTypes.Transfer
+    End Function
+
+    Private Async Function LoadMweContextAsync() As Task
+        _mweOffered = False
+        If _earnings Is Nothing Then _earnings = Await _service.GetEarningsAsync(_header.RecordId)
+        If _earnings Is Nothing Then Return
+
+        _context.MinimumWage = _earnings.MinimumWage
+        _context.HasPayRate = (_earnings.BasicSalary.HasValue AndAlso _earnings.BasicSalary.Value > 0D) OrElse
+                              (_earnings.DailyRate.HasValue AndAlso _earnings.DailyRate.Value > 0D)
+
+        Dim canEditSalary As Boolean =
+            GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary)
+        _mweOffered = canEditSalary AndAlso _context.HasPayRate
+
+        _wageRef = Await _service.GetWageReferenceAsync(_employment.BranchId, Date.Today)
+
+        _settingMwe = True
+        chkMinimumWage.Checked = _earnings.MinimumWage
+        _settingMwe = False
+        _mweUserTouched = False
+
+        If _movementType = Employee.Models.MovementTypes.TaxStatusChange Then
+            ' Ang mungkahi agad (kung alam), para isang click na lang.
+            Dim suggestion = GlobalShared.Helpers.MinimumWageRules.SuggestedMwe(
+                GlobalShared.Helpers.MinimumWageRules.Compare(_earnings.DailyRate, _wageRef.Rate))
+            _settingMwe = True
+            chkMinimumWage.Checked = If(suggestion.HasValue AndAlso suggestion.Value <> _earnings.MinimumWage,
+                                        suggestion.Value, Not _earnings.MinimumWage)
+            _settingMwe = False
+            lblCurrentRate.Text = "Current tax status"
+            lblCurrentRateValue.Text = Employee.Models.EmployeeMovementRules.TaxStatusText(_earnings.MinimumWage)
+        End If
+        UpdateMweHint()
+    End Function
+
+    ''' <summary>Ang daily equivalent na ihahambing sa minimum wage: bagong rate (Salary adjustment) o ang kasalukuyan.</summary>
+    Private Function DailyEquivalentForMwe() As Decimal?
+        If _earnings Is Nothing Then Return Nothing
+        If _movementType = Employee.Models.MovementTypes.SalaryAdjustment Then
+            Dim entered = ReadNewRate()
+            If entered.HasValue AndAlso entered.Value > 0D Then
+                Dim rates = Employee.Models.EmployeeMovementRules.ComputeAdjustedRates(
+                    _usesDailyRate, entered.Value, _earnings.DaysInYear, _earnings.WorkHourPer,
+                    _earnings.BasicSalary, _earnings.DailyRate, _earnings.HourlyRate)
+                Return rates.DailyRate
+            End If
+        End If
+        Return _earnings.DailyRate
+    End Function
+
+    ''' <summary>Ipakita ba ang checkbox: laging sa Change tax status; sa Salary adjustment kapag may access; sa Transfer kapag nagpalit ng branch.</summary>
+    Private Function ShowMweRow() As Boolean
+        If Not _mweOffered Then Return False
+        If _movementType = Employee.Models.MovementTypes.Transfer Then
+            Return Not Employee.Models.EmployeeMovementRules.SameId(_employment.BranchId, GetId(lookBranch))
+        End If
+        Return True
+    End Function
+
+    ''' <summary>Paliwanag + kusang mungkahi (hangga't hindi pa ginagalaw ng user ang checkbox).</summary>
+    Private Sub UpdateMweHint()
+        If _wageRef Is Nothing Then Return
+        Dim daily = DailyEquivalentForMwe()
+        lblMweHint.Text = GlobalShared.Helpers.MinimumWageRules.ExplainText(daily, _wageRef.Rate, _wageRef.WageArea)
+
+        If _movementType <> Employee.Models.MovementTypes.TaxStatusChange AndAlso Not _mweUserTouched Then
+            Dim suggestion = GlobalShared.Helpers.MinimumWageRules.SuggestedMwe(
+                GlobalShared.Helpers.MinimumWageRules.Compare(daily, _wageRef.Rate))
+            If suggestion.HasValue Then
+                _settingMwe = True
+                chkMinimumWage.Checked = suggestion.Value
+                _settingMwe = False
+            End If
+        End If
+    End Sub
+
+    Private Sub chkMinimumWage_CheckedChanged(sender As Object, e As EventArgs) Handles chkMinimumWage.CheckedChanged
+        If Not _settingMwe Then _mweUserTouched = True
+    End Sub
+
+    Private Sub spnNewRate_EditValueChanged(sender As Object, e As EventArgs) Handles spnNewRate.EditValueChanged
+        If _movementType = Employee.Models.MovementTypes.SalaryAdjustment AndAlso _mweOffered Then UpdateMweHint()
+    End Sub
+
+    Private Async Sub lookBranch_EditValueChanged(sender As Object, e As EventArgs) Handles lookBranch.EditValueChanged
+        If _movementType <> Employee.Models.MovementTypes.Transfer OrElse Not _mweOffered OrElse _employment Is Nothing Then Return
+        Try
+            _wageRef = Await _service.GetWageReferenceAsync(GetId(lookBranch), Date.Today)
+            If Employee.Models.EmployeeMovementRules.SameId(_employment.BranchId, GetId(lookBranch)) Then
+                ' Bumalik sa dating branch: ibalik ang kasalukuyang status.
+                _settingMwe = True
+                chkMinimumWage.Checked = _earnings.MinimumWage
+                _settingMwe = False
+                _mweUserTouched = False
+            Else
+                UpdateMweHint()
+            End If
+        Catch ex As Exception
+            lblMweHint.Text = ex.Message
+        End Try
+        LayoutRows()
+    End Sub
+
+    ''' <summary>Ang bagong Minimum Wage Earner na isasama sa request (Nothing = walang pagbabago o hindi ipinakita).</summary>
+    Private Function MweRequestValue() As Boolean?
+        If Not ShowMweRow() OrElse _earnings Is Nothing Then Return Nothing
+        If _movementType = Employee.Models.MovementTypes.TaxStatusChange Then Return chkMinimumWage.Checked
+        If chkMinimumWage.Checked = _earnings.MinimumWage Then Return Nothing
+        Return chkMinimumWage.Checked
+    End Function
+
     ' Daily Rate ba ang pay basis ng napiling BAGONG cycle? (Basic Salary kung hindi pa napili / hindi kilala)
     Private Function SelectedCycleUsesDaily() As Boolean
         Dim basis As GlobalShared.Models.PayRateBasis = GlobalShared.Models.PayRateBasis.BasicSalary
@@ -269,6 +404,9 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.EndOfContract : Return "Record End of Contract"
             Case Employee.Models.MovementTypes.SalaryAdjustment : Return "Salary Adjustment"
             Case Employee.Models.MovementTypes.PayCycleChange : Return "Change Pay Cycle"
+            Case Employee.Models.MovementTypes.ConvertToProbationary : Return "Convert to Probationary"
+            Case Employee.Models.MovementTypes.ContractEndChange : Return "Change Contract End"
+            Case Employee.Models.MovementTypes.TaxStatusChange : Return "Change Tax Status (Minimum Wage Earner)"
             Case Else : Return "Employee Action"
         End Select
     End Function
@@ -285,6 +423,9 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.EndOfContract : Return "End Contract"
             Case Employee.Models.MovementTypes.SalaryAdjustment : Return "Adjust Salary"
             Case Employee.Models.MovementTypes.PayCycleChange : Return "Change Cycle"
+            Case Employee.Models.MovementTypes.ConvertToProbationary : Return "Convert"
+            Case Employee.Models.MovementTypes.ContractEndChange : Return "Save"
+            Case Employee.Models.MovementTypes.TaxStatusChange : Return "Save"
             Case Else : Return "Apply"
         End Select
     End Function
@@ -298,7 +439,8 @@ Public Class frmEmployeeAction
         Return _movementType = Employee.Models.MovementTypes.Resign OrElse
                _movementType = Employee.Models.MovementTypes.Terminate OrElse
                _movementType = Employee.Models.MovementTypes.SalaryAdjustment OrElse
-               _movementType = Employee.Models.MovementTypes.PayCycleChange
+               _movementType = Employee.Models.MovementTypes.PayCycleChange OrElse
+               _movementType = Employee.Models.MovementTypes.TaxStatusChange
     End Function
 
     Private Function InfoText() As String
@@ -328,7 +470,22 @@ Public Class frmEmployeeAction
                        "Salary is not changed here."
 
             Case Employee.Models.MovementTypes.Transfer
-                Return "Changes Branch and/or Department and sets Date Last Transferred."
+                Return "Changes Branch and/or Department and sets Date Last Transferred. When the new store is in another " &
+                       "Wage Area, the Minimum Wage Earner (tax-exempt) status is checked against that area's minimum wage."
+
+            Case Employee.Models.MovementTypes.ConvertToProbationary
+                Dim current = If(String.IsNullOrWhiteSpace(_employment.EmployeeStatus), "not set", _employment.EmployeeStatus.Trim())
+                Return $"Changes Employment Type from {current} to Probationary. The probation period starts on the effective date " &
+                       "(not on Date Joined), so the regularization reminder counts from that date."
+
+            Case Employee.Models.MovementTypes.ContractEndChange
+                Dim currentEnd = If(_employment.ContractEndDate.HasValue, _employment.ContractEndDate.Value.ToString("MM/dd/yyyy"), "(none)")
+                Return $"Changes the planned Contract End (now {currentEnd}), e.g. for an extension. This is only for the reminder: " &
+                       "the employee stays active until Actions > End of Contract is recorded."
+
+            Case Employee.Models.MovementTypes.TaxStatusChange
+                Return "Sets whether withholding tax is exempt as a Minimum Wage Earner (the checkbox in the Earnings tab). The minimum wage " &
+                       "shown below comes from the Wage Area of the employee's branch (Settings > Payroll > Minimum Wage)."
 
             Case Employee.Models.MovementTypes.Resign
                 Return "Sets Date Resigned and marks the employee Inactive. The Employment Type is kept on record."
@@ -413,7 +570,15 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.SalaryAdjustment
                 PlaceRow(y, lblCurrentRate, lblCurrentRateValue, 20)
                 PlaceRow(y, lblNewRate, spnNewRate, 20)
+
+            Case Employee.Models.MovementTypes.ContractEndChange
+                PlaceRow(y, lblNewDate, dtpNewDate, 20)
+
+            Case Employee.Models.MovementTypes.TaxStatusChange
+                PlaceRow(y, lblCurrentRate, lblCurrentRateValue, 20)
         End Select
+
+        PlaceMweRows(y)
 
         PlaceRow(y, lblRemarks, memoRemarks, 70)
 
@@ -433,6 +598,22 @@ Public Class frmEmployeeAction
         btnApply.Top = y + 6
         btnCancel.Top = y + 6
         ClientSize = New Size(ClientSize.Width, btnApply.Bottom + 16)
+    End Sub
+
+    ' Ang "Minimum Wage Earner" checkbox at ang paliwanag sa ilalim nito.
+    Private Sub PlaceMweRows(ByRef y As Integer)
+        Dim show = SupportsMwe() AndAlso ShowMweRow()
+        chkMinimumWage.Visible = show
+        lblMweHint.Visible = show
+        If Not show Then Return
+
+        chkMinimumWage.Location = New Point(148, y)
+        y += 24
+        Dim text = If(lblMweHint.Text, String.Empty)
+        Dim h = If(text.Length = 0, 0, TextRenderer.MeasureText(text, lblMweHint.Font, New Size(300, 0), TextFormatFlags.WordBreak).Height + 4)
+        lblMweHint.Location = New Point(150, y)
+        lblMweHint.Size = New Size(300, h)
+        y += h + 10
     End Sub
 
     ' Ang checkbox na "Also change Pay Cycle" (Regularize / Promote), at ang mga hilera ng cycle kapag naka-tick.
@@ -511,6 +692,11 @@ Public Class frmEmployeeAction
             Case Employee.Models.MovementTypes.Rehire
                 req.NewEmploymentType = cboEmploymentType.Text.Trim()
 
+            Case Employee.Models.MovementTypes.ContractEndChange
+                If dtpNewDate.EditValue IsNot Nothing AndAlso dtpNewDate.EditValue IsNot DBNull.Value Then
+                    req.NewContractEndDate = CDate(dtpNewDate.EditValue).Date
+                End If
+
             Case Employee.Models.MovementTypes.SalaryAdjustment
                 Dim entered As Decimal? = Nothing
                 If spnNewRate.EditValue IsNot Nothing AndAlso spnNewRate.EditValue IsNot DBNull.Value Then
@@ -523,6 +709,8 @@ Public Class frmEmployeeAction
                 End If
         End Select
 
+        If SupportsMwe() Then req.NewMinimumWage = MweRequestValue()
+
         ' Pay cycle change (o Regularize / Promote na naka-tick): ang rate ay ayon sa pay basis ng BAGONG cycle.
         If WantsCycleChange() Then
             req.NewPayCycle = cboNewCycle.Text.Trim()
@@ -534,6 +722,14 @@ Public Class frmEmployeeAction
         End If
 
         Return req
+    End Function
+
+    ''' <summary>Dagdag na pangungusap sa Confirm kapag magbabago rin ang Minimum Wage Earner.</summary>
+    Private Function MweChangeSentence(req As Employee.Models.EmployeeMovementRequest) As String
+        If Not req.NewMinimumWage.HasValue OrElse _earnings Is Nothing Then Return String.Empty
+        Return vbCrLf & vbCrLf & "Tax status will also change: " &
+               Employee.Models.EmployeeMovementRules.TaxStatusText(_earnings.MinimumWage) & " -> " &
+               Employee.Models.EmployeeMovementRules.TaxStatusText(req.NewMinimumWage.Value) & " (separate History row)."
     End Function
 
     Private Sub SetBusy(busy As Boolean)
@@ -593,7 +789,8 @@ Public Class frmEmployeeAction
             Dim newValue As Decimal = If(_usesDailyRate, req.NewDailyRate.GetValueOrDefault(), req.NewBasicSalary.GetValueOrDefault())
             Dim prompt = $"Change the {rateName} of {who} from {lblCurrentRateValue.Text} to ₱{newValue:N2} " &
                          $"(effective {req.EffectiveDate:MM/dd/yyyy})?" & vbCrLf & vbCrLf &
-                         "The Daily and Hourly rates will be recomputed. This is recorded in History."
+                         "The Daily and Hourly rates will be recomputed. This is recorded in History." &
+                         MweChangeSentence(req)
 
             Dim answer = XtraMessageBox.Show(Me, prompt, Text,
                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question,
@@ -631,6 +828,18 @@ Public Class frmEmployeeAction
                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question,
                                              MessageBoxDefaultButton.Button2)
             If answer <> DialogResult.Yes Then Return
+        End If
+
+        If _movementType = Employee.Models.MovementTypes.Transfer AndAlso req.NewMinimumWage.HasValue Then
+            If XtraMessageBox.Show(Me, "Transfer this employee?" & MweChangeSentence(req), Text,
+                                   MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) <> DialogResult.Yes Then Return
+        End If
+
+        If _movementType = Employee.Models.MovementTypes.ConvertToProbationary Then
+            Dim who = If(String.IsNullOrWhiteSpace(_header.FullName), "this employee", _header.FullName)
+            If XtraMessageBox.Show(Me, $"Convert {who} to Probationary effective {req.EffectiveDate:MM/dd/yyyy}?" & vbCrLf & vbCrLf &
+                                   "The probation period will be counted from this date. This is recorded in History.", Text,
+                                   MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) <> DialogResult.Yes Then Return
         End If
 
         If _movementType = Employee.Models.MovementTypes.Rehire Then

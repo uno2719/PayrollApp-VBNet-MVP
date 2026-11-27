@@ -60,7 +60,9 @@ Namespace PayrollProcessing.Services
 
             For Each row As DataRow In table.Rows
                 For Each col In columns
-                    Dim value = Convert.ToDecimal(row(col.ColumnName))
+                    Dim cell = row(col.ColumnName)
+                    If cell Is Nothing OrElse cell Is DBNull.Value Then Continue For   ' blangko = walang Input
+                    Dim value = Convert.ToDecimal(cell)
 
                     If value < 0D Then
                         Throw New PayrollInputValidationException($"{row("EmployeeNo")} - {row("EmployeeName")}: negative values are not allowed ({col.Caption}).")

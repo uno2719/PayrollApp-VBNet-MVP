@@ -184,6 +184,62 @@ Namespace PayrollProcessing.Data
              WHERE e.IsDeleted = 0
              ORDER BY e.LastName, e.FirstName"
 
+        ' Employee > Fix Transactions: lahat ng ACTIVE na entry ng mga empleyado, kasama ang Input Unit ng code
+        ' (para malaman kung peso o dami ang Amount). Ginagamit din ng PayrollProcessRepository.
+        Friend Const FixTxnSql As String =
+            "SELECT f.FixTxnId, f.RecordId, f.TxnCategory, f.TxnCode, f.Amount,
+                    CAST(f.StartYear AS INT) AS StartYear, CAST(f.StartMonth AS INT) AS StartMonth,
+                    CAST(f.EndYear AS INT) AS EndYear, CAST(f.EndMonth AS INT) AS EndMonth,
+                    f.Frequency, f.PayOn, f.IsActive,
+                    CAST(COALESCE(c.InputUnit, b.InputUnit, d.InputUnit, 3) AS TINYINT) AS InputUnit
+             FROM tblEmployeeFixTxn f
+                  LEFT JOIN tblCompensation c ON f.TxnCategory = 'COMPENSATION' AND c.Code = f.TxnCode
+                  LEFT JOIN tblBonus b        ON f.TxnCategory = 'BONUS'        AND b.Code = f.TxnCode
+                  LEFT JOIN tblDeduction d    ON f.TxnCategory = 'DEDUCTION'    AND d.Code = f.TxnCode
+             WHERE f.IsActive = 1 AND f.RecordId IN @ids"
+
+        ''' <summary>Bilang ng cycle sa isang buwan ng pay cycle ng cutoff (SemiMonthly = 2). 1 kung hindi mahanap.</summary>
+        Private Shared Async Function PeriodsPerMonthAsync(conn As IDbConnection, cutoff As CutoffModel) As Task(Of Integer)
+            Dim count = Await conn.ExecuteScalarAsync(Of Integer)(
+                "SELECT COUNT(1)
+                 FROM tblPayCyclePeriod p
+                      INNER JOIN tblPayCycle c ON c.PayCycleId = p.PayCycleId
+                 WHERE c.PayCycleId = (SELECT TOP 1 x.PayCycleId FROM tblPayCycle x
+                                       WHERE x.PayCycleType IN (@raw, @normalized)
+                                       ORDER BY CASE WHEN x.PayCycleType = @normalized THEN 0 ELSE 1 END)",
+                New With {.raw = If(cutoff.CycleType, ""), .normalized = PayCycleChoices.Normalize(cutoff.CycleType)})
+            Return Math.Max(1, count)
+        End Function
+
+        ''' <summary>
+        ''' Halaga ng Fix Transaction na papasok sa cutoff bawat empleyado + column (PayrollInputSheet.HintKey).
+        ''' Nasa unit ng column: peso para sa Amount, dami para sa Hours/Minutes/Days. Para lang sa mga code na nasa grid.
+        ''' </summary>
+        Private Shared Async Function LoadFixHintsAsync(conn As IDbConnection, cutoff As CutoffModel, ids As IList(Of Integer),
+                                                        columns As List(Of PayrollInputColumnModel)) As Task(Of Dictionary(Of String, Decimal))
+            Dim hints As New Dictionary(Of String, Decimal)(StringComparer.OrdinalIgnoreCase)
+            If ids Is Nothing OrElse ids.Count = 0 OrElse Not cutoff.PeriodInMonth.HasValue Then Return hints
+
+            Dim periods = Await PeriodsPerMonthAsync(conn, cutoff)
+            Dim monthKey = PayrollComputationRules.PayMonthKey(cutoff)
+            Dim fixes = Await conn.QueryAsync(Of EmployeeFixTxnModel)(FixTxnSql, New With {ids})
+
+            For Each fixRow In fixes
+                If Not FixTransactionRules.AppliesTo(fixRow, monthKey, cutoff.PeriodInMonth.Value, periods) Then Continue For
+                Dim fx = fixRow
+                Dim col = columns.FirstOrDefault(Function(c) Not c.IsBasicDays AndAlso
+                                                             FixTransactionRules.SameCode(c.Category.ToString(), c.ColumnName, fx.TxnCategory, fx.TxnCode))
+                If col Is Nothing Then Continue For   ' inactive na code / wala sa grid
+
+                Dim key = PayrollInputSheet.HintKey(fixRow.RecordId, col.ColumnName)
+                Dim current As Decimal = 0D
+                hints.TryGetValue(key, current)
+                hints(key) = current + fixRow.Amount
+            Next
+
+            Return hints
+        End Function
+
         Public Async Function GetInputDataAsync(cutoffId As Integer, columns As List(Of PayrollInputColumnModel)) As Task(Of PayrollInputSheet) _
             Implements IPayrollInputRepository.GetInputDataAsync
 
@@ -192,7 +248,7 @@ Namespace PayrollProcessing.Data
             table.Columns.Add("EmployeeNo", GetType(String))
             table.Columns.Add("EmployeeName", GetType(String))
             For Each col In columns
-                table.Columns.Add(col.ColumnName, GetType(Decimal))
+                table.Columns.Add(col.ColumnName, GetType(Decimal))   ' nullable: blangko = walang Input (susundin ang Fix kung meron)
             Next
 
             Dim sheet As New PayrollInputSheet With {.Table = table}
@@ -217,6 +273,9 @@ Namespace PayrollProcessing.Data
                      WHERE CutoffID = @CutoffID AND TxnSrc = @TxnSrc",
                     New With {cutoffId, .TxnSrc = TxnSource})).ToLookup(Function(t) t.RecordId)
 
+                Dim ids = eligibility.Eligible.Select(Function(e) e.RecordId).ToList()
+                sheet.FixHints = Await LoadFixHintsAsync(conn, cutoff, ids, columns)
+
                 Dim modeByCode = columns.ToDictionary(Function(c) c.ColumnName, Function(c) c.ValueMode)
 
                 For Each emp In eligibility.Eligible
@@ -225,8 +284,9 @@ Namespace PayrollProcessing.Data
                     row("EmployeeNo") = emp.EmployeeNo
                     row("EmployeeName") = emp.EmployeeName
                     For Each col In columns
-                        row(col.ColumnName) = 0D
+                        row(col.ColumnName) = DBNull.Value
                     Next
+                    ' May naka-save na row = may Input (kasama ang 0 = "skip" ng Fix Transaction).
                     For Each t In txnRows(emp.RecordId)
                         If modeByCode.ContainsKey(t.TxnCode) Then
                             row(t.TxnCode) = If(modeByCode(t.TxnCode) = PayrollTxnValueMode.Amount, t.Rate, t.Qty)
@@ -239,13 +299,28 @@ Namespace PayrollProcessing.Data
             Return sheet
         End Function
 
+        ''' <summary>
+        ''' Blangko = walang Input (hindi sine-save; susundin ang Fix Transaction kung meron).
+        ''' May halaga = Input. 0 = sine-save LANG kapag may Fix Transaction ang code sa cutoff na ito ("skip ngayong cutoff");
+        ''' kung walang Fix, ang 0 ay parang blangko (gaya ng dati).
+        ''' </summary>
         Public Async Function SaveInputDataAsync(cutoffId As Integer, table As DataTable, columns As List(Of PayrollInputColumnModel), modifiedBy As String) As Task _
             Implements IPayrollInputRepository.SaveInputDataAsync
 
             Dim categoryByCode = columns.ToDictionary(Function(c) c.ColumnName, Function(c) c.Category.ToString().ToUpperInvariant())
             Dim modeByCode = columns.ToDictionary(Function(c) c.ColumnName, Function(c) c.ValueMode)
 
+            Dim allCutoffs = Await _cutoffRepo.GetAllAsync()
+            Dim cutoff = allCutoffs.FirstOrDefault(Function(c) c.CutoffID = cutoffId)
+
             Using conn = GetConnection()
+                Dim ids As New List(Of Integer)()
+                For Each row As DataRow In table.Rows
+                    ids.Add(CInt(row("RecordId")))
+                Next
+                Dim hints As New Dictionary(Of String, Decimal)(StringComparer.OrdinalIgnoreCase)
+                If cutoff IsNot Nothing Then hints = Await LoadFixHintsAsync(conn, cutoff, ids, columns)
+
                 Using tx = conn.BeginTransaction()
                     For Each row As DataRow In table.Rows
                         Dim recordId = CInt(row("RecordId"))
@@ -256,8 +331,11 @@ Namespace PayrollProcessing.Data
                             New With {cutoffId, recordId, .TxnSrc = TxnSource}, tx)
 
                         For Each col In columns
-                            Dim value = Convert.ToDecimal(row(col.ColumnName))
-                            If value = 0D Then Continue For   ' skip zero entries
+                            Dim cell = row(col.ColumnName)
+                            If cell Is Nothing OrElse cell Is DBNull.Value Then Continue For   ' blangko = walang Input
+
+                            Dim value = Convert.ToDecimal(cell)
+                            If value = 0D AndAlso Not hints.ContainsKey(PayrollInputSheet.HintKey(recordId, col.ColumnName)) Then Continue For
 
                             Dim isAmount = modeByCode(col.ColumnName) = PayrollTxnValueMode.Amount
                             Dim qty As Decimal = If(isAmount, 1D, value)

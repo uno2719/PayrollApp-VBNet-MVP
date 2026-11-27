@@ -38,6 +38,12 @@
         Public Property DateTerminated As Date?
         Public Property DateEndOfContract As Date?
 
+        ''' <summary>PLANADONG katapusan ng kontrata ng Contractual (paalala lang; hindi separation). Default = Date Joined + ContractMonths - 1 araw.</summary>
+        Public Property ContractEndDate As Date?
+
+        ''' <summary>Simula ng probation kapag galing sa Contractual (Actions > Convert to Probationary). Walang laman = Date Joined.</summary>
+        Public Property DateProbationStart As Date?
+
         ' Timekeeping
         Public Property TimekeepingControlNo As String
 

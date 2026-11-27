@@ -269,7 +269,9 @@ Namespace Employee.Views
 
                 Dim probationMonths = If(h.ProbationMonths.HasValue AndAlso h.ProbationMonths.Value > 0,
                                          h.ProbationMonths.Value, DefaultProbationMonths)
-                Dim due = h.DateJoined.Value.Date.AddMonths(probationMonths)
+                ' Galing sa Contractual: ang probation ay mula sa petsa ng conversion (DateProbationStart), hindi sa Date Joined.
+                Dim probationStart = If(h.DateProbationStart.HasValue, h.DateProbationStart.Value.Date, h.DateJoined.Value.Date)
+                Dim due = probationStart.AddMonths(probationMonths)
                 Dim days = CInt((due - today.Date).TotalDays)
 
                 If days > 30 Then
@@ -282,6 +284,48 @@ Namespace Employee.Views
                     msgs.Add($"Probation ended {FormatDate(due)} ({-days} {If(-days = 1, "day", "days")} ago). Regularization is overdue (Actions > Regularize).")
                     anyWarning = True
                 End If
+            End If
+
+            ' ---------- Contractual: planadong katapusan ng kontrata ----------
+            If sep Is Nothing AndAlso statusText.Equals("Contractual", StringComparison.OrdinalIgnoreCase) Then
+                If h.ContractEndDate.HasValue Then
+                    Dim cdue = h.ContractEndDate.Value.Date
+                    Dim cdays = CInt((cdue - today.Date).TotalDays)
+                    If cdays > 30 Then
+                        msgs.Add($"Contract ends {FormatDate(cdue)} ({cdays} days left).")
+                        probationOnly = True
+                    ElseIf cdays >= 0 Then
+                        msgs.Add($"Contract ends {FormatDate(cdue)} ({cdays} {If(cdays = 1, "day", "days")} left). Decide: Actions > Convert to Probationary, Change contract end, or End of Contract.")
+                        anyWarning = True
+                    Else
+                        msgs.Add($"Contract ended {FormatDate(cdue)} ({-cdays} {If(-cdays = 1, "day", "days")} ago) but the employee is still active and in payroll. Use Actions > Convert to Probationary, Change contract end, or End of Contract.")
+                        anyWarning = True
+                    End If
+                Else
+                    msgs.Add("Contractual with no Contract End (Actions > Change contract end).")
+                    anyWarning = True
+                End If
+            End If
+
+            ' ---------- Minimum Wage Earner vs minimum wage ng Wage Area ng branch ----------
+            If sep Is Nothing AndAlso h.HasPayRate Then
+                Dim cmp = CType(h.WageComparison, GlobalShared.Helpers.WageComparison)
+                Dim minText = If(String.IsNullOrWhiteSpace(h.MinimumWageText), "", h.MinimumWageText)
+                Select Case cmp
+                    Case GlobalShared.Helpers.WageComparison.AboveMinimum
+                        If h.MinimumWage Then
+                            msgs.Add($"Tagged Minimum Wage Earner (tax-exempt), but the Daily Rate is above the minimum wage {minText}. Check Actions > Change tax status.")
+                            anyWarning = True
+                        End If
+                    Case GlobalShared.Helpers.WageComparison.AtMinimum
+                        If Not h.MinimumWage Then
+                            msgs.Add($"Daily Rate is the minimum wage {minText} but the employee is not tagged Minimum Wage Earner. Check Actions > Change tax status.")
+                            anyWarning = True
+                        End If
+                    Case GlobalShared.Helpers.WageComparison.BelowMinimum
+                        msgs.Add($"Daily Rate is BELOW the minimum wage {minText}. Please check the salary.")
+                        anyWarning = True
+                End Select
             End If
 
             If msgs.Count > 0 Then

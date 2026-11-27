@@ -23,6 +23,15 @@ Namespace Employee.Models
         Public Const EndOfContract As String = "End of Contract"
         Public Const SalaryAdjustment As String = "Salary adjustment"
 
+        ''' <summary>Contractual (o Project-based / Casual / Seasonal) -> Probationary. Ang probation ay magsisimula sa effective date.</summary>
+        Public Const ConvertToProbationary As String = "Convert to Probationary"
+
+        ''' <summary>Pagbago ng PLANADONG katapusan ng kontrata (ContractEndDate) ng Contractual - hal. extension.</summary>
+        Public Const ContractEndChange As String = "Contract end change"
+
+        ''' <summary>Pagbago ng "Minimum Wage Earner" (tax-exempt) sa Earnings. Kasama rin bilang hiwalay na History row ng Salary adjustment / Transfer.</summary>
+        Public Const TaxStatusChange As String = "Tax status change"
+
         ''' <summary>
         ''' Pagpalit ng Pay Cycle (hal. Daily -> SemiMonthly) kasama ang bagong rate. Galing sa Actions > Change pay cycle,
         ''' o sa Regularize dialog (opsyonal; sariling History row). MovementType ay varchar(30): kasya.
@@ -70,6 +79,9 @@ Namespace Employee.Models
                 Case Rehire : Return "Rehired"
                 Case EndOfContract : Return "Contract ended"
                 Case SalaryAdjustment : Return "Salary adjusted"
+                Case ConvertToProbationary : Return "Converted to Probationary"
+                Case ContractEndChange : Return "Contract end changed"
+                Case TaxStatusChange : Return "Tax status changed"
                 Case PayCycleChange : Return "Pay cycle changed"
                 Case DetailsChanged : Return "Details changed"
                 Case Correction : Return "Corrected"
@@ -114,6 +126,12 @@ Namespace Employee.Models
         ' Rehire: ang Employment Type ng bagong panahon ng serbisyo (pinipili ng HR; walang default)
         Public Property NewEmploymentType As String
 
+        ' Change contract end: ang bagong planadong katapusan ng kontrata
+        Public Property NewContractEndDate As Date?
+
+        ' Tax status change (at opsyonal sa Salary adjustment / Transfer): ang bagong "Minimum Wage Earner". Nothing = walang pagbabago.
+        Public Property NewMinimumWage As Boolean?
+
         ' Salary adjustment: ang bagong halaga ng INPUT ng pay basis ng empleyado (Basic Salary para sa Basic cycle,
         ' Daily Rate para sa Daily Rate cycle). Ang Daily/Hourly ay kinukuwenta ng repository sa loob ng transaction.
         Public Property NewBasicSalary As Decimal?
@@ -140,6 +158,12 @@ Namespace Employee.Models
         Public Property DateRetired As Date?
         Public Property DateTerminated As Date?
         Public Property DateEndOfContract As Date?
+
+        ''' <summary>Planadong katapusan ng kontrata (hindi separation).</summary>
+        Public Property ContractEndDate As Date?
+
+        ''' <summary>Kasalukuyang "Minimum Wage Earner" (galing sa Earnings; itinatakda lang kapag kailangan).</summary>
+        Public Property MinimumWage As Boolean
 
         ' Para sa Salary adjustment lang (galing sa Earnings): meron na bang rate, at alin ang input.
         Public Property HasPayRate As Boolean
@@ -170,6 +194,8 @@ Namespace Employee.Models
                 .DateRetired = h.DateRetired,
                 .DateTerminated = h.DateTerminated,
                 .DateEndOfContract = h.DateEndOfContract,
+                .ContractEndDate = h.ContractEndDate,
+                .MinimumWage = h.MinimumWage,
                 .HasPayRate = h.HasPayRate
             }
         End Function
@@ -184,6 +210,7 @@ Namespace Employee.Models
                 .DateRetired = emp.DateRetired,
                 .DateTerminated = emp.DateTerminated,
                 .DateEndOfContract = emp.DateEndOfContract,
+                .ContractEndDate = emp.ContractEndDate,
                 .PositionId = emp.PositionId,
                 .CategoryId = emp.CategoryId,
                 .JobClassId = emp.JobClassId,
@@ -231,6 +258,28 @@ Namespace Employee.Models
             Dim t As String = Clean(employmentType)
             Return t.Equals("Regular", StringComparison.OrdinalIgnoreCase) OrElse
                    t.Equals("Permanent", StringComparison.OrdinalIgnoreCase)
+        End Function
+
+        ''' <summary>Contractual ba (ang may planadong Contract End).</summary>
+        Public Function IsContractualType(employmentType As String) As Boolean
+            Return Clean(employmentType).Equals("Contractual", StringComparison.OrdinalIgnoreCase)
+        End Function
+
+        ''' <summary>Pwedeng gawing Probationary: Contractual, Project-based, Casual, Seasonal (hindi Probationary/Regular/Permanent).</summary>
+        Public Function CanConvertToProbationary(employmentType As String) As Boolean
+            Dim t As String = Clean(employmentType)
+            Return {"Contractual", "Project-based", "Casual", "Seasonal"}.Any(Function(k) k.Equals(t, StringComparison.OrdinalIgnoreCase))
+        End Function
+
+        ''' <summary>Default na Contract End: Date Joined + ContractMonths - 1 araw (hal. Jan 1 + 3 buwan = Mar 31).</summary>
+        Public Function DefaultContractEnd(startDate As Date, contractMonths As Integer) As Date
+            Dim months = If(contractMonths < 1, 3, contractMonths)
+            Return startDate.Date.AddMonths(months).AddDays(-1)
+        End Function
+
+        ''' <summary>Para sa History: "Minimum Wage Earner (tax-exempt)" / "Taxable".</summary>
+        Public Function TaxStatusText(minimumWage As Boolean) As String
+            Return If(minimumWage, "Minimum Wage Earner (tax-exempt)", "Taxable")
         End Function
 
         Public Function IsKnownEmploymentType(employmentType As String) As Boolean
@@ -303,6 +352,23 @@ Namespace Employee.Models
                     ' HULA (hindi pa kumpirmado ng HR): hindi para sa Regular/Permanent. Palitan dito kung iba ang patakaran.
                     If IsRegularType(c.EmploymentType) Then
                         Return "End of Contract is not for Regular employees. Use Resign, Terminate, or Retire instead."
+                    End If
+
+                Case MovementTypes.ConvertToProbationary
+                    If IsSeparated(c) Then Return SeparatedMessage()
+                    If Not c.IsActive Then Return "This employee is Inactive. Reactivate the employee first."
+                    If Not CanConvertToProbationary(c.EmploymentType) Then
+                        Return "Only a Contractual, Project-based, Casual or Seasonal employee can be converted to Probationary."
+                    End If
+
+                Case MovementTypes.ContractEndChange
+                    If IsSeparated(c) Then Return SeparatedMessage()
+                    If Not IsContractualType(c.EmploymentType) Then Return "Only a Contractual employee has a Contract End."
+
+                Case MovementTypes.TaxStatusChange
+                    If IsSeparated(c) Then Return SeparatedMessage()
+                    If Not c.HasPayRate Then
+                        Return "This employee has no Basic Salary or Daily Rate yet. Set it (and Minimum Wage Earner) in the Earnings tab first."
                     End If
 
                 Case MovementTypes.SalaryAdjustment
@@ -455,6 +521,23 @@ Namespace Employee.Models
 
                 Case MovementTypes.Resign, MovementTypes.Terminate
                     If remarks.Length = 0 Then Return "Remarks is required for this action (state the reason)."
+
+                Case MovementTypes.ConvertToProbationary
+                    ' (Walang dagdag: petsa at availability lang.)
+
+                Case MovementTypes.ContractEndChange
+                    If Not req.NewContractEndDate.HasValue Then Return "Enter the new Contract End."
+                    If req.NewContractEndDate.Value.Date < c.DateJoined.Value.Date Then
+                        Return $"The Contract End can't be earlier than Date Joined ({FormatDate(c.DateJoined.Value)})."
+                    End If
+                    If c.ContractEndDate.HasValue AndAlso c.ContractEndDate.Value.Date = req.NewContractEndDate.Value.Date Then
+                        Return "Nothing to change: the Contract End is the same."
+                    End If
+
+                Case MovementTypes.TaxStatusChange
+                    If Not req.NewMinimumWage.HasValue Then Return "Choose the tax status."
+                    If req.NewMinimumWage.Value = c.MinimumWage Then Return "Nothing to change: the tax status is the same."
+                    If remarks.Length = 0 Then Return "Remarks is required for a tax status change (state the reason, e.g. salary above minimum wage, transferred store)."
 
                 ' End of Contract: optional ang Remarks (walang dagdag na patakaran maliban sa petsa sa itaas).
 

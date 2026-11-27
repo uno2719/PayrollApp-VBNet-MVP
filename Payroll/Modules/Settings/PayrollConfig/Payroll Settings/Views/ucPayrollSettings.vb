@@ -14,6 +14,9 @@ Public Class ucPayrollSettings
     Private ReadOnly _ucPayCycle As ucPayCycle
     Private ReadOnly _ucCutoff As ucCutoff
 
+    ' Minimum Wage (paalala ng Minimum Wage Earner): hindi injected, walang dependency (kapareho ng 201 Files tab).
+    Private ReadOnly _ucMinimumWage As New ucMinimumWage()
+
     Public Sub New(
         compensationView As ucCompensation,
         deductionView As ucPayrollFlaggedEntry,
@@ -62,6 +65,9 @@ Public Class ucPayrollSettings
 
         _ucCutoff.Dock = DockStyle.Fill
         tabpageCutoff.Controls.Add(_ucCutoff)
+
+        _ucMinimumWage.Dock = DockStyle.Fill
+        tabpageMinimumWage.Controls.Add(_ucMinimumWage)
     End Sub
 
     Public Overrides ReadOnly Property Breadcrumb As String

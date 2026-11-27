@@ -12,6 +12,7 @@ Namespace GlobalShared.Helpers
     ''' Pagkakasunod bawat employee:
     '''   1. Basic pay            = Basic Salary / bilang ng cutoff kada buwan
     '''   2. Input Entry          = Hours/Minutes/Days x rate ng employee (x Rate ng OT/Holiday), o ang peso mismo (Amount)
+    '''      + Fix Transactions   = Employee > Fix Transactions na tumatama sa cutoff, kung WALANG Input Entry ang parehong code
     '''   3. Bases                = flagged na kita MINUS flagged na manual deduction (Tax / SSS / PhilHealth / Pag-IBIG)
     '''   4. SSS, PhilHealth, Pag-IBIG (buwanang halaga mula sa bracket, hinati ayon sa Deduction Schedule)
     '''   5. Tax                  = (Tax gross - EE contributions na kinaltas sa cutoff na ito) sa income tax table
@@ -109,6 +110,25 @@ Namespace GlobalShared.Helpers
                     Return Round2(qty * emp.HourlyRate.Value * multiplier / 60D)
                 Case Else
                     Return Round2(qty * emp.DailyRate.Value * multiplier)
+            End Select
+        End Function
+
+        ''' <summary>
+        ''' Minimum Wage Earner (RR 11-2018): exempt ang statutory minimum wage, holiday pay, overtime pay, night shift differential
+        ''' at hazard pay. Sa engine: BASIC, OVERTIME, HOLIDAY, at Compensation na ang 2316 Component ay NDIF / HOLI / COLA
+        ''' (HULA: ang COLA ay bahagi ng minimum wage ayon sa wage order - kumpirmahin kay Accounting).
+        ''' </summary>
+        Public Function IsMweExemptComponent(component2316 As String) As Boolean
+            Select Case If(component2316, "").Trim().ToUpperInvariant()
+                Case "NDIF", "HOLI", "COLA" : Return True
+                Case Else : Return False
+            End Select
+        End Function
+
+        Public Function IsMweExemptCategory(category As String) As Boolean
+            Select Case If(category, "").Trim().ToUpperInvariant()
+                Case ResultCategory.Basic, ResultCategory.Overtime, ResultCategory.Holiday : Return True
+                Case Else : Return False
             End Select
         End Function
 
@@ -340,18 +360,31 @@ Namespace GlobalShared.Helpers
             End If
             h.BasicPay = basicPay
 
-            ' ---- 2. Input Entry (Overtime/Holiday/Compensation/Bonus/Deduction) ----
-            For Each t In emp.Txns
+            ' ---- 2. Input Entry + Fix Transactions (Overtime/Holiday/Compensation/Bonus/Deduction) ----
+            ' Ang Fix Transaction na tumatama sa cutoff ay idinudugtong dito, maliban kung may Input Entry ang parehong code
+            ' (ang Input Entry ang masusunod, kahit 0 = "skip ngayong cutoff").
+            Dim allTxns = FixTransactionRules.MergeTxns(emp.Txns, emp.FixTxns, emp.RecordId, PayMonthKey(cutoff), periodNo, periods)
+            Dim mweExemptLines As New HashSet(Of PayrollResultLineModel)()   ' NDIF/HOLI/COLA na Compensation (para sa MWE)
+
+            For Each t In allTxns
                 Dim category = If(t.TxnCategory, "").Trim().ToUpperInvariant()
                 If category = "CORE" Then Continue For          ' lumang DAYSWORKED (nailipat na sa BASIC ng migration script)
                 If IsBasicTxn(ctx, t) Then Continue For         ' BASIC = Days Worked; nabilang na sa Basic pay
+                Dim isFix = t.FixTxnId.HasValue
 
                 Dim item As PayrollCatalogItem = Nothing
                 If Not ctx.Catalog.TryGetValue(CatalogKey(category, t.TxnCode), item) Then
-                    res.Warnings.Add($"Input '{t.TxnCode}' ({category}) is not in the catalog anymore - skipped.")
+                    res.Warnings.Add(If(isFix,
+                        $"Fix Transaction '{t.TxnCode}' ({category}) is not in the catalog anymore - skipped. Set it Inactive in Employee > Fix Transactions.",
+                        $"Input '{t.TxnCode}' ({category}) is not in the catalog anymore - skipped."))
                     Continue For
                 End If
                 If Not item.IsActive Then
+                    If isFix Then
+                        ' Hindi na lumalabas ang inactive na code sa Input Entry (hindi ma-override), kaya hindi ito kusang ibinibigay.
+                        res.Warnings.Add($"Fix Transaction '{item.Code}' is inactive in Payroll Settings - skipped. Set the Fix Transaction Inactive (or activate the code).")
+                        Continue For
+                    End If
                     res.Warnings.Add($"Input '{item.Code}' is inactive in Payroll Settings but has an entry - still computed.")
                 End If
 
@@ -386,6 +419,12 @@ Namespace GlobalShared.Helpers
                 Dim ln = AddLine(res, If(isDeduction, ResultLineType.Deduction, ResultLineType.Earning), category,
                                  item.Code, item.Description, qty, unitText, rateUsed, amount)
                 SetFlags(ln, item.TaxFlag, item.SSSFlag, item.PhilHealthFlag, item.PagIbigFlag)
+                If IsMweExemptComponent(item.Component2316) Then mweExemptLines.Add(ln)
+                If isFix Then
+                    ' Ligtas ang RefId: ang mga query ng Loan ay laging may Category = LOAN.
+                    ln.RefId = t.FixTxnId
+                    ln.Remark = FixTxnType.ResultRemark
+                End If
             Next
 
             ' ---- 3. Totals at bases ----
@@ -428,13 +467,26 @@ Namespace GlobalShared.Helpers
             Dim contributionEE = h.SSSEE + h.SSSMPFEE + h.PhilHealthEE + h.PagIbigEE
 
             ' ---- 5. Tax ----
-            h.TaxableIncome = Math.Max(0D, h.TaxGross - contributionEE)
+            If emp.MinimumWage Then
+                ' MWE: ang taxable lang ay ang kita na HINDI minimum wage / OT / holiday / night differential (RR 11-2018).
+                ' Hindi ibinabawas ang EE contributions at ang mga taxable na kaltas (absent/late) - nasa minimum wage ang mga iyon.
+                Dim otherTaxable As Decimal = 0D
+                For Each ln In res.Lines
+                    If ln.LineType = ResultLineType.Earning AndAlso ln.TaxFlag AndAlso
+                       Not IsMweExemptCategory(ln.Category) AndAlso Not mweExemptLines.Contains(ln) Then
+                        otherTaxable += ln.Amount
+                    End If
+                Next
+                h.TaxableIncome = Math.Max(0D, otherTaxable)
+            Else
+                h.TaxableIncome = Math.Max(0D, h.TaxGross - contributionEE)
+            End If
 
             ' Daily tax table (pay cycle "Daily" na Daily Rate ang basis): ang table ay BAWAT ARAW, kaya hinahanap ang bracket
             ' gamit ang taxable income kada araw (taxable / Days Worked) at ang buwis kada araw ay minu-multiply sa Days Worked.
             Dim perDayTax = isDaily AndAlso String.Equals(h.PayCycle, "Daily", StringComparison.OrdinalIgnoreCase)
 
-            If emp.MinimumWage Then
+            If emp.MinimumWage AndAlso h.TaxableIncome <= 0D Then
                 h.WithholdingTax = 0D
             ElseIf ctx.TaxBrackets Is Nothing OrElse ctx.TaxBrackets.Count = 0 Then
                 res.Warnings.Add($"No income tax table rows ({ctx.TaxTableName}) - tax not computed.")
@@ -472,6 +524,14 @@ Namespace GlobalShared.Helpers
                         AddLine(res, ResultLineType.Deduction, ResultCategory.Tax, "TAX", "Withholding Tax",
                                 1D, "", h.TaxableIncome, h.WithholdingTax)
                     End If
+                End If
+            End If
+
+            If emp.MinimumWage AndAlso h.WithholdingTax <> 0D Then
+                Dim taxLn = res.Lines.LastOrDefault(Function(x) x.Category = ResultCategory.Tax)
+                If taxLn IsNot Nothing Then
+                    taxLn.Remark = "MWE: tax on pay other than minimum wage/OT/holiday/night diff" &
+                                   If(String.IsNullOrWhiteSpace(taxLn.Remark), "", "; " & taxLn.Remark)
                 End If
             End If
 

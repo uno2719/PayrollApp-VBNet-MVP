@@ -54,6 +54,7 @@ Namespace GeneralSettings.Presenters
             _view.PercentPrecision = _current.PercentPrecision
             _view.DailyRateMonthlyFactor = _current.DailyRateMonthlyFactor
             _view.ProbationMonths = _current.ProbationMonths
+            _view.ContractMonths = _current.ContractMonths
             _view.FileStorageRoot = _current.FileStorageRoot
 
             _view.BasicSalaryCodePlusId = _current.BasicSalaryCodePlusId
@@ -75,6 +76,7 @@ Namespace GeneralSettings.Presenters
             _current.PercentPrecision = _view.PercentPrecision
             _current.DailyRateMonthlyFactor = _view.DailyRateMonthlyFactor
             _current.ProbationMonths = _view.ProbationMonths
+            _current.ContractMonths = _view.ContractMonths
             _current.FileStorageRoot = If(String.IsNullOrWhiteSpace(_view.FileStorageRoot), Nothing, _view.FileStorageRoot.Trim())
 
             _current.BasicSalaryCodePlusId = _view.BasicSalaryCodePlusId

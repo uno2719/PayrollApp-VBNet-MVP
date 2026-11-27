@@ -51,6 +51,9 @@ Partial Class ucGeneralSettings
         lblSSSBasedOn = New DevExpress.XtraEditors.LabelControl()
         grpEmployment = New DevExpress.XtraEditors.GroupControl()
         lblProbationHint = New DevExpress.XtraEditors.LabelControl()
+        lblContractMonths = New DevExpress.XtraEditors.LabelControl()
+        txtContractMonths = New DevExpress.XtraEditors.TextEdit()
+        lblContractHint = New DevExpress.XtraEditors.LabelControl()
         txtProbationMonths = New DevExpress.XtraEditors.TextEdit()
         lblProbationMonths = New DevExpress.XtraEditors.LabelControl()
         lblFilesFolder = New DevExpress.XtraEditors.LabelControl()
@@ -83,6 +86,7 @@ Partial Class ucGeneralSettings
         CType(grpEmployment, ComponentModel.ISupportInitialize).BeginInit()
         grpEmployment.SuspendLayout()
         CType(txtProbationMonths.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(txtContractMonths.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(txtFilesFolder.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -453,6 +457,9 @@ Partial Class ucGeneralSettings
         grpEmployment.Controls.Add(btnBrowseFilesFolder)
         grpEmployment.Controls.Add(txtFilesFolder)
         grpEmployment.Controls.Add(lblFilesFolder)
+        grpEmployment.Controls.Add(lblContractHint)
+        grpEmployment.Controls.Add(txtContractMonths)
+        grpEmployment.Controls.Add(lblContractMonths)
         grpEmployment.Controls.Add(lblProbationHint)
         grpEmployment.Controls.Add(txtProbationMonths)
         grpEmployment.Controls.Add(lblProbationMonths)
@@ -472,6 +479,35 @@ Partial Class ucGeneralSettings
         lblProbationHint.Size = New Size(330, 13)
         lblProbationHint.TabIndex = 2
         lblProbationHint.Text = "Used for the regularization reminder in the Employee header."
+        ' 
+        ' lblContractMonths
+        ' 
+        lblContractMonths.Location = New Point(640, 34)
+        lblContractMonths.Name = "lblContractMonths"
+        lblContractMonths.Size = New Size(130, 13)
+        lblContractMonths.TabIndex = 8
+        lblContractMonths.Text = "Contract Period (months)"
+        ' 
+        ' txtContractMonths
+        ' 
+        txtContractMonths.Location = New Point(640, 52)
+        txtContractMonths.Margin = New Padding(3, 2, 3, 2)
+        txtContractMonths.Name = "txtContractMonths"
+        txtContractMonths.Properties.Mask.EditMask = "n0"
+        txtContractMonths.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.Numeric
+        txtContractMonths.Properties.Mask.UseMaskAsDisplayFormat = True
+        txtContractMonths.Size = New Size(120, 20)
+        txtContractMonths.TabIndex = 9
+        ' 
+        ' lblContractHint
+        ' 
+        lblContractHint.Appearance.ForeColor = Color.Gray
+        lblContractHint.Appearance.Options.UseForeColor = True
+        lblContractHint.Location = New Point(770, 55)
+        lblContractHint.Name = "lblContractHint"
+        lblContractHint.Size = New Size(290, 13)
+        lblContractHint.TabIndex = 10
+        lblContractHint.Text = "Contractual: Contract End = Date Joined + months - 1 day."
         ' 
         ' txtProbationMonths
         ' 
@@ -576,6 +612,7 @@ Partial Class ucGeneralSettings
         grpEmployment.ResumeLayout(False)
         grpEmployment.PerformLayout()
         CType(txtProbationMonths.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(txtContractMonths.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(txtFilesFolder.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
@@ -627,5 +664,8 @@ Partial Class ucGeneralSettings
     Friend WithEvents btnTestFilesFolder As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents lblFilesFolderHint As DevExpress.XtraEditors.LabelControl
     Friend WithEvents lblProbationHint As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblContractMonths As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents txtContractMonths As DevExpress.XtraEditors.TextEdit
+    Friend WithEvents lblContractHint As DevExpress.XtraEditors.LabelControl
 
 End Class

@@ -144,9 +144,9 @@ Partial Class ucPayslip
         ' chkIncludeAllowance
         ' 
         chkIncludeAllowance.EditValue = True
-        chkIncludeAllowance.Location = New Point(240, 44)
+        chkIncludeAllowance.Location = New Point(400, 44)
         chkIncludeAllowance.Name = "chkIncludeAllowance"
-        chkIncludeAllowance.Properties.Caption = "Include allowance"
+        chkIncludeAllowance.Properties.Caption = "Include Allowance"
         chkIncludeAllowance.Size = New Size(140, 20)
         chkIncludeAllowance.TabIndex = 4
         chkIncludeAllowance.ToolTip = "Uncheck to leave out the allowance codes (Payroll Settings > Compensation > Allowance (Payslip)). Gross and Net are recomputed."
@@ -154,7 +154,7 @@ Partial Class ucPayslip
         ' chkShowYtd
         ' 
         chkShowYtd.EditValue = True
-        chkShowYtd.Location = New Point(386, 44)
+        chkShowYtd.Location = New Point(546, 44)
         chkShowYtd.Name = "chkShowYtd"
         chkShowYtd.Properties.Caption = "Show YTD"
         chkShowYtd.Size = New Size(90, 20)
@@ -163,18 +163,18 @@ Partial Class ucPayslip
         ' chkProtectPdf
         ' 
         chkProtectPdf.EditValue = True
-        chkProtectPdf.Location = New Point(482, 44)
+        chkProtectPdf.Location = New Point(642, 44)
         chkProtectPdf.Name = "chkProtectPdf"
-        chkProtectPdf.Properties.Caption = "Password-protect emailed PDF"
+        chkProtectPdf.Properties.Caption = "Password-protect Emailed PDF"
         chkProtectPdf.Size = New Size(200, 20)
         chkProtectPdf.TabIndex = 6
         chkProtectPdf.ToolTip = "Password = employee's birthdate (MMDDYYYY). If there is no birthdate on file, the Employee ID."
         ' 
         ' chkGroupByPayDate
         ' 
-        chkGroupByPayDate.Location = New Point(690, 44)
+        chkGroupByPayDate.Location = New Point(240, 44)
         chkGroupByPayDate.Name = "chkGroupByPayDate"
-        chkGroupByPayDate.Properties.Caption = "Group by pay date"
+        chkGroupByPayDate.Properties.Caption = "Group by Pay Date"
         chkGroupByPayDate.Size = New Size(140, 20)
         chkGroupByPayDate.TabIndex = 18
         chkGroupByPayDate.ToolTip = "Show all cutoffs with the same pay date together (like Payroll > Output)."
@@ -185,7 +185,7 @@ Partial Class ucPayslip
         btnCheckAll.Name = "btnCheckAll"
         btnCheckAll.Size = New Size(80, 25)
         btnCheckAll.TabIndex = 7
-        btnCheckAll.Text = "Check all"
+        btnCheckAll.Text = "Check All"
         ' 
         ' btnUncheckAll
         ' 
@@ -193,7 +193,7 @@ Partial Class ucPayslip
         btnUncheckAll.Name = "btnUncheckAll"
         btnUncheckAll.Size = New Size(80, 25)
         btnUncheckAll.TabIndex = 8
-        btnUncheckAll.Text = "Uncheck all"
+        btnUncheckAll.Text = "Uncheck All"
         ' 
         ' lblSelection
         ' 
@@ -341,6 +341,7 @@ Partial Class ucPayslip
         ' documentViewer
         ' 
         documentViewer.Dock = DockStyle.Fill
+        documentViewer.IsMetric = True
         documentViewer.Location = New Point(0, 0)
         documentViewer.Name = "documentViewer"
         documentViewer.Size = New Size(622, 454)

@@ -51,5 +51,8 @@
         Function GetDailyRateMonthlyFactorAsync() As Task(Of Decimal)
         Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel))
 
+        ''' <summary>Wage Area ng branch at ang minimum wage nito sa petsa (Minimum Wage Earner na paalala).</summary>
+        Function GetWageReferenceAsync(branchId As Integer?, onDate As Date) As Task(Of Models.WageReference)
+
     End Interface
 End Namespace

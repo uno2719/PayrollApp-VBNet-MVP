@@ -23,6 +23,7 @@ Partial Class ucPayrollSettings
         tabpageLoan = New DevExpress.XtraTab.XtraTabPage()
         tabpagePayCycle = New DevExpress.XtraTab.XtraTabPage()
         tabpageCutoff = New DevExpress.XtraTab.XtraTabPage()
+        tabpageMinimumWage = New DevExpress.XtraTab.XtraTabPage()
         CType(tabconPayrollSettings, ComponentModel.ISupportInitialize).BeginInit()
         tabconPayrollSettings.SuspendLayout()
         SuspendLayout()
@@ -45,7 +46,7 @@ Partial Class ucPayrollSettings
         tabconPayrollSettings.SelectedTabPage = tabpageCompensation
         tabconPayrollSettings.Size = New Size(900, 480)
         tabconPayrollSettings.TabIndex = 0
-        tabconPayrollSettings.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageCompensation, tabpageDeduction, tabpageOvertime, tabpageHoliday, tabpageBonus, tabpageLoan, tabpagePayCycle, tabpageCutoff})
+        tabconPayrollSettings.TabPages.AddRange(New DevExpress.XtraTab.XtraTabPage() {tabpageCompensation, tabpageDeduction, tabpageOvertime, tabpageHoliday, tabpageBonus, tabpageLoan, tabpagePayCycle, tabpageCutoff, tabpageMinimumWage})
         ' 
         ' tabpageCompensation
         ' 
@@ -103,6 +104,13 @@ Partial Class ucPayrollSettings
         tabpageCutoff.Size = New Size(898, 451)
         tabpageCutoff.Text = "Cut-Off"
         ' 
+        ' tabpageMinimumWage
+        ' 
+        tabpageMinimumWage.Margin = New Padding(3, 2, 3, 2)
+        tabpageMinimumWage.Name = "tabpageMinimumWage"
+        tabpageMinimumWage.Size = New Size(898, 451)
+        tabpageMinimumWage.Text = "Minimum Wage"
+        ' 
         ' ucPayrollSettings
         ' 
         AutoScaleDimensions = New SizeF(6.0F, 13.0F)
@@ -125,5 +133,6 @@ Partial Class ucPayrollSettings
     Friend WithEvents tabpageLoan As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpagePayCycle As DevExpress.XtraTab.XtraTabPage
     Friend WithEvents tabpageCutoff As DevExpress.XtraTab.XtraTabPage
+    Friend WithEvents tabpageMinimumWage As DevExpress.XtraTab.XtraTabPage
 
 End Class

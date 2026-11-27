@@ -61,6 +61,7 @@ Namespace PayrollProcessing.Presenters
             End If
 
             Dim sheet = Await _service.GetInputDataAsync(cutoffId, _columns)
+            _view.DisplayFixHints(sheet.FixHints)
             _view.DisplayData(sheet.Table)
             _view.DisplayEligibilityWarnings(sheet.Warnings)
         End Function

@@ -58,6 +58,10 @@ Public Class ucEmployees
     ' Phase 3: 201 Files tab + Photo
     Private ReadOnly _fileService As New Employee.Services.EmployeeFileService()
     Private _ucDocuments As ucEmployeesDocuments
+
+    ' Fix Transactions tab (paulit-ulit na allowance/compensation/bonus/deduction) - kapareho ng 201 Files ang wiring
+    Private ReadOnly _fixTxnService As New Employee.Services.EmployeeFixTxnService()
+    Private _ucFixTxn As ucEmployeesFixTransactions
     Private _photoImage As Image
     Private _photoMenu As ContextMenuStrip
     Private _miPhotoChange As ToolStripMenuItem
@@ -70,6 +74,9 @@ Public Class ucEmployees
     Private _miSalary As DXMenuItem
     Private _miPayCycle As DXMenuItem
     Private _miEndOfContract As DXMenuItem
+    Private _miToProbationary As DXMenuItem
+    Private _miContractEnd As DXMenuItem
+    Private _miTaxStatus As DXMenuItem
     Private _miCorrect As DXMenuItem
     Private _miResign As DXMenuItem
     Private _miTerminate As DXMenuItem
@@ -135,6 +142,12 @@ Public Class ucEmployees
         _ucDocuments.Dock = DockStyle.Fill
         tabpage201Files.Controls.Add(_ucDocuments)
         AddHandler _ucDocuments.DocumentsChanged, AddressOf OnDocumentsChanged
+
+        ' Fix Transactions tab (hindi injected; walang dependency ang service)
+        _ucFixTxn = New ucEmployeesFixTransactions()
+        _ucFixTxn.Initialize(_fixTxnService)
+        _ucFixTxn.Dock = DockStyle.Fill
+        tabpageFixTransactions.Controls.Add(_ucFixTxn)
 
         BuildHeaderUi()
 
@@ -342,6 +355,7 @@ Public Class ucEmployees
         End If
 
         _ucDocuments?.SetRecord(_selectedRecordId)
+        _ucFixTxn?.SetRecord(_selectedRecordId)
 
         UpdateHeaderAsync()
     End Sub
@@ -374,6 +388,7 @@ Public Class ucEmployees
             _headerModel = header
             ApplyHeaderState(Employee.Views.EmployeeHeaderPresentation.Build(header, loans, Date.Today))
             _ucDocuments?.SetEmployeeName(header.FullName)
+            _ucFixTxn?.SetEmployeeName(header.FullName)
             LoadPhotoAsync(recordId)
         Catch ex As Exception
             ShowError(ex.Message)
@@ -403,6 +418,9 @@ Public Class ucEmployees
         _miTransfer = NewMovementItem("Transfer...", Employee.Models.MovementTypes.Transfer, False)
         _miSalary = NewMovementItem("Salary adjustment...", Employee.Models.MovementTypes.SalaryAdjustment, False)
         _miPayCycle = NewMovementItem("Change pay cycle...", Employee.Models.MovementTypes.PayCycleChange, False)
+        _miTaxStatus = NewMovementItem("Change tax status (Minimum Wage)...", Employee.Models.MovementTypes.TaxStatusChange, False)
+        _miToProbationary = NewMovementItem("Convert to Probationary...", Employee.Models.MovementTypes.ConvertToProbationary, False)
+        _miContractEnd = NewMovementItem("Change contract end...", Employee.Models.MovementTypes.ContractEndChange, False)
         _miResign = NewMovementItem("Resign...", Employee.Models.MovementTypes.Resign, True)
         _miTerminate = NewMovementItem("Terminate...", Employee.Models.MovementTypes.Terminate, False)
         _miRetire = NewMovementItem("Retire...", Employee.Models.MovementTypes.Retire, False)
@@ -414,10 +432,13 @@ Public Class ucEmployees
 
         _actionsMenu = New DXPopupMenu()
         _actionsMenu.Items.Add(_miRegularize)
+        _actionsMenu.Items.Add(_miToProbationary)
+        _actionsMenu.Items.Add(_miContractEnd)
         _actionsMenu.Items.Add(_miPromote)
         _actionsMenu.Items.Add(_miTransfer)
         _actionsMenu.Items.Add(_miSalary)
         _actionsMenu.Items.Add(_miPayCycle)
+        _actionsMenu.Items.Add(_miTaxStatus)
         _actionsMenu.Items.Add(_miResign)
         _actionsMenu.Items.Add(_miTerminate)
         _actionsMenu.Items.Add(_miRetire)
@@ -506,6 +527,12 @@ Public Class ucEmployees
         _miRetire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Retire, ctx)
         _miEndOfContract.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.EndOfContract, ctx)
 
+        ' Contractual: Convert to Probationary / Change contract end (nakikita lang kapag may saysay sa Employment Type).
+        _miToProbationary.Visible = Employee.Models.EmployeeMovementRules.CanConvertToProbationary(ctx.EmploymentType)
+        _miToProbationary.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.ConvertToProbationary, ctx)
+        _miContractEnd.Visible = Employee.Models.EmployeeMovementRules.IsContractualType(ctx.EmploymentType)
+        _miContractEnd.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.ContractEndChange, ctx)
+
         ' Salary adjustment: valid sa rules (may rate na) AT may "Employee Salary" na Can Edit (Admin laging meron).
         Dim canAdjustSalary As Boolean =
             GlobalShared.Security.PermissionService.CanEdit(GlobalShared.Constants.ModuleCodes.Main_Employees_Salary)
@@ -517,6 +544,10 @@ Public Class ucEmployees
         _miPayCycle.Enabled = canAdjustSalary AndAlso
             Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.PayCycleChange, ctx)
         _miRehire.Enabled = Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.Rehire, ctx)
+
+        ' Change tax status (Minimum Wage Earner): "Employee Salary" (Can Edit), dahil nakakaapekto sa buwis.
+        _miTaxStatus.Enabled = canAdjustSalary AndAlso
+            Employee.Models.EmployeeMovementRules.IsAvailable(Employee.Models.MovementTypes.TaxStatusChange, ctx)
 
         ' Correct record: Admin lang (nakatago sa iba).
         _miCorrect.Visible = GlobalShared.Constants.AppSession.IsAdmin
@@ -755,7 +786,7 @@ Public Class ucEmployees
                 EnableTab(tabpageStatutory, True)
                 EnableTab(tabpagePrevEmployer, True)
                 EnableTab(tabpage201Files, CanView201Files())
-                EnableTab(tabpageFixTransactions, True)
+                EnableTab(tabpageFixTransactions, CanViewFixTransactions())
 
                 ' Disable controls ng SubViews
                 _ucPersonal?.SetEditMode(False)
@@ -1211,6 +1242,7 @@ Public Class ucEmployees
         btnHdr_Loans.Text = "Loans"
         SetPhotoImage(Nothing)
         _ucDocuments?.SetRecord(0)
+        _ucFixTxn?.SetRecord(0)
 
         UpdateHeaderButtons()
     End Sub
@@ -1308,6 +1340,11 @@ Public Class ucEmployees
 
     Private Shared Function CanView201Files() As Boolean
         Return GlobalShared.Security.PermissionService.CanView(GlobalShared.Constants.ModuleCodes.Main_Employees_Documents)
+    End Function
+
+    ' Fix Transactions: halaga ng sahod/allowance, kaya ang "Employee Salary" permission ang ginagamit.
+    Private Shared Function CanViewFixTransactions() As Boolean
+        Return Employee.Services.EmployeeFixTxnService.CanView()
     End Function
 
 

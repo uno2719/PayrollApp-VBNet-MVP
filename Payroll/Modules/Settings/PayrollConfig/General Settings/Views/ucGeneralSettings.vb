@@ -158,6 +158,15 @@ Public Class ucGeneralSettings
         End Set
     End Property
 
+    Public Property ContractMonths As Integer Implements IGeneralSettingsView.ContractMonths
+        Get
+            Return ToInteger(txtContractMonths.Text)
+        End Get
+        Set(value As Integer)
+            txtContractMonths.Text = value.ToString()
+        End Set
+    End Property
+
     ' === IGeneralSettingsView : Files ===
 
     Public Property FileStorageRoot As String Implements IGeneralSettingsView.FileStorageRoot

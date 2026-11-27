@@ -66,6 +66,11 @@ Namespace GeneralSettings.Services
                 Return Fail("Probation Period must be between 1 and 12 months.")
             End If
 
+            ' Default na haba ng kontrata ng Contractual (Contract End = Date Joined + buwan - 1 araw).
+            If item.ContractMonths < 1 OrElse item.ContractMonths > 24 Then
+                Return Fail("Contract Period must be between 1 and 24 months.")
+            End If
+
             ' --- Files ---
             ' Hindi sinusuri dito kung maabot ang folder (iba-iba ang PC; may "Test" button sa screen). Ang tinitiyak lang:
             ' buong path (UNC o may drive letter). Ang bawat upload ay nagtsi-check ulit mula sa PC ng nag-a-upload.

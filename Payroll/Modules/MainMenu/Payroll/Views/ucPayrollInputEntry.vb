@@ -17,6 +17,10 @@ Public Class ucPayrollInputEntry
     Private _cutoffs As New List(Of CutoffModel)()
     Private _loadingCutoffs As Boolean = False
 
+    ' Employee > Fix Transactions na papasok kapag blangko ang cell (key = PayrollInputSheet.HintKey)
+    Private _fixHints As New Dictionary(Of String, Decimal)(StringComparer.OrdinalIgnoreCase)
+    Private _catalogColumnNames As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+
     Public Sub New()
         InitializeComponent()
     End Sub
@@ -153,6 +157,8 @@ Public Class ucPayrollInputEntry
         AddReferenceColumn("EmployeeNo", "Employee No", 0)
         AddReferenceColumn("EmployeeName", "Name", 1)
 
+        _catalogColumnNames = New HashSet(Of String)(columns.Select(Function(c) c.ColumnName), StringComparer.OrdinalIgnoreCase)
+
         Dim index = 2
         For Each col In columns
             Dim gridCol = gridView.Columns.AddField(col.ColumnName)
@@ -186,8 +192,71 @@ Public Class ucPayrollInputEntry
     Public Sub DisplayData(table As DataTable) Implements IPayrollInputEntryView.DisplayData
         _table = table
         gridControl.DataSource = _table
+        ShowColumnsWithFixHints()
         UpdateCloseButton()
     End Sub
+
+#Region "Fix Transactions (hint sa blangkong cell)"
+
+    Public Sub DisplayFixHints(hints As Dictionary(Of String, Decimal)) Implements IPayrollInputEntryView.DisplayFixHints
+        _fixHints = If(hints, New Dictionary(Of String, Decimal)(StringComparer.OrdinalIgnoreCase))
+    End Sub
+
+    ''' <summary>Kusang inilalabas ang column ng code na may Fix Transaction sa cutoff na ito (hindi itinatago ang iba).</summary>
+    Private Sub ShowColumnsWithFixHints()
+        If _fixHints.Count = 0 Then Return
+        Dim codes As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        For Each key In _fixHints.Keys
+            Dim sep = key.IndexOf("|"c)
+            If sep >= 0 Then codes.Add(key.Substring(sep + 1))
+        Next
+
+        For Each code In codes
+            Dim gridCol = gridView.Columns.ColumnByFieldName(code)
+            If gridCol Is Nothing OrElse gridCol.Visible Then Continue For
+            gridCol.Visible = True
+            gridCol.VisibleIndex = gridView.VisibleColumns.Count
+        Next
+    End Sub
+
+    ''' <summary>May Fix hint ba ang cell (blangko ang cell at may Fix ang empleyado + code).</summary>
+    Private Function HintFor(cellValue As Object, recordIdValue As Object, fieldName As String, ByRef amount As Decimal) As Boolean
+        If _fixHints.Count = 0 OrElse Not _catalogColumnNames.Contains(fieldName) Then Return False
+        If cellValue IsNot Nothing AndAlso cellValue IsNot DBNull.Value Then Return False
+        If recordIdValue Is Nothing OrElse recordIdValue Is DBNull.Value Then Return False
+        Return _fixHints.TryGetValue(PayrollInputSheet.HintKey(CInt(recordIdValue), fieldName), amount)
+    End Function
+
+    ' Blangkong cell na may Fix Transaction: "750.00 (Fix)" na kulay gray at naka-italic.
+    ' Blangko = susundin ang Fix; may halaga = papalitan ang Fix sa cutoff na ito; 0 = hindi ibibigay ngayong cutoff.
+    Private Sub gridView_CustomColumnDisplayText(sender As Object, e As DevExpress.XtraGrid.Views.Base.CustomColumnDisplayTextEventArgs) _
+        Handles gridView.CustomColumnDisplayText
+        If e.Column Is Nothing OrElse e.IsForGroupRow OrElse e.ListSourceRowIndex < 0 Then Return
+        Dim amount As Decimal
+        Dim recordId = gridView.GetListSourceRowCellValue(e.ListSourceRowIndex, "RecordId")
+        If HintFor(e.Value, recordId, e.Column.FieldName, amount) Then e.DisplayText = $"{amount:N2} (Fix)"
+    End Sub
+
+    Private Sub gridView_RowCellStyle(sender As Object, e As DevExpress.XtraGrid.Views.Grid.RowCellStyleEventArgs) Handles gridView.RowCellStyle
+        If e.Column Is Nothing OrElse e.RowHandle < 0 Then Return
+        Dim amount As Decimal
+        If HintFor(e.CellValue, gridView.GetRowCellValue(e.RowHandle, "RecordId"), e.Column.FieldName, amount) Then
+            e.Appearance.ForeColor = Color.Gray
+            e.Appearance.FontStyleDelta = FontStyle.Italic
+        End If
+    End Sub
+
+    ' Pagbura ng laman ng cell = bumalik sa blangko (DBNull), hindi 0 at hindi error.
+    Private Sub gridView_ValidatingEditor(sender As Object, e As DevExpress.XtraEditors.Controls.BaseContainerValidateEditorEventArgs) _
+        Handles gridView.ValidatingEditor
+        Dim col = gridView.FocusedColumn
+        If col Is Nothing OrElse Not _catalogColumnNames.Contains(col.FieldName) Then Return
+        If e.Value Is Nothing OrElse (TypeOf e.Value Is String AndAlso String.IsNullOrWhiteSpace(CStr(e.Value))) Then
+            e.Value = DBNull.Value
+        End If
+    End Sub
+
+#End Region
 
     Public Sub DisplayEligibilityWarnings(warnings As List(Of GlobalShared.Models.PayrollEligibilityWarning)) _
         Implements IPayrollInputEntryView.DisplayEligibilityWarnings

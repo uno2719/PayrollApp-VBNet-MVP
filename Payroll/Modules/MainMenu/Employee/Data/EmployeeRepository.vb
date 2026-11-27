@@ -204,6 +204,7 @@ Namespace Employee.Data
                     Await TryFillPhotoAndDocumentsAsync(conn, header)
                     header.OriginalDateJoined = Await TryGetOriginalDateJoinedAsync(conn, recordId)
                     header.DateEndOfContract = Await TryGetEndOfContractAsync(conn, recordId)
+                    Await TryFillContractAndWageAsync(conn, header)
                 End If
 
                 Return header
@@ -273,6 +274,74 @@ Namespace Employee.Data
                 Debug.WriteLine($"DateEndOfContract not available: {ex.Message}")
                 Return Nothing
             End Try
+        End Function
+
+        ' Phase 2: planadong Contract End, simula ng probation, Minimum Wage Earner, at paghahambing ng Daily Rate sa minimum wage
+        ' ng Wage Area ng branch. Ang halaga ng sahod ay HINDI isinasama sa header (paghahambing lang). Kapag wala pa ang mga
+        ' column/table (hindi pa na-run ang SQL), tahimik na lalaktawan.
+        Private Class ContractWageRow
+            Public Property ContractEndDate As Date?
+            Public Property DateProbationStart As Date?
+            Public Property MinimumWage As Boolean
+            Public Property DailyRate As Decimal?
+            Public Property WageArea As String
+        End Class
+
+        Private Shared Async Function TryFillContractAndWageAsync(conn As IDbConnection, header As Models.EmployeeHeaderModel) As Task
+            Try
+                Dim row = Await conn.QuerySingleOrDefaultAsync(Of ContractWageRow)("
+                    SELECT em.ContractEndDate, em.DateProbationStart,
+                           CAST(ISNULL(ern.MinimumWage, 0) AS BIT) AS MinimumWage, ern.DailyRate, b.WageArea
+                    FROM tblEmployee e
+                    LEFT JOIN tblEmployeeEmployment em ON em.RecordId = e.RecordId
+                    LEFT JOIN tblEmployeeEarnings ern ON ern.RecordId = e.RecordId
+                    LEFT JOIN tblBranch b ON b.BranchId = em.BranchId
+                    WHERE e.RecordId = @RecordId", New With {.RecordId = header.RecordId})
+                If row Is Nothing Then Return
+
+                header.ContractEndDate = row.ContractEndDate
+                header.DateProbationStart = row.DateProbationStart
+                header.MinimumWage = row.MinimumWage
+                header.WageArea = row.WageArea
+
+                If Not String.IsNullOrWhiteSpace(row.WageArea) Then
+                    Dim rate = Await conn.QuerySingleOrDefaultAsync(Of GlobalShared.Models.MinimumWageModel)(
+                        "SELECT TOP 1 * FROM tblMinimumWage WHERE WageArea = @area AND EffectiveDate <= @today ORDER BY EffectiveDate DESC",
+                        New With {.area = row.WageArea.Trim(), .today = Date.Today})
+                    If rate IsNot Nothing Then
+                        header.MinimumWageText = rate.DisplayText
+                        header.WageComparison = CInt(GlobalShared.Helpers.MinimumWageRules.Compare(row.DailyRate, rate))
+                    End If
+                End If
+            Catch ex As Exception
+                Debug.WriteLine($"Contract/minimum wage info not available: {ex.Message}")
+            End Try
+        End Function
+
+        ''' <summary>Wage Area ng branch at ang minimum wage nito sa petsa. Nothing ang rate kapag walang Wage Area o walang rate.</summary>
+        Public Async Function GetWageReferenceAsync(branchId As Integer?, onDate As Date) As Task(Of Models.WageReference) _
+            Implements IEmployeeRepository.GetWageReferenceAsync
+
+            Dim result As New Models.WageReference()
+            If Not branchId.HasValue Then Return result
+
+            Using conn = GetConnection()
+                result.WageArea = Await conn.QuerySingleOrDefaultAsync(Of String)(
+                    "SELECT WageArea FROM tblBranch WHERE BranchId = @branchId", New With {.branchId = branchId.Value})
+                If String.IsNullOrWhiteSpace(result.WageArea) Then Return result
+
+                result.WageArea = result.WageArea.Trim()
+                result.Rate = Await conn.QuerySingleOrDefaultAsync(Of GlobalShared.Models.MinimumWageModel)(
+                    "SELECT TOP 1 * FROM tblMinimumWage WHERE WageArea = @area AND EffectiveDate <= @onDate ORDER BY EffectiveDate DESC",
+                    New With {.area = result.WageArea, .onDate = onDate.Date})
+            End Using
+            Return result
+        End Function
+
+        Private Shared Async Function GetContractMonthsAsync(conn As IDbConnection, tran As IDbTransaction) As Task(Of Integer)
+            Dim months = Await conn.ExecuteScalarAsync(Of Integer?)(
+                "SELECT TOP 1 ContractMonths FROM tblGeneralSettings ORDER BY GeneralSettingsId", Nothing, tran)
+            Return If(months.HasValue AndAlso months.Value > 0, months.Value, 3)
         End Function
 
         ' Galing sa General Settings (tblGeneralSettings.ProbationMonths). Kapag wala pa ang column
@@ -403,8 +472,10 @@ Namespace Employee.Data
                              Not String.IsNullOrWhiteSpace(request.NewPayCycle))
 
                         ' Salary adjustment / Pay cycle change: basahin (may lock) ang kasalukuyang Earnings at ang pay basis ng cycle niya.
+                        ' (Kasama ang Tax status change, at ang Transfer / Salary adjustment na may bagong Minimum Wage Earner.)
                         Dim earningsRow As Models.EmployeeEarningsModel = Nothing
-                        If Models.MovementTypes.IsSalary(type) OrElse wantsCycleChange Then
+                        If Models.MovementTypes.IsSalary(type) OrElse wantsCycleChange OrElse
+                           type = Models.MovementTypes.TaxStatusChange OrElse request.NewMinimumWage.HasValue Then
                             earningsRow = Await conn.QuerySingleOrDefaultAsync(Of Models.EmployeeEarningsModel)(
                                 "SELECT * FROM tblEmployeeEarnings WITH (UPDLOCK, ROWLOCK) WHERE RecordId = @RecordId",
                                 New With {.RecordId = request.RecordId}, tran)
@@ -414,6 +485,7 @@ Namespace Employee.Data
                                 ctx.CurrentBasicSalary = earningsRow.BasicSalary
                                 ctx.CurrentDailyRate = earningsRow.DailyRate
                                 ctx.PayCycle = earningsRow.PayCycle
+                                ctx.MinimumWage = earningsRow.MinimumWage
                                 ctx.HasPayRate = (earningsRow.BasicSalary.HasValue AndAlso earningsRow.BasicSalary.Value > 0D) OrElse
                                                  (earningsRow.DailyRate.HasValue AndAlso earningsRow.DailyRate.Value > 0D)
                             End If
@@ -461,6 +533,39 @@ Namespace Employee.Data
                                         UpdatedBy          = @UserName
                                     WHERE RecordId = @RecordId",
                                     New With {.EffectiveDate = effective, .UserName = userName, .RecordId = request.RecordId}, tran)
+
+                            Case Models.MovementTypes.ConvertToProbationary
+                                ' Ang probation ay magsisimula sa effective date (hindi sa Date Joined). Ang Contract End ay nananatili
+                                ' bilang tala (hindi na ginagamit dahil hindi na Contractual).
+                                fromText = "Employment Type: " & OrNone(cur.EmployeeStatus)
+                                toText = $"Employment Type: Probationary (probation starts {FmtDate(effective)})"
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEmployment SET
+                                        EmployeeStatus     = 'Probationary',
+                                        DateProbationStart = @EffectiveDate,
+                                        UpdatedAt          = GETDATE(),
+                                        UpdatedBy          = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.EffectiveDate = effective, .UserName = userName, .RecordId = request.RecordId}, tran)
+
+                            Case Models.MovementTypes.ContractEndChange
+                                fromText = "Contract End: " & FmtDate(cur.ContractEndDate)
+                                toText = "Contract End: " & FmtDate(request.NewContractEndDate.Value.Date)
+
+                                Await conn.ExecuteAsync("
+                                    UPDATE tblEmployeeEmployment SET
+                                        ContractEndDate = @ContractEndDate,
+                                        UpdatedAt       = GETDATE(),
+                                        UpdatedBy       = @UserName
+                                    WHERE RecordId = @RecordId",
+                                    New With {.ContractEndDate = request.NewContractEndDate.Value.Date, .UserName = userName,
+                                              .RecordId = request.RecordId}, tran)
+
+                            Case Models.MovementTypes.TaxStatusChange
+                                fromText = Models.EmployeeMovementRules.TaxStatusText(ctx.MinimumWage)
+                                toText = Models.EmployeeMovementRules.TaxStatusText(request.NewMinimumWage.Value)
+                                Await SetMinimumWageAsync(conn, tran, request.RecordId, request.NewMinimumWage.Value, userName)
 
                             Case Models.MovementTypes.Promote
                                 Dim names = Await GetNewNamesAsync(conn, tran, request)
@@ -615,6 +720,12 @@ Namespace Employee.Data
                                 Dim lastKind = Models.EmployeeMovementRules.LastSeparationKind(ctx)
                                 Dim empType = Models.EmployeeMovementRules.CanonicalEmploymentType(request.NewEmploymentType)
 
+                                ' Bagong kontrata kapag Contractual; ang probation (kung Probationary) ay mula sa rehire date.
+                                Dim newContractEnd As Date? = Nothing
+                                If Models.EmployeeMovementRules.IsContractualType(empType) Then
+                                    newContractEnd = Models.EmployeeMovementRules.DefaultContractEnd(effective, Await GetContractMonthsAsync(conn, tran))
+                                End If
+
                                 fromText = $"Joined {FmtDate(cur.DateJoined)}; " &
                                            $"{If(lastKind.Length = 0, "Separated", lastKind)} {FmtDate(lastDate)}; " &
                                            $"Employment Type: {OrNone(cur.EmployeeStatus)}"
@@ -630,10 +741,12 @@ Namespace Employee.Data
                                         DateEndOfContract  = NULL,
                                         EmployeeStatus     = @EmploymentType,
                                         DateRegularization = CASE WHEN @EmploymentType = 'Regular' THEN @EffectiveDate ELSE NULL END,
+                                        ContractEndDate    = @ContractEndDate,
+                                        DateProbationStart = NULL,
                                         UpdatedAt          = GETDATE(),
                                         UpdatedBy          = @UserName
                                     WHERE RecordId = @RecordId",
-                                    New With {.EffectiveDate = effective, .EmploymentType = empType,
+                                    New With {.EffectiveDate = effective, .EmploymentType = empType, .ContractEndDate = newContractEnd,
                                               .UserName = userName, .RecordId = request.RecordId}, tran)
 
                                 Await conn.ExecuteAsync("
@@ -653,6 +766,16 @@ Namespace Employee.Data
                         Await InsertMovementAsync(conn, tran, request.RecordId, type, effective,
                                                   fromText, toText, remarks, userName)
 
+                        ' Salary adjustment / Transfer na may bagong Minimum Wage Earner: sariling History row (Tax status changed).
+                        If type <> Models.MovementTypes.TaxStatusChange AndAlso request.NewMinimumWage.HasValue AndAlso
+                           earningsRow IsNot Nothing AndAlso request.NewMinimumWage.Value <> earningsRow.MinimumWage Then
+                            Await SetMinimumWageAsync(conn, tran, request.RecordId, request.NewMinimumWage.Value, userName)
+                            Await InsertMovementAsync(conn, tran, request.RecordId, Models.MovementTypes.TaxStatusChange, effective,
+                                                      Models.EmployeeMovementRules.TaxStatusText(earningsRow.MinimumWage),
+                                                      Models.EmployeeMovementRules.TaxStatusText(request.NewMinimumWage.Value),
+                                                      If(remarks, $"With {Models.MovementTypes.HistoryLabel(type).ToLowerInvariant()}"), userName)
+                        End If
+
                         ' Regularize / Promote + bagong Pay Cycle: sa parehong transaction, sariling History row (Pay cycle changed).
                         If type <> Models.MovementTypes.PayCycleChange AndAlso wantsCycleChange Then
                             Dim cycleChange = Await ApplyPayCycleChangeAsync(conn, tran, request, ctx, earningsRow, newCycleName, userName)
@@ -670,6 +793,17 @@ Namespace Employee.Data
                 End Using
             End Using
 
+        End Function
+
+        Private Shared Async Function SetMinimumWageAsync(conn As SqlConnection, tran As IDbTransaction, recordId As Integer,
+                                                          minimumWage As Boolean, userName As String) As Task
+            Await conn.ExecuteAsync("
+                UPDATE tblEmployeeEarnings SET
+                    MinimumWage = @MinimumWage,
+                    UpdatedAt   = GETDATE(),
+                    UpdatedBy   = @UserName
+                WHERE RecordId = @RecordId",
+                New With {.MinimumWage = minimumWage, .UserName = userName, .RecordId = recordId}, tran)
         End Function
 
         ' Ang pay basis ng Pay Cycle ng empleyado: True kung Daily Rate ang input (kapareho ng EmployeeService.GetPayCycleRateBasesAsync).
@@ -877,6 +1011,7 @@ Namespace Employee.Data
                         DateRetired             = @DateRetired,
                         DateTerminated          = @DateTerminated,
                         DateEndOfContract       = @DateEndOfContract,
+                        ContractEndDate         = @ContractEndDate,
                         TimekeepingControlNo    = @TimekeepingControlNo,
                         UpdatedAt               = GETDATE(),
                         UpdatedBy               = @UpdatedBy
@@ -889,7 +1024,7 @@ Namespace Employee.Data
                         LeaveGroupId, HolidayGroupId, ScheduleGroupId,
                         DateJoined, DateRegularization, DateLastPromoted,
                         DateLastIncremented, DateLastTransferred,
-                        DateResigned, DateRetired, DateTerminated, DateEndOfContract,
+                        DateResigned, DateRetired, DateTerminated, DateEndOfContract, ContractEndDate,
                         TimekeepingControlNo, CreatedAt, CreatedBy
                     ) VALUES (
                         @RecordId, @EmployeeStatus, @EmploymentType,
@@ -898,7 +1033,7 @@ Namespace Employee.Data
                         @LeaveGroupId, @HolidayGroupId, @ScheduleGroupId,
                         @DateJoined, @DateRegularization, @DateLastPromoted,
                         @DateLastIncremented, @DateLastTransferred,
-                        @DateResigned, @DateRetired, @DateTerminated, @DateEndOfContract,
+                        @DateResigned, @DateRetired, @DateTerminated, @DateEndOfContract, @ContractEndDate,
                         @TimekeepingControlNo, GETDATE(), @CreatedBy
                     )"
 
@@ -910,6 +1045,15 @@ Namespace Employee.Data
                             New With {.RecordId = model.RecordId}, tran)
 
                         Dim merged = Models.EmployeeEmploymentLockRules.MergeForTabSave(cur, model, model.IsInitialSetup)
+
+                        ' Contractual: kusang Contract End = Date Joined + ContractMonths - 1 araw kapag wala pa (o habang
+                        ' ginagawa pa ang bagong empleyado, para sumunod sa binagong Date Joined). Ang pagbago pagkatapos ay
+                        ' sa Actions > Change contract end (may History).
+                        If Models.EmployeeMovementRules.IsContractualType(merged.EmployeeStatus) AndAlso merged.DateJoined.HasValue AndAlso
+                           (model.IsInitialSetup OrElse Not merged.ContractEndDate.HasValue) Then
+                            merged.ContractEndDate = Models.EmployeeMovementRules.DefaultContractEnd(
+                                merged.DateJoined.Value, Await GetContractMonthsAsync(conn, tran))
+                        End If
                         Dim rows = Await conn.ExecuteAsync(sql, merged, tran)
 
                         ' Pagbabago sa naka-save nang empleyado (hindi initial setup) = may bakas sa History.

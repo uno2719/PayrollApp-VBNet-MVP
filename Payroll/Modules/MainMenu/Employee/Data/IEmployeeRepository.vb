@@ -54,6 +54,9 @@
         Function GetEmployeeLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeLookupModel))
         Function GetEmployeeContactLookupAsync() As Task(Of List(Of GlobalShared.Models.EmployeeContactLookupModel))
 
+        ''' <summary>Wage Area ng branch at ang minimum wage nito sa petsa (Phase 2: Minimum Wage Earner na paalala).</summary>
+        Function GetWageReferenceAsync(branchId As Integer?, onDate As Date) As Task(Of Models.WageReference)
+
 
     End Interface
 End Namespace

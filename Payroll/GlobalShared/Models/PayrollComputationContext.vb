@@ -13,15 +13,21 @@ Namespace GlobalShared.Models
         Public Property PhilHealthFlag As Boolean
         Public Property PagIbigFlag As Boolean
         Public Property IsActive As Boolean = True
+
+        ''' <summary>tblCompensation.Component2316 (COLA, NDIF, HOLI, ...). Para sa MWE: NDIF/HOLI/COLA ay exempt.</summary>
+        Public Property Component2316 As String
     End Class
 
-    ''' <summary>Isang entry mula sa tblPayrollInputTxn.</summary>
+    ''' <summary>Isang entry mula sa tblPayrollInputTxn (Input Entry), o mula sa Employee > Fix Transactions (may FixTxnId).</summary>
     Public Class PayrollTxnInput
         Public Property RecordId As Integer
         Public Property TxnCategory As String
         Public Property TxnCode As String
         Public Property Qty As Decimal
         Public Property Rate As Decimal
+
+        ''' <summary>Nothing = galing sa Input Entry; may laman = galing sa tblEmployeeFixTxn (FixTransactionRules.MergeTxns).</summary>
+        Public Property FixTxnId As Integer?
     End Class
 
     ''' <summary>Isang hulog ng loan na pwedeng kaltasin sa cutoff na ito.</summary>
@@ -70,7 +76,11 @@ Namespace GlobalShared.Models
         Public Property DateTerminated As Date?
         Public Property DateEndOfContract As Date?
 
+        ''' <summary>Input Entry lang (tblPayrollInputTxn). Ang Fix Transactions ay idinudugtong ng engine (MergeTxns).</summary>
         Public Property Txns As List(Of PayrollTxnInput) = New List(Of PayrollTxnInput)()
+
+        ''' <summary>Lahat ng ACTIVE na Fix Transaction ng empleyado (sinasala ng engine ayon sa cutoff).</summary>
+        Public Property FixTxns As List(Of EmployeeFixTxnModel) = New List(Of EmployeeFixTxnModel)()
         Public Property Loans As List(Of PayrollLoanDue) = New List(Of PayrollLoanDue)()
         Public Property Prior As PayrollPriorBases = New PayrollPriorBases()
     End Class

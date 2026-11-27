@@ -190,8 +190,13 @@ Namespace PayrollProcessing.Data
                     Next
                 End If
 
+                ' Employee > Fix Transactions (active lang; ang engine ang sumasala ayon sa cutoff at Input Entry override)
+                Dim fixes = (Await conn.QueryAsync(Of EmployeeFixTxnModel)(PayrollInputRepository.FixTxnSql, New With {ids})).
+                            ToLookup(Function(fx) fx.RecordId)
+
                 For Each emp In result.Employees
                     emp.Txns = txns(emp.RecordId).ToList()
+                    emp.FixTxns = fixes(emp.RecordId).ToList()
                     emp.Loans = loans(emp.RecordId).OrderBy(Function(l) l.ScheduledDate).ThenBy(Function(l) l.InstallmentNo).ToList()
                     Dim prior As PayrollPriorBases = Nothing
                     If priors.TryGetValue(emp.RecordId, prior) Then emp.Prior = prior

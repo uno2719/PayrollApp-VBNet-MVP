@@ -126,6 +126,8 @@ Namespace Employee.Models
                 .DateRetired = src.DateRetired,
                 .DateTerminated = src.DateTerminated,
                 .DateEndOfContract = src.DateEndOfContract,
+                .ContractEndDate = src.ContractEndDate,
+                .DateProbationStart = src.DateProbationStart,
                 .TimekeepingControlNo = src.TimekeepingControlNo,
                 .CreatedAt = src.CreatedAt,
                 .CreatedBy = src.CreatedBy,
@@ -164,6 +166,7 @@ Namespace Employee.Models
             AddDate(list, "Date Retired", before.DateRetired, after.DateRetired)
             AddDate(list, "Date Terminated", before.DateTerminated, after.DateTerminated)
             AddDate(list, "Date End of Contract", before.DateEndOfContract, after.DateEndOfContract)
+            AddDate(list, "Contract End", before.ContractEndDate, after.ContractEndDate)
             Return list
         End Function
 

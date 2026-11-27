@@ -40,6 +40,10 @@ Partial Class frmEmployeeAction
         cboNewCycle = New DevExpress.XtraEditors.ComboBoxEdit()
         lblNewRate = New DevExpress.XtraEditors.LabelControl()
         spnNewRate = New DevExpress.XtraEditors.SpinEdit()
+        lblNewDate = New DevExpress.XtraEditors.LabelControl()
+        dtpNewDate = New DevExpress.XtraEditors.DateEdit()
+        chkMinimumWage = New DevExpress.XtraEditors.CheckEdit()
+        lblMweHint = New DevExpress.XtraEditors.LabelControl()
         lblRemarks = New DevExpress.XtraEditors.LabelControl()
         memoRemarks = New DevExpress.XtraEditors.MemoEdit()
         lblWarning = New DevExpress.XtraEditors.LabelControl()
@@ -57,6 +61,9 @@ Partial Class frmEmployeeAction
         CType(cboNewCycle.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(spnNewRate.Properties, ComponentModel.ISupportInitialize).BeginInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(dtpNewDate.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(dtpNewDate.Properties, ComponentModel.ISupportInitialize).BeginInit()
+        CType(chkMinimumWage.Properties, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' lblEmployee
@@ -299,6 +306,48 @@ Partial Class frmEmployeeAction
         memoRemarks.TabIndex = 15
         memoRemarks.Visible = False
         ' 
+        ' lblNewDate
+        ' 
+        lblNewDate.Location = New Point(20, 410)
+        lblNewDate.Name = "lblNewDate"
+        lblNewDate.Size = New Size(100, 13)
+        lblNewDate.TabIndex = 30
+        lblNewDate.Text = "New Contract End *"
+        lblNewDate.Visible = False
+        ' 
+        ' dtpNewDate
+        ' 
+        dtpNewDate.EditValue = Nothing
+        dtpNewDate.Location = New Point(150, 406)
+        dtpNewDate.Name = "dtpNewDate"
+        dtpNewDate.Properties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        dtpNewDate.Properties.CalendarTimeProperties.Buttons.AddRange(New DevExpress.XtraEditors.Controls.EditorButton() {New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)})
+        dtpNewDate.Size = New Size(300, 20)
+        dtpNewDate.TabIndex = 31
+        dtpNewDate.Visible = False
+        ' 
+        ' chkMinimumWage
+        ' 
+        chkMinimumWage.Location = New Point(148, 436)
+        chkMinimumWage.Name = "chkMinimumWage"
+        chkMinimumWage.Properties.Caption = "Minimum Wage Earner (tax-exempt)"
+        chkMinimumWage.Size = New Size(302, 20)
+        chkMinimumWage.TabIndex = 32
+        chkMinimumWage.Visible = False
+        ' 
+        ' lblMweHint
+        ' 
+        lblMweHint.Appearance.ForeColor = Color.DimGray
+        lblMweHint.Appearance.Options.UseForeColor = True
+        lblMweHint.Appearance.Options.UseTextOptions = True
+        lblMweHint.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap
+        lblMweHint.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None
+        lblMweHint.Location = New Point(150, 460)
+        lblMweHint.Name = "lblMweHint"
+        lblMweHint.Size = New Size(300, 30)
+        lblMweHint.TabIndex = 33
+        lblMweHint.Visible = False
+        ' 
         ' lblWarning
         ' 
         lblWarning.Appearance.BackColor = Color.FromArgb(250, 238, 218)
@@ -343,6 +392,10 @@ Partial Class frmEmployeeAction
         Controls.Add(btnCancel)
         Controls.Add(btnApply)
         Controls.Add(lblWarning)
+        Controls.Add(lblMweHint)
+        Controls.Add(chkMinimumWage)
+        Controls.Add(dtpNewDate)
+        Controls.Add(lblNewDate)
         Controls.Add(memoRemarks)
         Controls.Add(spnNewRate)
         Controls.Add(lblNewRate)
@@ -387,6 +440,9 @@ Partial Class frmEmployeeAction
         CType(cboNewCycle.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(spnNewRate.Properties, ComponentModel.ISupportInitialize).EndInit()
         CType(memoRemarks.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(dtpNewDate.Properties.CalendarTimeProperties, ComponentModel.ISupportInitialize).EndInit()
+        CType(dtpNewDate.Properties, ComponentModel.ISupportInitialize).EndInit()
+        CType(chkMinimumWage.Properties, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
         PerformLayout()
     End Sub
@@ -417,6 +473,10 @@ Partial Class frmEmployeeAction
     Friend WithEvents lblRemarks As DevExpress.XtraEditors.LabelControl
     Friend WithEvents memoRemarks As DevExpress.XtraEditors.MemoEdit
     Friend WithEvents lblWarning As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents lblNewDate As DevExpress.XtraEditors.LabelControl
+    Friend WithEvents dtpNewDate As DevExpress.XtraEditors.DateEdit
+    Friend WithEvents chkMinimumWage As DevExpress.XtraEditors.CheckEdit
+    Friend WithEvents lblMweHint As DevExpress.XtraEditors.LabelControl
     Friend WithEvents btnApply As DevExpress.XtraEditors.SimpleButton
     Friend WithEvents btnCancel As DevExpress.XtraEditors.SimpleButton
 
