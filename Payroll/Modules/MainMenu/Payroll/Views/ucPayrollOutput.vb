@@ -232,17 +232,18 @@ Public Class ucPayrollOutput
         AddColumn(gridView, NameOf(PayrollResultModel.EmployeeNo), "Employee No", 0, False)
         AddColumn(gridView, NameOf(PayrollResultModel.EmployeeName), "Name", 1, False)
         AddColumn(gridView, NameOf(PayrollResultModel.BasicPay), "Basic Pay", 2, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.GrossPay), "Gross Pay", 3, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.OtherDeduction), "Other Deductions", 4, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.SSSTotalEE), "SSS", 5, True)       ' EE + MPF
-        AddColumn(gridView, NameOf(PayrollResultModel.PhilHealthEE), "PhilHealth", 6, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.PagIbigEE), "Pag-IBIG", 7, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.TaxableIncome), "Taxable Income", 8, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.WithholdingTax), "Tax", 9, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.LoanDeduction), "Loans", 10, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.TotalDeduction), "Total Deductions", 11, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.NetPay), "Net Pay", 12, True)
-        AddColumn(gridView, NameOf(PayrollResultModel.WarningText), "Warnings", 13, False)
+        AddColumn(gridView, NameOf(PayrollResultModel.OtherEarnings), "Other Earnings", 3, True)   ' OT, Holiday, Compensation, Bonus
+        AddColumn(gridView, NameOf(PayrollResultModel.GrossPay), "Gross Pay", 4, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.OtherDeduction), "Other Deductions", 5, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.SSSTotalEE), "SSS", 6, True)       ' EE + MPF
+        AddColumn(gridView, NameOf(PayrollResultModel.PhilHealthEE), "PhilHealth", 7, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.PagIbigEE), "Pag-IBIG", 8, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.TaxableIncome), "Taxable Income", 9, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.WithholdingTax), "Tax", 10, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.LoanDeduction), "Loans", 11, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.TotalDeduction), "Total Deductions", 12, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.NetPay), "Net Pay", 13, True)
+        AddColumn(gridView, NameOf(PayrollResultModel.WarningText), "Warnings", 14, False)
 
         ' Mga nakatagong detalye (nasa Column Chooser): bases at employer share
         AddHiddenColumn(gridView, NameOf(PayrollResultModel.SSSEE), "SSS (EE only)")

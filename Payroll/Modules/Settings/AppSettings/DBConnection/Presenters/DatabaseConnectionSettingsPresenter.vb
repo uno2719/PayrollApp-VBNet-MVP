@@ -8,6 +8,21 @@ Namespace DBConnection.Presenters
         Private ReadOnly _settingsService As Services.IDatabaseConnectionSettingsService
         Private ReadOnly _allowEdit As Boolean
 
+        ' Ang Server + Database na naka-save nang buksan ang screen; ikinukumpara sa huling na-save
+        ' para malaman kung nagbago ang database na gagamitin ng app.
+        Private _openedServer As String = String.Empty
+        Private _openedDatabase As String = String.Empty
+        Private _savedServer As String = String.Empty
+        Private _savedDatabase As String = String.Empty
+
+        ''' <summary>True kapag ang Server o Database Name na na-save ay iba sa dati nang buksan ang screen.</summary>
+        Public ReadOnly Property TargetChanged As Boolean
+            Get
+                Return Not String.Equals(_openedServer, _savedServer, StringComparison.OrdinalIgnoreCase) OrElse
+                       Not String.Equals(_openedDatabase, _savedDatabase, StringComparison.OrdinalIgnoreCase)
+            End Get
+        End Property
+
         Public Sub New(
             view As Views.IDatabaseConnectionSettingsView,
             settingsService As Services.IDatabaseConnectionSettingsService,
@@ -26,37 +41,51 @@ Namespace DBConnection.Presenters
             _view.AuthenticationType = settings.AuthenticationType
             _view.SqlUsername = settings.SqlUsername
 
+            _openedServer = If(settings.ServerAddress, String.Empty).Trim()
+            _openedDatabase = If(settings.DatabaseName, String.Empty).Trim()
+            _savedServer = _openedServer
+            _savedDatabase = _openedDatabase
+
             ' Huwag ipakita ang naka-save na password.
             _view.SqlPassword = String.Empty
         End Sub
 
-        Public Async Function TestConnectionAsync() As Task
-
-            If Not ValidateRequiredFields() Then Return
-
+        ' Sinusubukang kumonekta sa laman ng screen. Hindi nagpapakita ng message.
+        Private Async Function TryConnectAsync() As Task(Of (Success As Boolean, Message As String))
             Dim settings = BuildSettingsFromView()
             Dim connString = _settingsService.BuildConnectionString(
                 settings,
                 ResolvePasswordForTest())
 
+            ' Maikling timeout para hindi maghintay ng 15 segundo kapag mali ang server.
+            Dim builder As New System.Data.SqlClient.SqlConnectionStringBuilder(connString) With {
+                .ConnectTimeout = 8
+            }
+
             Try
-                Using conn As New System.Data.SqlClient.SqlConnection(connString)
+                Using conn As New System.Data.SqlClient.SqlConnection(builder.ConnectionString)
                     Await conn.OpenAsync()
                 End Using
 
-                _view.ShowTestConnectionResult(
-                    True,
-                    "Successfully connected to the database!")
+                Return (True, "Successfully connected to the database!")
 
             Catch ex As Exception
-                _view.ShowTestConnectionResult(
-                    False,
-                    $"Could not connect: {ex.Message}")
+                Return (False, $"Could not connect: {ex.Message}")
             End Try
+        End Function
+
+        Public Async Function TestConnectionAsync() As Task
+
+            If Not ValidateRequiredFields() Then Return
+
+            Dim result = Await TryConnectAsync()
+            _view.ShowTestConnectionResult(result.Success, result.Message)
 
         End Function
 
-        Public Sub SaveSettings()
+        ' Sinusubukan muna ang connection bago mag-save. Kung hindi makakonekta, may babala at tinatanong
+        ' kung itutuloy pa rin ang pag-save (default: hindi).
+        Public Async Function SaveSettingsAsync() As Task
 
             ' Normal in-app access:
             ' kailangan pa rin ng regular AuthorizationService permission.
@@ -76,16 +105,45 @@ Namespace DBConnection.Presenters
 
             If Not ValidateRequiredFields() Then Return
 
-            Dim settings = BuildSettingsFromView()
+            _view.SetBusy(True)
+            Try
+                Dim result = Await TryConnectAsync()
 
-            _settingsService.Save(
-                settings,
-                _view.SqlPassword)
+                If Not result.Success Then
+                    _view.ShowTestConnectionResult(False, result.Message)
 
-            _view.ShowMessage(
-                "Database Connection Settings saved.")
+                    Dim saveAnyway = _view.ConfirmSaveAnyway(
+                        "The app could not connect with these settings:" & Environment.NewLine & Environment.NewLine &
+                        result.Message & Environment.NewLine & Environment.NewLine &
+                        "If you save them, the app may not be able to log in until they are fixed." & Environment.NewLine &
+                        "Save anyway?")
 
-        End Sub
+                    If Not saveAnyway Then
+                        _view.ShowError("Not saved. Fix the settings, or use Test Connection to check them.")
+                        Return
+                    End If
+                End If
+
+                Dim settings = BuildSettingsFromView()
+
+                _settingsService.Save(
+                    settings,
+                    _view.SqlPassword)
+
+                _savedServer = If(settings.ServerAddress, String.Empty).Trim()
+                _savedDatabase = If(settings.DatabaseName, String.Empty).Trim()
+
+                If result.Success Then
+                    _view.ShowMessage("Database Connection Settings saved.")
+                Else
+                    _view.ShowError("Saved, but the connection could not be verified.")
+                End If
+
+            Finally
+                _view.SetBusy(False)
+            End Try
+
+        End Function
 
         Private Function ValidateRequiredFields() As Boolean
 

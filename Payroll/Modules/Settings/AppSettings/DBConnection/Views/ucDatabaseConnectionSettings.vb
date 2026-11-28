@@ -9,13 +9,15 @@ Namespace DBConnection.Views
 
         Private _presenter As DatabaseConnectionSettingsPresenter
         Private _isPasswordVisible As Boolean = False
+        Private _canSave As Boolean = False
 
         Public Sub SetPresenter(presenter As DatabaseConnectionSettingsPresenter, Optional allowEdit As Boolean = False)
 
             _presenter = presenter
             _presenter.LoadSettings()
 
-            btnSave.Enabled = allowEdit OrElse AuthorizationService.CanModify(ModuleCodes.Settings_DatabaseSettings)
+            _canSave = allowEdit OrElse AuthorizationService.CanModify(ModuleCodes.Settings_DatabaseSettings)
+            btnSave.Enabled = _canSave
         End Sub
 
         Public Property ServerAddress As String Implements IDatabaseConnectionSettingsView.ServerAddress
@@ -133,9 +135,36 @@ Namespace DBConnection.Views
             End Try
         End Sub
 
-        Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
-            _presenter.SaveSettings()
+        Private Async Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
+            Await _presenter.SaveSettingsAsync()
         End Sub
+
+        Public Function ConfirmSaveAnyway(message As String) As Boolean _
+            Implements IDatabaseConnectionSettingsView.ConfirmSaveAnyway
+
+            Return XtraMessageBox.Show(message, "Connection failed",
+                                       MessageBoxButtons.YesNo,
+                                       MessageBoxIcon.Warning,
+                                       MessageBoxDefaultButton.Button2) = DialogResult.Yes
+        End Function
+
+        Public Sub SetBusy(isBusy As Boolean) Implements IDatabaseConnectionSettingsView.SetBusy
+            btnTestConnection.Enabled = Not isBusy
+            If isBusy Then
+                btnSave.Enabled = False
+                lblStatusMessage.Appearance.Options.UseForeColor = False
+                lblStatusMessage.Text = "Checking the connection..."
+            Else
+                btnSave.Enabled = _canSave
+            End If
+        End Sub
+
+        ''' <summary>True kapag nagbago ang Server o Database Name na na-save sa screen na ito.</summary>
+        Public ReadOnly Property TargetChanged As Boolean
+            Get
+                Return _presenter IsNot Nothing AndAlso _presenter.TargetChanged
+            End Get
+        End Property
 
     End Class
 End Namespace

@@ -95,6 +95,16 @@ Namespace GlobalShared.Models
             End Get
         End Property
 
+        ''' <summary>
+        ''' Ibang earnings bukod sa Basic Pay (Overtime, Holiday, Compensation, Bonus, Fix Transaction).
+        ''' Ang GrossPay ay kabuuan ng LAHAT ng EARNING line, kaya Gross - Basic ang kabuuan ng mga iyon. Hindi galing sa DB.
+        ''' </summary>
+        Public ReadOnly Property OtherEarnings As Decimal
+            Get
+                Return GrossPay - BasicPay
+            End Get
+        End Property
+
         ''' <summary>SSS na kinaltas sa empleyado (EE + MPF). Ito ang "SSS" column sa Output grid at sa mga report.</summary>
         Public ReadOnly Property SSSTotalEE As Decimal
             Get

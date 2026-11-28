@@ -259,9 +259,25 @@ Public Class frmMain
 
     Private Sub ShowDatabaseSettingsDialog()
         Dim settingsView = AppComposition.BuildDatabaseConnectionSettingsView()
+        Dim targetChanged As Boolean
         Using dlg As New frmDatabaseConnectionSettingsDialog(settingsView)
             dlg.ShowDialog()
+            targetChanged = dlg.TargetChanged
         End Using
+
+        ' Ginagamit na ng app ang bagong Server/Database sa susunod na connection (binabasa ang settings file
+        ' sa bawat connection), pero ang mga screen na bukas na at ang permission cache ay galing pa sa dati.
+        If targetChanged Then
+            Dim answer = XtraMessageBox.Show(
+                "You changed the database that the app connects to." & Environment.NewLine & Environment.NewLine &
+                "Log out now so the app starts fresh on the new database?" & Environment.NewLine &
+                "If you choose No, screens that are already open may still show data from the old database.",
+                "Database changed",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question)
+
+            If answer = DialogResult.Yes Then PerformLogout(askConfirm:=False)
+        End If
     End Sub
 
 
@@ -351,14 +367,16 @@ Public Class frmMain
 
     ' Iisa na lang ang lugar ng logout logic - tinatawag ito ng parehong
     ' Accordion sidebar AT ng bagong Profile dropdown, walang duplicate na code.
-    Private Sub PerformLogout()
-        Dim confirm = XtraMessageBox.Show(
-                                        "Are you sure you want to logout?",
-                                        "Logout",
-                                        MessageBoxButtons.YesNo,
-                                        MessageBoxIcon.Question)
+    Private Sub PerformLogout(Optional askConfirm As Boolean = True)
+        If askConfirm Then
+            Dim confirm = XtraMessageBox.Show(
+                                            "Are you sure you want to logout?",
+                                            "Logout",
+                                            MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Question)
 
-        If confirm <> DialogResult.Yes Then Return
+            If confirm <> DialogResult.Yes Then Return
+        End If
 
         ' ✅ I-clear ang AppSession
         AppSession.CurrentUser = String.Empty
