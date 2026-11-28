@@ -202,7 +202,7 @@ Partial Class frmEmployeeCorrection
         lblJobClass.Name = "lblJobClass"
         lblJobClass.Size = New Size(80, 13)
         lblJobClass.TabIndex = 14
-        lblJobClass.Text = "Job Class *"
+        lblJobClass.Text = "Job Class"
         ' 
         ' lookJobClass
         ' 

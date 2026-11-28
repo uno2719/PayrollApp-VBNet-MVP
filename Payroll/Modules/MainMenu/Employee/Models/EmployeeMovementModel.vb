@@ -561,7 +561,7 @@ Namespace Employee.Models
                 Case MovementTypes.Promote
                     If Not req.NewPositionId.HasValue Then Return "Position is required."
                     If c.CategoryId.HasValue AndAlso Not req.NewCategoryId.HasValue Then Return "Category can't be blank."
-                    If c.JobClassId.HasValue AndAlso Not req.NewJobClassId.HasValue Then Return "Job Class can't be blank."
+                    ' Job Class: opsyonal, kaya puwedeng blangko (kasama ang pag-alis ng dating laman; naka-log sa History).
                     If SameId(c.PositionId, req.NewPositionId) AndAlso
                        SameId(c.CategoryId, req.NewCategoryId) AndAlso
                        SameId(c.JobClassId, req.NewJobClassId) Then

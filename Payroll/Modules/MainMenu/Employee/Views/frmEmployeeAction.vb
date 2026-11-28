@@ -125,6 +125,7 @@ Public Class frmEmployeeAction
                     BindLookup(lookPosition, Await _service.GetLookupsAsync("tblPosition"))
                     BindLookup(lookCategory, Await _service.GetLookupsAsync("tblCategoryCode"))
                     BindLookup(lookJobClass, Await _service.GetLookupsAsync("tblJobClass"))
+                    MakeOptional(lookJobClass)
                     lookPosition.EditValue = ToObj(_employment.PositionId)
                     lookCategory.EditValue = ToObj(_employment.CategoryId)
                     lookJobClass.EditValue = ToObj(_employment.JobClassId)
@@ -656,6 +657,20 @@ Public Class frmEmployeeAction
             .Columns.Add(New DevExpress.XtraEditors.Controls.LookUpColumnInfo("Name", "Name"))
             .NullText = String.Empty
         End With
+    End Sub
+
+    ' Job Class ay opsyonal: puwedeng blangko at may "X" button para burahin ang napili.
+    Private Sub MakeOptional(edit As LookUpEdit)
+        edit.Properties.AllowNullInput = DevExpress.Utils.DefaultBoolean.True
+        If edit.Properties.Buttons.Count > 1 Then Return
+        edit.Properties.Buttons.Add(New DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Clear))
+        AddHandler edit.ButtonClick, AddressOf OptionalLookup_ButtonClick
+    End Sub
+
+    Private Sub OptionalLookup_ButtonClick(sender As Object, e As DevExpress.XtraEditors.Controls.ButtonPressedEventArgs)
+        If e.Button.Kind = DevExpress.XtraEditors.Controls.ButtonPredefines.Clear Then
+            CType(sender, LookUpEdit).EditValue = Nothing
+        End If
     End Sub
 
     Private Shared Function ToObj(value As Integer?) As Object

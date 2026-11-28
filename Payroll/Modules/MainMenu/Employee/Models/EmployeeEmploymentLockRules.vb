@@ -277,7 +277,7 @@ Namespace Employee.Models
 
             If Not req.PositionId.HasValue Then Return "Position is required."
             If Not req.CategoryId.HasValue Then Return "Category Code is required."
-            If Not req.JobClassId.HasValue Then Return "Job Class is required."
+            ' Job Class: opsyonal (hindi ginagamit ng kompanya pero iniwan para sa hinaharap), puwedeng blangko.
             If Not req.BranchId.HasValue Then Return "Branch is required."
             If Not req.DepartmentId.HasValue Then Return "Department is required."
 
